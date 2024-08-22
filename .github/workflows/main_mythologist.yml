@@ -22,11 +22,11 @@ jobs:
           dotnet-version: '8.x'
 
       - name: Build with dotnet
-        run: dotnet build --configuration ReleaseWeb
+        run: dotnet build Mythologist_Client_WASM --configuration ReleaseWeb
         working-directory: ./Mythologist_Client_WASM/Mythologist_Client_WASM/
         
       - name: dotnet publish
-        run: dotnet publish -c ReleaseWeb -o ${{env.DOTNET_ROOT}}/myapp
+        run: dotnet publish Mythologist_Client_WASM -c ReleaseWeb -o ${{env.DOTNET_ROOT}}/myapp
         working-directory: ./ Mythologist_Client_WASM/Mythologist_Client_WASM/
         
       - name: Upload artifact for deployment job
