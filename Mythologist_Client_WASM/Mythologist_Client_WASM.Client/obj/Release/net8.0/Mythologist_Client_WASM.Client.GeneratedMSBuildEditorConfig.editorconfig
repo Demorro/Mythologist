@@ -1,0 +1,58 @@
+is_global = true
+build_property.EnableAotAnalyzer = 
+build_property.EnableSingleFileAnalyzer = 
+build_property.EnableTrimAnalyzer = false
+build_property.IncludeAllContentForSelfExtract = 
+build_property.MudDebugAnalyzer = 
+build_property.MudAllowedAttributePattern = 
+build_property.MudIllegalParameters = 
+build_property.TargetFramework = net8.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = 
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = false
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = browser
+build_property.RootNamespace = Mythologist_Client_WASM.Client
+build_property.RootNamespace = Mythologist_Client_WASM.Client
+build_property.ProjectDir = C:\Dev\Mythologist\Mythologist_Client_WASM\Mythologist_Client_WASM.Client\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = false
+build_property.RazorLangVersion = 8.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = C:\Dev\Mythologist\Mythologist_Client_WASM\Mythologist_Client_WASM.Client
+build_property._RazorSourceGeneratorDebug = 
+
+[C:/Dev/Mythologist/Mythologist_Client_WASM/Mythologist_Client_WASM.Client/Dialogs/LoginAsPlayerOrGMDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = RGlhbG9nc1xMb2dpbkFzUGxheWVyT3JHTURpYWxvZy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Dev/Mythologist/Mythologist_Client_WASM/Mythologist_Client_WASM.Client/Layout/MainLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = TGF5b3V0XE1haW5MYXlvdXQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Dev/Mythologist/Mythologist_Client_WASM/Mythologist_Client_WASM.Client/Layout/NavMenu.razor]
+build_metadata.AdditionalFiles.TargetPath = TGF5b3V0XE5hdk1lbnUucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Dev/Mythologist/Mythologist_Client_WASM/Mythologist_Client_WASM.Client/Pages/GMSceneView.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcR01TY2VuZVZpZXcucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Dev/Mythologist/Mythologist_Client_WASM/Mythologist_Client_WASM.Client/Pages/Landing.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTGFuZGluZy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Dev/Mythologist/Mythologist_Client_WASM/Mythologist_Client_WASM.Client/Pages/PlayerSceneView.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGxheWVyU2NlbmVWaWV3LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Dev/Mythologist/Mythologist_Client_WASM/Mythologist_Client_WASM.Client/Routes.razor]
+build_metadata.AdditionalFiles.TargetPath = Um91dGVzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Dev/Mythologist/Mythologist_Client_WASM/Mythologist_Client_WASM.Client/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = X0ltcG9ydHMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 

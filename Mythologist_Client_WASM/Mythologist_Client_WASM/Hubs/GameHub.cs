@@ -1,0 +1,196 @@
+﻿using Microsoft.AspNetCore.SignalR;
+using Mythologist_Client_WASM.Client.Infos;
+using Mythologist_Client_WASM.Services;
+using SharedLogic.Model;
+using SharedLogic.Services;
+
+namespace Mythologist_Client_WASM.Hubs
+{
+	public class GameHub : Hub
+	{
+		IClientsService clients;
+		IDatabaseConnectionService database;
+		HttpClient httpClient;
+		ILastKnownStateService lastKnownStates;
+
+        public GameHub(IClientsService _clients, IDatabaseConnectionService _database, HttpClient _httpClient, ILastKnownStateService _lastKnownStates)
+		{
+			clients = _clients;
+			database = _database;
+			httpClient = _httpClient;
+			lastKnownStates = _lastKnownStates;
+        }
+
+		public override async Task OnConnectedAsync()
+		{
+			Console.WriteLine($"Player with ID `{Context.ConnectionId}` connected");
+
+			await base.OnConnectedAsync();
+        }
+
+        public override Task OnDisconnectedAsync(Exception? exception)
+        {
+            Console.WriteLine($"Player with ID `{Context.ConnectionId}` disconnected");
+
+			//This group may be null if the game ended up being deleted, or the client wasn't in any games
+			string? groupToNotify = clients.Remove(Context.ConnectionId);
+			if (groupToNotify is not null)
+			{
+                Clients.Group(groupToNotify).SendAsync("NotifyOfClients", clients.GetClientsInGameAsList(groupToNotify));
+            }
+
+            return base.OnDisconnectedAsync(exception);
+        }
+
+        // See if we're allowed to join the game.
+        // If there's a GM password, also validate that.
+        public async Task<SuccessOrFailInfo> JoinGame(string gameName, string username, string? discordClientID, Uri? avatarUrl, string? GMPassword)
+		{
+			bool allowedToJoin = true;
+			bool isGM = false;
+			string failureMessage = "Error Joining Game";
+			if (GMPassword != null)
+			{
+				allowedToJoin = await VerifyPassword(gameName, GMPassword);
+				if (!allowedToJoin)
+				{
+					failureMessage = "Invalid Password";
+				}
+				isGM = true;
+
+            }
+
+			//Check that the game exists
+			if (!await database.VerifyGameExists(gameName)){
+				allowedToJoin = false;
+				failureMessage = $"Game '{gameName}' does not exist";
+			}
+
+			if (allowedToJoin)
+			{
+				//Register the new client
+				var groupName = gameName;
+				await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+				clients.Add(groupName, Context.ConnectionId, username, discordClientID, avatarUrl, isGM);
+                await database.HydrateForGame(gameName); //Important or Scenes dont get populated (see database service it's bad)
+                var allScenes = database.AllScenes();
+
+                try
+                {
+                    //Seriously if the client isn't in a scene it wont display in the frontend .
+                    EnsureClientIsInScene(allScenes, clients.GetClient(gameName, Context.ConnectionId), await database.GameSettings(gameName));
+                }
+                catch (Exception ex)
+                {
+                    SuccessOrFailInfo couldntFindSceneFail = new SuccessOrFailInfo();
+                    couldntFindSceneFail.successful = false;
+					couldntFindSceneFail.message = ex.Message;
+					return couldntFindSceneFail; ;
+                }
+
+                Console.WriteLine($"Player with ID `{Context.ConnectionId}` Joined Game '{groupName}'");
+                await Clients.Group(gameName).SendAsync("NotifyOfClients", clients.GetClientsInGameAsList(groupName));
+			}
+
+			SuccessOrFailInfo successOrFail = new SuccessOrFailInfo();
+            successOrFail.successful = allowedToJoin;
+            successOrFail.message = failureMessage;
+
+            return successOrFail;
+		}
+
+		private void EnsureClientIsInScene(List<SceneModel> allScenes, ClientInfo client, GameSettingsModel gameSettings)
+		{
+            if (allScenes.Count == 0)
+            {
+				throw new Exception("Attempting to load a client into a game with no scenes");
+            }
+            else
+            {
+				if ((gameSettings.defaultScene != null) && (allScenes.Any(x => x.id == gameSettings.defaultScene.id)))
+				{
+					client.currentSceneID = gameSettings.defaultScene.id;
+                }
+				else
+				{
+					client.currentSceneID = allScenes.First().id;
+				}
+            }
+        }
+
+		//Called initially, and whenever a client feels like it needs to get all the messages to setup its own state again
+		public async Task RefreshGameState(string gameName)
+		{
+			ClientInfo thisClient = clients.GetClient(gameName, Context.ConnectionId);
+
+			await database.HydrateForGame(gameName); //Important or Scenes dont get populated (see database service it's bad)
+            var allScenes = database.AllScenes();
+			var gameSettings = await database.GameSettings(gameName);
+			try
+			{
+				EnsureClientIsInScene(allScenes, thisClient, gameSettings);
+			}
+			catch(Exception ex)
+			{
+				await Clients.Client(Context.ConnectionId).SendAsync("NotifyOfServerError", ex.Message);
+				return;
+			}
+            GameInfo gameInfo = new GameInfo { scenes = allScenes, gameSettings = gameSettings };
+
+            List<Task> refreshTasks = new List<Task>();
+            SceneChangeInfo sceneChangeInfo = new SceneChangeInfo
+            {
+                newSceneId = thisClient.currentSceneID!,
+                timeSinceMusicStart = 0.0f //TODO, this.
+            };
+
+			refreshTasks.Add(Clients.Client(Context.ConnectionId).SendAsync("NotifyOfGameInfo", gameInfo));
+            refreshTasks.Add(Clients.Client(Context.ConnectionId).SendAsync("NotifyOfClients", clients.GetClientsInGameAsList(gameName)));
+			refreshTasks.Add(Clients.Client(Context.ConnectionId).SendAsync("NotifyOfGameSettingsInfo", lastKnownStates.LastKnownSettings()));
+
+			await Task.WhenAll(refreshTasks);
+        }
+
+		public async Task ChangeGameSettings(string gameName, GameSettingsInfo settingsInfo)
+		{
+			lastKnownStates.SetLastKnownSettings(settingsInfo);
+            await Clients.Group(gameName).SendAsync("NotifyOfGameSettingsInfo", settingsInfo);
+
+        }
+
+		private async Task<bool> VerifyPassword(string gameName, string GMPassword)
+		{
+			return await database.VerifyLogin(gameName, GMPassword);
+        }
+
+		public async Task ChangeClientScene(string gameName, string clientToChangeSignalRConnectionID, string newScene)
+		{
+            clients.GetClient(gameName, clientToChangeSignalRConnectionID).currentSceneID = newScene;
+            await Clients.Group(gameName).SendAsync("NotifyOfClients", clients.GetClientsInGameAsList(gameName));
+		}
+		
+		public async Task SendEvent(string gameName, EventInfo theEvent)
+		{
+			var clientsInGame = clients.GetClientsInGame(gameName);
+
+			if (theEvent.TargetConnectionIds == null)
+			{
+				Console.WriteLine("ERROR. No Targets in Event");
+				return;
+			}
+
+            List<Task> sendEventInfoMessages = new List<Task>();
+            foreach (var connectionID in theEvent.TargetConnectionIds)
+			{
+				ClientInfo? target;
+				if (clientsInGame.TryGetValue(connectionID, out target))
+				{
+                    sendEventInfoMessages.Add(Clients.Client(connectionID).SendAsync("NotifyOfEventInfo", theEvent));
+				}
+			}
+
+			await Task.WhenAll(sendEventInfoMessages);
+		}
+
+    }
+}

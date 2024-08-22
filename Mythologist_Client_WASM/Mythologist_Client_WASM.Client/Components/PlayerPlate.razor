@@ -1,0 +1,67 @@
+﻿@using Mythologist_Client_WASM.Client.Infos
+
+<style>
+    .shadow-outlined {
+        text-shadow: 0.05em 0 black, 0 0.05em black, -0.05em 0 black, 0 -0.05em black, -0.05em -0.05em black, -0.05em 0.05em black, 0.05em -0.05em black, 0.05em 0.05em black;
+    }
+
+</style>
+
+<MudStack Class="d-flex justify-center pt-2 ml-2 mr-2" Style="align-items: center;" Spacing=0>
+	@if (Client != null)
+	{
+		@if (Client.avatarUrl != null)
+		{
+			@if (Client.isGM) {
+				<MudBadge Icon="@Icons.Material.Outlined.Star" Color="Color.Surface" Overlap="true">
+					<MudAvatar Size="PlateSize">
+						<MudImage Src=@Client.avatarUrl.ToString()></MudImage>
+					</MudAvatar>
+				</MudBadge>
+			}
+			else
+			{
+				<MudAvatar Size="PlateSize">
+					<MudImage Src=@Client.avatarUrl.ToString()></MudImage>
+				</MudAvatar>
+			}
+		}
+		else
+		{
+			@if (Client.isGM)
+			{
+				<MudBadge Icon="@Icons.Material.Outlined.Star" Color="Color.Surface" Overlap="true">
+					<MudAvatar Size="PlateSize" Style="@($"background-color:{color}; color: white;")">@Client.userName.First()</MudAvatar>
+				</MudBadge>
+			}
+			else
+			{
+				<MudAvatar Size="PlateSize" Style="@($"background-color:{color}; color: white;")">@Client.userName.First()</MudAvatar>
+			}
+		}
+		<MudText Typo="Typo.subtitle2" Class="shadow-outlined">@Client.userName</MudText>
+	}
+	else
+	{
+		//You're not the GM if you're here. You're barely a real person.
+		<MudAvatar Size="PlateSize">P</MudAvatar>
+		<MudText Typo="Typo.subtitle2">Player</MudText>
+	}
+</MudStack>
+
+
+@code {
+	[Parameter]
+	public ClientInfo Client { get; set; }
+
+	[Parameter]
+	public Size PlateSize { get; set; } = Size.Medium;
+
+	private string color;
+
+	protected override void OnInitialized()
+	{
+		color = Utils.Utils.GenerateHTMLColor(Client.userName);
+		base.OnInitialized();
+	}
+}

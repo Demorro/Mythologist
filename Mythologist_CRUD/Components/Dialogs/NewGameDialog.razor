@@ -1,0 +1,78 @@
+﻿@using MudBlazor
+@using SharedLogic.Services
+
+@inject IConfiguration configuration
+@inject ISnackbar Snackbar
+@inject IDatabaseConnectionService dbConnection
+
+<MudDialog DefaultFocus="DefaultFocus.FirstChild" ContentStyle="overflow-y: hidden;">
+    <DialogContent>
+        <MudStack>
+            <MudTextField @bind-Value="GameName" Label="Game Name" Variant="Variant.Text"></MudTextField>
+            <MudTextField @bind-Value="GMPassword" Label="GM Password" Variant="Variant.Text" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="TogglePasswordVisible" AdornmentAriaLabel="Show Password" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Disabled="@showLoading" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Disabled="@showLoading" Color="Color.Success" OnClick="Submit">Create</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@if(@showLoading){
+    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Size="Size.Medium" />
+}
+
+
+@code {
+
+    #region Password Display
+    bool isShow = false;
+    InputType PasswordInput = InputType.Password;
+    string PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+    void TogglePasswordVisible()
+    {
+        @if (isShow)
+        {
+            isShow = false;
+            PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+            PasswordInput = InputType.Password;
+        }
+        else
+        {
+            isShow = true;
+            PasswordInputIcon = Icons.Material.Filled.Visibility;
+            PasswordInput = InputType.Text;
+        }
+    }
+    #endregion
+
+    [CascadingParameter]
+    private MudDialogInstance MudDialog { get; set; }
+
+    public string GameName { get; set; }
+    public string GMPassword { get; set; }
+
+    private bool showLoading = false;
+
+    private async Task Submit() {
+
+        showLoading = true;
+
+        try
+        {
+            await dbConnection.CreateNewGame(GameName, GMPassword);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+            MudDialog.Cancel();
+            return;
+        }
+
+        Snackbar.Add($"{GameName} Created", Severity.Success);
+        MudDialog.Close<Tuple<string, string>>(new Tuple<string, string>(GameName, GMPassword));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}
+

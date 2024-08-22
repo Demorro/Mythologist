@@ -1,0 +1,400 @@
+﻿@using SharedLogic.Styling
+@inherits LayoutComponentBase
+
+<MudThemeProvider Theme="@_theme" IsDarkMode="_isDarkMode" />
+<!-- <MudThemeProvider Theme="@Styling.MythologistTheme()" IsDarkMode="_isDarkMode" />  -->
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<CascadingValue Value="this">
+    <MudLayout>
+        @*
+        <MudAppBar Elevation="1">
+            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+            <MudText Typo="Typo.h5" Class="ml-3">@_headerName</MudText>
+            <MudSpacer />
+            <MudIconButton Icon="@(DarkLightModeButtonIcon)" Color="Color.Inherit" OnClick="@DarkModeToggle" />
+            <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
+        </MudAppBar>
+        *@
+        @*
+        <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
+            <NavMenu />
+        </MudDrawer>
+        *@
+        <MudMainContent Class="pl-4 pr-4 pb-0 pt-0">
+            @Body
+        </MudMainContent>
+    </MudLayout>
+</CascadingValue>
+
+
+<div id="blazor-error-ui">
+    An unhandled error has occurred.
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div>
+
+@code {
+    private bool _drawerOpen = true;
+    private bool _isDarkMode = true;
+    private MudTheme? _theme = null;
+    private string _headerName = "";
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        _theme = new()
+        {
+            PaletteLight = _lightPalette,
+            //5 is good, needs a bit more vibrancy
+            //7 is pretty okay, i like the green
+            //8 is a fabulous light theme
+            PaletteDark = _darkPaletteOp1,
+            Typography = new Typography() {
+                H1 = new H1(){
+                        FontFamily = new[] { "Agreloy", "serif" },
+                },
+                H2 = new H2()
+                {
+                        FontFamily = new[] { "Agreloy", "serif" },
+                        FontSize = "4.5rem"
+
+                },
+                H3 = new H3()
+                {
+                        FontFamily = new[] { "SuperNormal", "serif" }
+                },
+                H4 = new H4()
+                {
+                        FontFamily = new[] { "SuperNormal", "serif" }
+                },
+                H5 = new H5()
+                {
+                        FontFamily = new[] { "SuperNormal", "serif" }
+                },
+                Body1 = new Body1()
+                {
+                        FontFamily = new[] { "Vegur", "sans-serif" },
+                },
+                Body2 = new Body2()
+                {
+                        FontFamily = new[] { "Vegur", "sans-serif" },
+                },
+                Subtitle1 = new Subtitle1()
+                {
+                        FontFamily = new[] { "SuperNormal", "sans-serif" },
+                },
+                Subtitle2 = new Subtitle2()
+                {
+                        FontFamily = new[] { "Vegur", "sans-serif" },
+                        FontSize = "1.1rem",
+                },
+                Button = new Button()
+                {
+                        FontFamily = new[] { "SuperNormal", "sans-serif" },
+                        FontSize = "1rem",
+                },
+                Input = new Input()
+                {
+                        FontFamily = new[] { "Vegur", "sans-serif" },
+                },
+                Caption = new Caption()
+                {
+                        FontFamily = new[] { "Vegur", "sans-serif" },
+                },
+                Overline = new Overline()
+                {
+                        FontFamily = new[] { "Vegur", "sans-serif" },
+                }
+            },
+            LayoutProperties = new LayoutProperties()
+        };
+    }
+
+
+    private void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    private void DarkModeToggle()
+    {
+        _isDarkMode = !_isDarkMode;
+    }
+
+    private readonly PaletteLight _lightPalette = new()
+    {
+        Black = "#110e2d",
+        AppbarText = "#424242",
+        AppbarBackground = "rgba(255,255,255,0.8)",
+        DrawerBackground = "#ffffff",
+        GrayLight = "#e8e8e8",
+        GrayLighter = "#f9f9f9",
+    };
+
+    static string SatinSheenGold = "#a0ad45";
+    static string SatinSheenGoldFaded = "#687733";
+    static string FernGreen = "#566E3D";
+    static string FernGreenFaded = "#40522d";
+    static string Pumpkin = "#FA7921";
+    static string PrincetonOrange = "#FE9920";
+    static string IndigoDye = "#0C4767";
+    static string Ivory = "fefae0";
+
+    private readonly PaletteDark _darkPaletteOp1 = new()
+    {
+            
+
+            Primary = SatinSheenGold,
+            Secondary = FernGreen,
+            Tertiary = Pumpkin,
+            PrimaryContrastText = Ivory,
+            SecondaryContrastText = Ivory,
+            TertiaryContrastText = Ivory,
+            Surface = "rgba(16,20,22,0.9)",
+            Background = "#0f1417",
+            BackgroundGray = "#171c1f",
+            AppbarText = "#f8fbfe",
+            AppbarBackground = "#101416",
+            DrawerBackground = "rgba(16,20,22,1.0)",
+            ActionDefault = SatinSheenGoldFaded,
+            ActionDisabled = "#101416",
+            ActionDisabledBackground = "#0b0f11",
+            TextPrimary = "#f8fbfe",
+            TextSecondary = "#c3ccd3",
+            TextDisabled = "#9ba4ab",
+            DrawerIcon = "#E4B363",
+            DrawerText = "#E8E9EB",
+            GrayLight = "#E0DFD5",
+            GrayLighter = "#E0DFD5",
+            Info = Ivory,
+            Success = SatinSheenGold,
+            Warning = "#ca7135",
+            Error = "#b63030",
+            LinesDefault = "rgba(155,164,171,0.14)",
+            TableLines = "rgba(155,164,171,0.14)",
+            Divider = "rgba(155,164,171,0.14)",
+            OverlayLight = "#FFFFFFAA"
+    };
+
+    private readonly PaletteDark _darkPaletteOp2 = new()
+        {
+            Primary = "#6B8E23", // Olive Drab Green, reminiscent of soft moss and fresh fields
+            Surface = "#EDE4CC", // Soft Wheat, gentle and light, offering a warm, calming backdrop
+            Background = "#FAF0E6", // Linen, soft and light, like the early morning light over a field
+            BackgroundGray = "#E0CDA9", // Pale Sand, evoking the color of ripe wheat or straw
+            AppbarText = "#8B4513", // Saddle Brown, warm and inviting, like the wood of a baker's counter
+            AppbarBackground = "#CD853F", // Peru, a warm brown-orange, like freshly baked bread
+            DrawerBackground = "#F4A460", // Sandy Brown, soft and warm, like a sunlit barn
+            ActionDefault = "#DAA520", // Goldenrod, bright and cheerful, symbolizing the bounty of the harvest
+            ActionDisabled = "#A0522D", // Sienna, deep and earthy, like the soil after the rain
+            ActionDisabledBackground = "#D2B48C", // Tan, blending seamlessly into a natural palette
+            TextPrimary = "#2E8B57", // Sea Green, fresh and vibrant, like herbs in a garden
+            TextSecondary = "#556B2F", // Dark Olive Green, offering a deep, rich contrast
+            TextDisabled = "#8F9779", // Moss Green, subtle and gentle, like lichen on a stone
+            DrawerIcon = "#BDB76B", // Dark Khaki, adding a touch of warmth and nostalgia
+            DrawerText = "#F5DEB3", // Wheat, light and soft, reminiscent of golden fields
+            GrayLight = "#D3D3D3", // Light Gray, soft and neutral, like clouds over the countryside
+            GrayLighter = "#F0E68C", // Khaki, warm and soft, like sunlight on hay bales
+            Info = "#FFD700", // Gold, bright and lively, representing the joy of a successful harvest
+            Success = "#9ACD32", // Yellow Green, fresh and invigorating, symbolizing new growth
+            Warning = "#FF6347", // Tomato, vibrant and ripe, like fresh produce from the farm
+            Error = "#B22222", // Firebrick Red, warm and earthy, signaling caution with a natural touch
+            LinesDefault = "#8B7355", // Raw Umber, providing a subtle, earthy structure to elements
+            TableLines = "#BC8F8F", // Rosy Brown, soft and warm, like a well-loved kitchen table
+            Divider = "#8B8378", // Taupe, dividing elements with a natural, understated line
+            OverlayLight = "#FFF8DC99" // Cornsilk with 60% transparency, like a soft, golden glow
+        };
+
+    private readonly PaletteDark _darkPaletteOp3 = new()
+        {
+            Primary = "#0F52BA", // Neon Blue, vibrant and electric, representing the glow of neon signs and digital screens
+            Surface = "#1C1C1C", // Jet Black, dark and sleek, like the shadows in a city that never sleeps
+            Background = "#121212", // Black Pearl, deep and moody, creating an immersive, noir-like atmosphere
+            BackgroundGray = "#2F2F2F", // Charcoal Gray, industrial and cold, like the concrete and steel of the urban jungle
+            AppbarText = "#FF00FF", // Neon Magenta, bold and striking, cutting through the darkness like a holographic display
+            AppbarBackground = "#282828", // Gunmetal, muted and metallic, like the surface of worn-down machinery
+            DrawerBackground = "#1A1A1A", // Obsidian, dark and brooding, fitting for a world of secrets and shadows
+            ActionDefault = "0F52BA", // Neon Orange, fiery and urgent, symbolizing danger and the fast pace of the city
+            ActionDisabled = "#555555", // Dim Gray, muted and inactive, representing the worn and broken parts of the city
+            ActionDisabledBackground = "#3B3B3B", // Dark Gray, blending into the background, like the decay hidden beneath the surface
+            TextPrimary = "#E0E0E0", // Cool Light Gray, crisp and modern, ensuring readability in the gloom
+            TextSecondary = "#B0B0B0", // Silver Gray, sleek and metallic, offering a subtle contrast to primary text
+            TextDisabled = "#696969", // Dull Gray, faded and tired, like a city losing its luster
+            DrawerIcon = "#00FFFF", // Neon Cyan, bright and cold, symbolizing the ever-present tech in the city
+            DrawerText = "#A9A9A9", // Dark Gray, understated and utilitarian, blending into the dystopian environment
+            GrayLight = "#808080", // Gray, neutral and industrial, fitting the gritty urban landscape
+            GrayLighter = "#BEBEBE", // Light Gray, offering a slight relief from the darkness without losing the dystopian edge
+            Info = "#32CD32", // Neon Green, representing the digital world, hacking, and the pervasive presence of technology
+            Success = "#32ec00 ", // Green, vibrant and positive, symbolizing success and progress with a natural tone
+            Warning = "#FFD700", // Neon Yellow, bright and cautionary, like the lights of a warning system
+            Error = "#FF0000", // Bright Red, intense and alarming, signaling danger and the ever-present threat in the city
+            LinesDefault = "#333333", // Dark Gray, strong and subtle, providing structure without overpowering the design
+            TableLines = "#484848", // Dark Slate Gray, maintaining order in a chaotic world
+            Divider = "#505050", // Steel Gray, dividing elements with a metallic, cold precision
+            OverlayLight = "#FFFFFF1A" // Semi-transparent White, creating a ghostly glow like a flickering screen or hologram
+        };
+
+    private readonly PaletteDark _darkPaletteOp4 = new()
+        {
+            Primary = "#FF8C00", // Dark Orange, warm and vibrant, used for clicked elements, offering a striking yet cohesive look
+            ActionDefault = "#FFA500", // Orange, slightly brighter than Primary, giving a subtle yet clear visual cue on hover
+            Surface = "#292929", // Charcoal Gray, providing a smooth, muted backdrop with a touch of warmth
+            Background = "#121212", // Jet Black, creating an immersive, high-contrast environment perfect for dark themes
+            BackgroundGray = "#333333", // Slate Gray, dark and cool, adding depth without overpowering other elements
+            AppbarText = "#CCCCCC", // Light Silver, crisp and modern, ensuring readability against dark backgrounds
+            AppbarBackground = "#1A1A1A", // Dark Slate, muted and sleek, blending seamlessly into the overall design
+            DrawerBackground = "#252525", // Deep Charcoal, slightly lighter than the background, offering a subtle distinction
+            ActionDisabled = "#555555", // Medium Gray, subdued and neutral, indicating inactive elements
+            ActionDisabledBackground = "#3C3C3C", // Steel Gray, providing a smooth, understated backdrop for disabled actions
+            TextPrimary = "#E5E5E5", // Light Gray, soft and clean, ensuring high readability against dark surfaces
+            TextSecondary = "#AAAAAA", // Silver, offering a gentle contrast for secondary text elements
+            TextDisabled = "#777777", // Dim Gray, subtly blending into the background for less prominent text
+            DrawerIcon = "#FFD700", // Gold, rich and luminous, adding a touch of luxury and warmth to the design
+            DrawerText = "#D3D3D3", // Light Gray, soft and easy on the eyes, maintaining readability in the dark theme
+            GrayLight = "#444444", // Dark Slate Gray, adding subtle contrast for lighter elements
+            GrayLighter = "#666666", // Cool Gray, offering a slightly lighter tone for minimal contrast
+            Info = "#4682B4", // Steel Blue, cool and calm, representing clarity and informational elements
+            Success = "#32CD32", // Lime Green, vibrant and positive, symbolizing success and growth
+            Warning = "#FF4500", // Orange Red, bold and alerting, drawing attention to warnings and important actions
+            Error = "#B22222", // Firebrick Red, dark and intense, signaling errors and critical issues
+            LinesDefault = "#2E2E2E", // Dark Charcoal, subtle and strong, providing structure without being distracting
+            TableLines = "#404040", // Medium Dark Gray, maintaining order and clarity in data presentation
+            Divider = "#4A4A4A", // Gunmetal Gray, dividing elements with a cool, metallic precision
+            OverlayLight = "#FFFFFF1A" // Semi-transparent White, adding a subtle, soft glow like light through frosted glass
+        };
+
+    private readonly PaletteDark _darkPaletteOp5 = new()
+        {
+            Primary = "#5A7D7C", // Cool Slate Blue-Green, reminiscent of the cool, smooth surface of a stone touched by the brook’s water
+            ActionDefault = "#739999", // Soft Aqua, a lighter, cooler tone that reflects the gentle movement of water over stones
+            Surface = "#E8ECEB", // Light Pebble Gray, soft and subtle, like the smooth surface of worn stones
+            Background = "#F5F9F8", // Pale Mist, a very light, cool blue, evoking the soft light filtering through trees by the brook
+            BackgroundGray = "#CFD4D3", // Misty Gray, adding a subtle depth, like the shadowed areas around the brook
+            AppbarText = "#3D4E4F", // Deep Slate, grounding the lighter elements with the cool, dark tone of wet stones
+            AppbarBackground = "#7A8F8F", // Soft Riverstone, a muted blue-gray, evoking the cool, weathered rocks beside the water
+            DrawerBackground = "#A4B7B6", // Pale Sage, soft and cool, like the greenery growing near the brook
+            ActionDisabled = "#9DAAAA", // Muted Gray-Blue, subdued and gentle, indicating inactive elements with a soft touch
+            ActionDisabledBackground = "#B8C5C4", // Cool Gray, providing a smooth, understated backdrop for disabled actions
+            TextPrimary = "#2E4747", // Dark Teal, strong yet cool, ensuring high readability while staying within the natural palette
+            TextSecondary = "#506A6A", // Slate Blue-Green, cool and calming, offering a soft contrast for secondary text elements
+            TextDisabled = "#798888", // Soft Gray-Blue, blending softly into the background for less prominent text
+            DrawerIcon = "#C4D6D5", // Light Aqua, adding a touch of lightness that complements the cool, serene tones
+            DrawerText = "#657D7D", // Smoky Teal, maintaining readability with a cool, natural tone
+            GrayLight = "#A3B3B3", // Soft Pebble Gray, light and neutral, providing gentle contrast without harshness
+            GrayLighter = "#DDE4E4", // Pale Cloud, very light and cool, offering a subtle highlight for lighter elements
+            Info = "#7CA6A6", // Cool Turquoise, calm and clear, representing the refreshing flow of the brook
+            Success = "#81A784", // Soft Moss Green, vibrant yet soft, symbolizing the life and growth along the brookside
+            Warning = "#B7A67A", // Muted Olive, warm but subdued, like the earthy tones of leaves and soil
+            Error = "#A77377", // Soft Mauve, gentle yet clear, signaling errors with a natural touch
+            LinesDefault = "#B0C2C2", // Light Slate, adding a light, airy structure for data presentation
+            TableLines = "#B0C2C2", // Light Slate, adding a light, airy structure for data presentation
+            Divider = "#C0C8C8", // Pale Gray-Blue, softly dividing elements with a cool, understated line
+            OverlayLight = "#FFFFFF99" // Semi-transparent White, adding a soft, gentle glow like sunlight reflecting off the brook’s surface
+        };
+
+    private readonly PaletteDark _darkPaletteOp6 = new()
+        {
+            Primary = "#5F9EA0", // Cadet Blue, representing the icy scales of the frost dragon and the cold waters surrounding her lair
+            ActionDefault = "#7FB3C7", // Ice Blue, a lighter, slightly brighter shade that stands out when hovering, like the glint of ice in the sunlight
+            Surface = "#1C2A35", // Deep Slate Blue, dark and mysterious, like the shadows in a frozen cave, providing a cold backdrop for content
+            Background = "#121B22", // Almost Black with a hint of blue, a dark, immersive background that evokes the depths of an icy cavern
+            BackgroundGray = "#2F3E48", // Frosty Slate, adding subtle depth and texture, reminiscent of ice-covered stone
+            AppbarText = "#E0E8F0", // Pale Ice, soft and cold, providing readability against dark backgrounds, like the glow of frost in moonlight
+            AppbarBackground = "#3B4E5C", // Cool Slate Blue, cool and calm, like the frozen peaks around the dragon’s lair
+            DrawerBackground = "#4A5C68", // Icy Gray-Blue, dark and frosty, blending with the cool tones of the theme
+            ActionDisabled = "#5A6A73", // Muted Ice Blue, subdued and cool, indicating inactive elements with the stillness of a frozen landscape
+            ActionDisabledBackground = "#4C5A63", // Dark Slate Blue, providing a smooth, understated backdrop for disabled actions, with a hint of cold steel
+            TextPrimary = "#D0E1F0", // Pale Frost, soft and glowing, ensuring readability while reflecting the icy light of the lair
+            TextSecondary = "#A9B8C7", // Soft Steel Blue, cool and calming, offering a gentle contrast for secondary text elements
+            TextDisabled = "#70787F", // Cool Gray, blending into the background for less prominent text, with a muted, frosty tone
+            DrawerIcon = "#B0E0E6", // Light Ice Blue, adding a touch of cold light against the darker tones, like the sparkle of frost
+            DrawerText = "#ADD8E6", // Pale Blue, cool and clear, maintaining readability with a gentle, icy glow
+            GrayLight = "#5C6A75", // Frosted Slate, neutral and soft, providing gentle contrast without harshness
+            GrayLighter = "#7A8A99", // Soft Steel, offering a subtle highlight for lighter elements, like the glint of ice on stone
+            Info = "#4682B4", // Steel Blue, bold and clear, representing the clarity and chill of the frozen north
+            Success = "#32CD32", // Bright Green, representing the rare signs of life in the frost, contrasting with the darker tones
+            Warning = "#FFA500", // Warm Amber, warm and alerting, like the glow of a distant fire in the cold
+            Error = "#B22222", // Firebrick Red, intense and clear, signaling the dangers and perils within the icy lair
+            LinesDefault = "#4A5C6880", // Icy Gray-Blue with 50% transparency, subtle and strong, providing a distinguished but smooth transition to Primary
+            TableLines = "#4F5E67", // Cool Slate, adding structure with a subtle, frosty touch to data elements
+            Divider = "#6C7B84", // Soft Slate, softly dividing elements with a cool, understated line, like the edge of an ice sheet
+            OverlayLight = "#FFFFFF22" // Semi-transparent White, adding a soft, ethereal glow like the shimmer of frost in the moonlight
+        };
+
+    private readonly PaletteDark _darkPaletteOp7 = new()
+        {
+            //Primary = "#8ABF30", // Bright Olive Green, a more vibrant and contrasty color that stands out against the dark background
+            Primary = "#b2b64d", // Softer Olive Green, maintaining its presence but with a more subdued, pastel quality
+            ActionDefault = "#98C57B", // Lighter Pastel Green, offering a gentle contrast that complements the Primary color without being too vibrant
+            Surface = "#1E1E1E", // Dark Charcoal, slightly softened to provide a more muted and comfortable surface
+            Background = "#141414", // Soft Black, deep but with a hint of softness to reduce harshness
+            BackgroundGray = "#2C2C2C", // Softer Dark Gray, adding depth without overwhelming the palette
+            AppbarText = "#CCCCCC", // Soft Silver, providing readability with a less intense contrast, offering a more pastel feel
+            AppbarBackground = "#34495E", // Muted Slate Blue, slightly toned down to create a softer, more balanced background
+            DrawerBackground = "#212121", // Soft Slate, providing a comfortable and unobtrusive backdrop for secondary navigation
+            ActionDisabled = "#666666", // Subtle Gray, indicating inactive elements with a softer tone that blends seamlessly into the dark theme
+            ActionDisabledBackground = "#424242", // Dark Gray, providing a gentle, understated backdrop for disabled actions
+            TextPrimary = "#C2C2C2", // Soft Gray, ensuring readability with a more muted, pastel-like quality
+            TextSecondary = "#8A8A8A", // Muted Silver, offering a gentle contrast for secondary text elements with a softer tone
+            TextDisabled = "#777777", // Soft Dark Gray, blending into the background for less prominent text without losing readability
+            DrawerIcon = "#98A7AC", // Soft Silver, adding refinement with a pastel-like softness that doesn’t draw too much attention
+            DrawerText = "#A8B1B3", // Muted Silver, maintaining readability with a balanced, soft tone that complements the overall theme
+            GrayLight = "#464646", // Soft Medium Gray, neutral and gentle, providing contrast without overpowering the design
+            GrayLighter = "#5D5D5D", // Soft Slate, offering a subtle highlight with a pastel-like quality, creating depth without harshness
+            Info = "#5A99C5", // Muted Soft Blue, providing clarity with a pastel tone that stands out against the dark background without being too bold
+            Success = "#5EC472", // Soft Emerald Green, toned down to create a more pastel-like, soothing effect for success indicators
+            Warning = "#E3A957", // Soft Amber, bright yet softened to fit into the pastel palette, suitable for warnings without being too harsh
+            Error = "#E16355", // Soft Red, clear and bold but with a pastel touch, signaling errors with visibility and softness
+            LinesDefault = "#555555", // Soft Gray, ensuring a gentle yet clear distinction in borders and lines without being too sharp
+            TableLines = "#464646", // Soft Dark Gray, adding structure with a neutral touch that fits the pastel-like theme
+            Divider = "#525252", // Softened Gray, dividing elements with a gentle, understated line, ensuring the design remains clean and harmonious
+            OverlayLight = "#FFFFFF22" // Semi-transparent White, adding a soft, gentle glow to overlays, creating a harmonious and balanced light effect
+        };
+
+    private readonly PaletteDark _darkPaletteOp8 = new()
+        {
+            Primary = "#556B2F", // Olive Drab, a natural and grounding color, strong enough to be used for primary actions and buttons
+            ActionDefault = "#6B8E23", // Yellow-Green, a brighter, slightly more vibrant tone that complements Primary, providing a clear hover state
+            Surface = "#FFFFFF", // Pure White, offering a clean, neutral backdrop that allows other colors to stand out
+            Background = "#F2F2F2", // Light Gray, a soft background that reduces eye strain and maintains a clean, modern appearance
+            BackgroundGray = "#E0E0E0", // Cool Gray, adding depth and contrast without overwhelming the design
+            AppbarText = "#333333", // Dark Charcoal, ensuring readability and contrast against lighter backgrounds
+            AppbarBackground = "#2C3E50", // Slate Blue, a deep, sophisticated tone that adds depth and professionalism to the design
+            DrawerBackground = "#ECF0F1", // Soft Cloud, a very light gray that keeps secondary navigation unobtrusive and easy on the eyes
+            ActionDisabled = "#A9A9A9", // Dim Gray, indicating inactive elements with a subtle tone that doesn’t distract from active content
+            ActionDisabledBackground = "#D3D3D3", // Light Gray, providing a neutral and soft backdrop for disabled actions
+            TextPrimary = "#2C3E50", // Slate Blue (same as AppbarBackground), ensuring high readability and a cohesive look
+            TextSecondary = "#7F8C8D", // Muted Blue-Gray, offering a gentle contrast for secondary text, maintaining legibility and balance
+            TextDisabled = "#B0B0B0", // Soft Gray, blending into the background for less prominent text
+            DrawerIcon = "#95A5A6", // Cool Silver, adding a touch of refinement without drawing too much attention
+            DrawerText = "#34495E", // Deep Blue-Gray, maintaining readability with a soft, balanced tone that complements the overall theme
+            GrayLight = "#BDC3C7", // Light Silver, neutral and soft, providing gentle contrast without overpowering the design
+            GrayLighter = "#E5E8E8", // Soft White, offering a subtle highlight for lighter elements, creating a light and airy feel
+            Info = "#3498DB", // Soft Blue, providing a clear and calm color for informational elements, enhancing readability and focus
+            Success = "#27AE60", // Green, vibrant and positive, symbolizing success and progress with a natural tone
+            Warning = "#F39C12", // Warm Amber, bright and attention-grabbing, suitable for warnings without being too harsh
+            Error = "#E74C3C", // Strong Red, clear and bold, signaling errors with a sense of urgency and visibility
+            LinesDefault = "#D3D3D3", // Light Gray with 50% transparency, subtle and neutral, ensuring a gentle yet clear distinction in borders and lines
+            TableLines = "#B3B6B7", // Soft Gray, adding structure with a neutral touch, ensuring tables and data are clearly defined without overpowering the design
+            Divider = "#D1D8DD", // Pale Gray, softly dividing elements with a cool, understated line, ensuring the design remains clean and organized
+            OverlayLight = "#FFFFFFAA" // Semi-transparent White, adding a soft, gentle glow to overlays, creating a harmonious and balanced light effect
+        };
+
+    public string DarkLightModeButtonIcon => _isDarkMode switch
+    {
+        true => Icons.Material.Rounded.AutoMode,
+        false => Icons.Material.Outlined.DarkMode,
+    };
+
+    public void SetHeaderName(string name)
+    {
+        _headerName = name;
+        StateHasChanged();
+    }
+}
+
+

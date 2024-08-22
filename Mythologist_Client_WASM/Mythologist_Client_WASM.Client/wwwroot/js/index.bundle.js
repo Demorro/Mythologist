@@ -1,0 +1,1 @@
+window.removeElementById=function(e){var t=document.getElementById(e);t.parentNode.removeChild(t)},window.getElementWidth=function(e){var t=document.getElementById(e);return t?t.offsetWidth:0};

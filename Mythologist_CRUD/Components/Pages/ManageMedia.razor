@@ -1,0 +1,497 @@
+﻿@page "/managemedia"
+@using Azure.Identity
+@using Azure.Storage.Blobs.Models
+@using Mythologist_CRUD.Components.Layout
+@using Mythologist_CRUD.Utils
+@using SharedLogic.Services
+@using SharedLogic.Model
+@using System.ComponentModel.DataAnnotations
+@using System.Net
+@using System.Globalization
+@using Azure.Storage.Blobs;
+@using SharedLogic.Utils;
+
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject IConfiguration configuration
+@inject ISnackbar snackBar
+@inject IDatabaseConnectionService dbConnection;
+@inject IJSRuntime jsRuntime;
+@inject IDialogService dialogService
+@inject NavigationManager navManager
+
+<MudContainer MaxWidth="MaxWidth.Medium">
+	<MudText Typo="Typo.h3" Align="Align.Left" Class="mb-4">Manage Media</MudText>
+	<MudStack Spacing="10">
+		<MudText Typo="Typo.body1" Align="Align.Left">
+			Upload sounds and images for use in your session. 
+		</MudText>
+		<MudPaper Class="pa-4">
+			<MudText Typo="Typo.h6" Color=Color.Primary Class="mb-2">Images</MudText>
+			<MudGrid>
+				<MudItem xs="6">
+					<MudList T="string" SelectedValue="@SelectedImage?.Name" SelectedValueChanged="OnSelectedImageChanged" SelectionMode="SelectionMode.SingleSelection" Class="overflow-y-scroll" Style="max-height:300px">
+						@foreach (var imageName in imageNames)
+						{
+							<MudListItem Icon="@Icons.Material.Filled.Image" Value=@imageName Text=@imageName Dense="true"> </MudListItem>
+						}
+					</MudList>
+					@foreach (var uploadingImageFile in @uploadingImageFiles)
+					{
+						<MudStack Row="true">
+							<MudProgressCircular Color="Color.Default" Indeterminate="true" Size="Size.Small"></MudProgressCircular>
+							<MudText Typo="Typo.body2">@uploadingImageFile</MudText>
+						</MudStack>
+					}
+				</MudItem>
+				<MudItem xs="6">
+					<MudPaper Height="300px" Width="100%" Class="d-flex" Style="max-height:300px; align-items: center; background: rgba(0,0,0,0.25)">
+						@if (SelectedImage != null)
+						{
+							<MudImage Src=@SelectedImage?.FullUrl Fluid="true" ObjectFit="ObjectFit.Contain" Style="max-height:300px; display: block; margin-left: auto; margin-right: auto;"></MudImage>
+						}
+					</MudPaper>
+				</MudItem>
+				<MudItem xs="6">
+					<MudStack Row="true" Class="d-flex">
+						<MudFileUpload @ref="ImageUpload" T="IReadOnlyList<IBrowserFile>" FilesChanged=@(async (x) => await UploadImages(x)) Accept=@Constants.AllowedImageFormatString() MaximumFileCount=20 Class="d-flex flex-grow-1">
+							<ActivatorContent>
+								<MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.UploadFile" Color="Color.Primary" FullWidth="true" Class="d-flex flex-grow-1">Upload</MudButton>
+							</ActivatorContent>
+						</MudFileUpload>
+						<MudButton Variant="Variant.Filled" OnClick="DeleteSelectedImage" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Class="d-flex flex-grow-1" Disabled="SelectedImage == null">Delete</MudButton>
+					</MudStack>
+				</MudItem>
+				<MudItem xs="6">
+					<MudStack Class="d-flex"> <!--Stack is so i can get a flex element ot make the allignment work-->
+						<MudText Typo="Typo.button" Align="Align.Center">@SelectedImage?.FileSizeStr</MudText>
+					</MudStack>
+				</MudItem>
+			</MudGrid>
+		</MudPaper>
+
+		<MudPaper Class="pa-4">
+			<MudText Typo="Typo.h6" Color=Color.Primary Class="mb-2">Audio</MudText>
+			<MudGrid Style="align-items: center">
+				<MudItem xs="6">
+					<MudList SelectedValue="@SelectedAudio?.Name" T="string" SelectedValueChanged="OnSelectedAudioChanged" SelectionMode="SelectionMode.SingleSelection" Class="overflow-y-scroll" Style="max-height:300px">
+						@foreach (var audioName in audioNames)
+						{
+							<MudListItem Icon="@Icons.Material.Filled.AudioFile" Value=@audioName Text=@audioName Dense="true"></MudListItem>
+						}
+					</MudList>
+					@foreach (var uploadingAudioFile in @uploadingAudioFiles)
+					{
+						<MudStack Row="true">
+							<MudProgressCircular Color="Color.Default" Indeterminate="true" Size="Size.Small"></MudProgressCircular>
+							<MudText>@uploadingAudioFile</MudText>
+						</MudStack>
+					}
+				</MudItem>
+				<MudItem xs="6">
+					<audio @key="@ForceAudioUpdate" id="audio-player" controls style="display: block; margin-left: auto; margin-right: auto;">
+						<source src="@SelectedAudio?.FullUrl">
+						Your browser does not support the audio element.
+					</audio>
+				</MudItem>
+				<MudItem xs="6">
+					<MudStack Row="true" Class="d-flex">
+						<MudFileUpload @ref="AudioUpload" T="IReadOnlyList<IBrowserFile>" FilesChanged=@(async (x) => await UploadAudio(x)) Accept=@Constants.AllowedAudioFormatString() MaximumFileCount=20 Class="d-flex flex-grow-1">
+							<ActivatorContent>
+								<MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.UploadFile" Color="Color.Primary" FullWidth="true" Class="d-flex flex-grow-1">Upload</MudButton>
+							</ActivatorContent>
+						</MudFileUpload>
+						<MudButton Variant="Variant.Filled" OnClick="DeleteSelectedAudio" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Class="d-flex flex-grow-1" Disabled="SelectedAudio == null">Delete</MudButton>
+					</MudStack>
+				</MudItem>
+				<MudItem xs="6">
+					<MudStack Class="d-flex"> <!--Stack is so i can get a flex element ot make the allignment work-->
+						<MudText Typo="Typo.button" Align="Align.Center">@SelectedAudio?.FileSizeStr</MudText>
+					</MudStack>
+				</MudItem>
+			</MudGrid>
+		</MudPaper>
+
+		<MudPaper Class="pa-4">
+			<MudStack Class="d-flex">
+				<MudText Class="d-flex" Typo="Typo.button">Used @UsedSpaceTextString()</MudText>
+				<MudProgressLinear Color="((ImageStorageUsedTotalMB + AudioStorageUsedTotalMB) < StorageLimitUpperBoundMB * 0.85) ? Color.Primary : Color.Error" Size="Size.Large" Value="@(((ImageStorageUsedTotalMB + AudioStorageUsedTotalMB) / StorageLimitUpperBoundMB) * 100)" />
+				<MudSpacer></MudSpacer>
+				<MudText Align="Align.Center">Need more space? Support Mythologist on Patreon.</MudText>
+			</MudStack>
+		</MudPaper>
+
+	</MudStack>
+</MudContainer>
+
+
+@code {
+	private string? gameName;
+	private string? GMPassword;
+
+	private BlobServiceClient? blobServiceClient;
+	private BlobContainerClient? gameContainer;
+
+	private List<string> imageNames = new List<string>();
+	private List<string> audioNames = new List<string>();
+
+	//Files that are currently being uploaded, so we can display spinners
+	private List<string> uploadingImageFiles = new List<string>();
+	private List<string> uploadingAudioFiles = new List<string>();
+
+	//We store all the file sizes in the one dict when we fetch the metadata, to prevent having to requery the blob storage on user interaction
+	private Dictionary<string, double> fileSizesInBytes = new Dictionary<string, double>(); //Key is blob local url "images/file.png"
+
+	private BlobUtils.MediaMetadata? SelectedImage = null;
+	private BlobUtils.MediaMetadata? SelectedAudio = null;
+
+	//Need to do the "clearasync" thing
+	private MudFileUpload<IReadOnlyList<IBrowserFile>>? AudioUpload;
+	private MudFileUpload<IReadOnlyList<IBrowserFile>>? ImageUpload;
+
+	//Weird hack. To get at the audio element (raw html), it needs a property on its root element that changes to force a rebuild
+	//This being an int dosen't matter, it just needs to change.
+	private int ForceAudioUpdate = 0;
+
+	private double ImageStorageUsedTotalMB = 0;
+	private double AudioStorageUsedTotalMB = 0; 
+	private int StorageLimitUpperBoundMB;
+
+	protected override void OnInitialized()
+	{
+		StorageLimitUpperBoundMB = configuration.GetValue<int>("StorageLimits:FreeTier");
+		Console.WriteLine(StorageLimitUpperBoundMB);
+	}
+
+	[CascadingParameter]
+	public MainLayout Layout { get; set; }
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+
+			(gameName, GMPassword) = await Utils.PageSetup(sessionStorage, Layout, dbConnection, navManager, snackBar);
+			await UpdateMediaListings(Constants.MediaItemType.Image);
+			await UpdateMediaListings(Constants.MediaItemType.Audio);
+		}
+	}
+
+	#region UI Handlers
+	//These dispatchers are non -ideal, but i dunno how to have reliably have callbacks in the razor html that and takes an argument. ¯\_(ツ)_/¯
+	private void OnSelectedImageChanged(string? selectedImageName) { OnSelectedItemChanged(selectedImageName, Constants.MediaItemType.Image); }
+	private void OnSelectedAudioChanged(string? selectedAudioName) { OnSelectedItemChanged(selectedAudioName, Constants.MediaItemType.Audio); }
+
+	private async Task UploadImages(IReadOnlyList<IBrowserFile> files) { await UploadItems(files, Constants.MediaItemType.Image); }
+	private async Task UploadAudio(IReadOnlyList<IBrowserFile> files) { await UploadItems(files, Constants.MediaItemType.Audio); }
+
+	private async Task DeleteSelectedImage() { await DeleteSelectedItem(Constants.MediaItemType.Image); }
+	private async Task DeleteSelectedAudio() { await DeleteSelectedItem(Constants.MediaItemType.Audio); }
+
+	//The real logic
+	private void OnSelectedItemChanged(string? selectedItemName, Constants.MediaItemType itemType)
+	{
+		BlobUtils.MediaMetadata selectedItem = SelectedItem(itemType);
+
+		if (selectedItemName == null)
+		{
+			switch (itemType)
+			{
+				case Constants.MediaItemType.Image:
+					SelectedImage = null;
+					break;
+				case Constants.MediaItemType.Audio:
+					SelectedAudio = null;
+					break;
+			}
+			return;
+		}
+
+		var url = BlobUtils.MakeFullStorageUri(blobServiceClient, gameName, itemType, selectedItemName).ToString();
+		double fileSizeInBytes = fileSizesInBytes.GetValueOrDefault($"{BlobUtils.MediaContainerPrefix(itemType)}{selectedItemName}", 0.0);
+
+		switch (itemType)
+		{
+			case Constants.MediaItemType.Image:
+				SelectedImage = new BlobUtils.MediaMetadata(selectedItemName, url, fileSizeInBytes);
+				return;
+			case Constants.MediaItemType.Audio:
+				SelectedAudio = new BlobUtils.MediaMetadata(selectedItemName, url, fileSizeInBytes);
+				ForceAudioUpdate++;
+				return;
+		}
+
+		throw new Exception($"Unexpected item type {itemType}");
+	}
+
+	private async Task UploadItems(IReadOnlyList<IBrowserFile> files, Constants.MediaItemType itemType)
+	{
+		//Null checks are about a repeated upload bug. See ClearAsync at end of function
+		//https://github.com/MudBlazor/MudBlazor/issues/9403
+		if (files == null)
+		{
+			return;
+		}
+
+		(blobServiceClient, gameContainer) = await BlobUtils.SetupOrVerifyBlobStorageGumph(gameName, configuration.GetConnectionString("blobStorage")!, blobServiceClient, gameContainer);
+
+		List<Task<Azure.Response<BlobContentInfo>>> uploadTasks = new List<Task<Azure.Response<BlobContentInfo>>>();
+		List<string> uploadingFileNames = new List<string>();
+
+		double tempStorageAmount = ImageStorageUsedTotalMB + AudioStorageUsedTotalMB; //Keep track of our working storage so we can not queue tasks that would blow away the limit
+		foreach (var file in files)
+		{
+			if (file == null)
+			{
+				continue;
+			}
+
+			if (!Constants.AllowedFormat(file.Name, itemType))
+			{
+				snackBar.Add($"'{file.Name}' is not a supported file type");
+				continue;
+			}
+
+			double fileSize = file.Size;
+			double fileSizeInMB = fileSize / (1024 * 1024);
+			if ((tempStorageAmount + fileSizeInMB) >= StorageLimitUpperBoundMB)
+			{
+				snackBar.Add($"Storage Limit Reached. Cannot Upload '{file.Name}'");
+				continue;
+			}
+
+			try
+			{
+				bool fileAlreadyExists = itemType switch
+				{
+					Constants.MediaItemType.Image => imageNames.Contains(file.Name),
+					Constants.MediaItemType.Audio => audioNames.Contains(file.Name),
+					_ => false
+				};
+
+				if (fileAlreadyExists)
+				{
+					snackBar.Add($"Item with name '{file.Name}' already exists.");
+				}
+				else
+				{
+					BlobClient blob = gameContainer.GetBlobClient(BlobUtils.MediaContainerPrefix(itemType) + file.Name);
+					uploadTasks.Add(gameContainer.UploadBlobAsync(BlobUtils.MediaContainerPrefix(itemType) + file.Name, file.OpenReadStream(StorageLimitUpperBoundMB * 1024 * 1024)));
+					uploadingFileNames.Add(file.Name);
+					tempStorageAmount += fileSizeInMB;
+					AddLoadingSpinner(file.Name, itemType);
+				}
+			}
+			catch (Exception ex)
+			{
+				snackBar.Add(ex.Message, Severity.Error);
+			}
+		}
+
+		var results = await Task.WhenAll(uploadTasks);
+
+		for (int i = 0; i < results.Length; ++i)
+		{
+			RemoveLoadingSpinner(uploadingFileNames[i], itemType);
+
+			if (results[i] == null)
+			{
+				snackBar.Add($"Unexpected Error Uploading File '{uploadingFileNames[i]}'", Severity.Error);
+			}
+			else
+			{
+				if (results[i].GetRawResponse().IsError)
+				{
+					snackBar.Add($"Unexpected Uploading File '{uploadingFileNames[i]}' : {results[i].GetRawResponse().ReasonPhrase}", Severity.Error);
+				}
+				else
+				{
+					snackBar.Add($"Uploaded'{uploadingFileNames[i]}'", Severity.Success);
+				}
+			}
+		}
+
+		await UpdateMediaListings(itemType);
+		await UploadHtmlElement(itemType)?.ClearAsync();
+	}
+
+	private void AddLoadingSpinner(string fileName, Constants.MediaItemType itemType)
+	{
+		switch (itemType)
+		{
+			case Constants.MediaItemType.Image:
+				uploadingImageFiles.Add(fileName);
+				break;
+			case Constants.MediaItemType.Audio:
+				uploadingAudioFiles.Add(fileName);
+				break;
+		}
+	}
+
+	private void RemoveLoadingSpinner(string fileName, Constants.MediaItemType itemType)
+	{
+		switch (itemType)
+		{
+			case Constants.MediaItemType.Image:
+				uploadingImageFiles.Remove(fileName);
+				break;
+			case Constants.MediaItemType.Audio:
+				uploadingAudioFiles.Remove(fileName);
+				break;
+		}
+	}
+
+	private async Task DeleteSelectedItem(Constants.MediaItemType itemType)
+	{
+		BlobUtils.MediaMetadata? selectedItem = SelectedItem(itemType);
+
+		if (selectedItem == null)
+		{
+			snackBar.Add("Trying to delete file but no file selected", Severity.Error);
+			return;
+		}
+
+		bool? result = await dialogService.ShowMessageBox(
+			"Are you sure?",
+			$"Deleting `{selectedItem.Name}`",
+			yesText: "Delete", cancelText: "Cancel");
+
+		if (result == null)
+		{
+			return;
+		}
+
+		(blobServiceClient, gameContainer) = await BlobUtils.SetupOrVerifyBlobStorageGumph(gameName, configuration.GetConnectionString("blobStorage")!, blobServiceClient, gameContainer);
+
+		var response = await gameContainer.DeleteBlobAsync(selectedItem.ContainerLocalUrl(itemType));
+
+		if (response.IsError)
+		{
+			snackBar.Add($"Error Deleting Item: {response.ReasonPhrase}", Severity.Error);
+		}
+		else
+		{
+			//Change the index of the list so it dosen't just deselect and be awkward.
+			DeletedElementListReselectBehaviour(itemType, selectedItem);
+			snackBar.Add($"Deleted '{selectedItem.Name}'", Severity.Success);
+			await UpdateMediaListings(itemType);
+
+		}
+	}
+
+	// When something is deleted, we want to at least try and select another element so we dont get the
+	// BLOODY ANNOYING behaviour where the list just becomes deselected. (Probably only I care about this)
+	private void DeletedElementListReselectBehaviour(Constants.MediaItemType itemType, BlobUtils.MediaMetadata selectedItem)
+	{
+		switch (itemType)
+		{
+			case Constants.MediaItemType.Image:
+				int newImageIndex = imageNames.IndexOf(selectedItem.Name) - 1;
+				if (newImageIndex >= 0)
+				{
+					OnSelectedImageChanged(imageNames[newImageIndex]);
+				}
+				else
+				{
+					OnSelectedImageChanged(null);
+				}
+				break;
+			case Constants.MediaItemType.Audio:
+				int newAudioIndex = audioNames.IndexOf(selectedItem.Name) - 1;
+				if (newAudioIndex >= 0)
+				{
+					OnSelectedAudioChanged(audioNames[newAudioIndex]);
+				}
+				else
+				{
+					OnSelectedAudioChanged(null);
+				}
+				break;
+		}
+	}
+	#endregion
+
+	#region ItemTypeDispatchers
+	// A reference to the upload HTML element itself. Primary because we need to do the "clearAsync" hack to allow subsequent uploads with the same file name
+	private MudFileUpload<IReadOnlyList<IBrowserFile>>? UploadHtmlElement(Constants.MediaItemType itemType)
+	{
+		switch (itemType)
+		{
+			case Constants.MediaItemType.Image:
+				return ImageUpload;
+			case Constants.MediaItemType.Audio:
+				return AudioUpload;
+		}
+
+		throw new Exception("Unknown item type");
+	}
+
+	// Get the currently selected item in whatever list we care about
+	private BlobUtils.MediaMetadata? SelectedItem(Constants.MediaItemType itemType)
+	{
+		switch(itemType){
+			case Constants.MediaItemType.Image:
+				return SelectedImage;
+			case Constants.MediaItemType.Audio:
+				return SelectedAudio;
+		}
+
+		throw new Exception("Unknown item type");
+	}
+
+	// Gets the media mediadata, and does state management to maintain the lists + other stateful CRAP
+	private async Task UpdateMediaListings(Constants.MediaItemType itemType)
+	{
+		switch (itemType)
+		{
+			case Constants.MediaItemType.Image:
+				imageNames.Clear();
+				ImageStorageUsedTotalMB = 0;
+				break;
+			case Constants.MediaItemType.Audio:
+				audioNames.Clear();
+				AudioStorageUsedTotalMB = 0;
+				break;
+		}
+
+		//Remove elements of prescribed type from the filesize dict, they all live in the filesize dict with their prefix, so use that.
+		var keysToRemove = fileSizesInBytes.Keys.Where(k => k.StartsWith(BlobUtils.MediaContainerPrefix(itemType))).ToList();
+		foreach (var key in keysToRemove)
+		{
+			fileSizesInBytes.Remove(key);
+		}
+
+		(blobServiceClient, gameContainer) = await BlobUtils.SetupOrVerifyBlobStorageGumph(gameName, configuration.GetConnectionString("blobStorage")!, blobServiceClient, gameContainer);
+		List<BlobUtils.MediaMetadata> metaDatas = await BlobUtils.GetMediaMetaData(gameName, itemType, gameContainer, blobServiceClient);
+
+		foreach (BlobUtils.MediaMetadata metadata in metaDatas)
+		{
+			//Add the filesize to the filesizes dict
+			fileSizesInBytes.TryAdd(BlobUtils.MediaContainerPrefix(itemType) + metadata.Name, metadata.FileSizeInBytes);
+
+			switch (itemType)
+			{
+				case Constants.MediaItemType.Image:
+					imageNames.Add(metadata.Name);
+					ImageStorageUsedTotalMB += metadata.FileSizeInBytes / (1024 * 1024);
+					break;
+				case Constants.MediaItemType.Audio:
+					audioNames.Add(metadata.Name);
+					AudioStorageUsedTotalMB += metadata.FileSizeInBytes / (1024 * 1024);
+					break;
+			}
+		}
+
+		StateHasChanged();
+	}
+
+	#endregion
+
+	#region Utils
+
+	//Displays above the used space progress bar. Like "30/50MB"
+	private string UsedSpaceTextString()
+	{
+		var totalUsedStorage = ImageStorageUsedTotalMB + AudioStorageUsedTotalMB;
+		return $"{totalUsedStorage.ToString("F2") + "MB"}/{StorageLimitUpperBoundMB.ToString("F2") + "MB"}";
+	}
+	#endregion
+}

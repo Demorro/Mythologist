@@ -1,0 +1,121 @@
+﻿@using MudBlazor
+@using Mythologist_Client_WASM.Client.Infos
+@using Mythologist_Client_WASM.Client.Services
+@using SharedLogic.Model
+@using SharedLogic.Services
+
+@inject IConfiguration configuration
+@inject ISnackbar snackBar
+@inject ISignalRHubClientService signalRHub
+@inject IDiscordApiService discordApi
+
+@*We get an annoying scrollbar is we dont do the overflow thing, cause of the complicated password field thinking it's taller than it is*@
+<MudDialog DefaultFocus="DefaultFocus.FirstChild" ContentStyle="overflow-y: hidden;">
+    <DialogContent>
+        <MudStack>
+            @if (!Utils.Utils.IsDiscord())
+            {
+                <MudTextField @bind-Value="displayName" Label="Display Name" Variant="Variant.Text"></MudTextField>
+            }
+            <MudFocusTrap DefaultFocus="DefaultFocus.FirstChild">
+                <MudTextField @bind-Value="GameName" Label="Game Name" Variant="Variant.Text"></MudTextField>
+            </MudFocusTrap>
+            @if (isGMLogin){
+                <MudTextField @bind-Value="GMPassword" Label="GM Password" Variant="Variant.Text" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon" AdornmentColor="Color.Primary" OnAdornmentClick="TogglePasswordVisible" AdornmentAriaLabel="Show Password" />
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Disabled="@showLoading" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Disabled="@showLoading" Color="Color.Primary" OnClick="Submit">Join</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@if (@showLoading)
+{
+    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Size="Size.Medium" />
+}
+
+@code {
+    #region Password Display
+    bool isShow = false;
+    InputType PasswordInput = InputType.Password;
+    string PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+    void TogglePasswordVisible()
+    {
+        @if (isShow)
+        {
+            isShow = false;
+            PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+            PasswordInput = InputType.Password;
+        }
+        else
+        {
+            isShow = true;
+            PasswordInputIcon = Icons.Material.Filled.Visibility;
+            PasswordInput = InputType.Text;
+        }
+    }
+    #endregion
+
+    private string displayName = Utils.Utils.RandomName();
+    //Is always something, even if we're not in discord. Mostly ignored though in that case
+    private Utils.DiscordUser discordUserObject = Utils.DiscordUser.FakeUser();
+
+    [Parameter]
+    public bool isGMLogin { get; set; } = false;
+
+    [CascadingParameter]
+    private MudDialogInstance MudDialog { get; set; }
+
+    public string GameName { get; set; } = "";
+    public string? GMPassword { get; set; } = null;
+
+    private bool showLoading = false;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        displayName = Utils.Utils.RandomName();
+
+        if (Utils.Utils.IsDiscord())
+        {
+            try
+            {
+                discordUserObject = await discordApi.GetUserObject();
+                displayName = discordUserObject.GlobalName != null ? discordUserObject.GlobalName : discordUserObject.Username;
+            }
+            catch(Exception ex)
+            {
+                snackBar.Add("Error getting discord user", Severity.Error);
+                MudDialog.Cancel();
+            }
+        }
+    }
+
+    private async Task Submit()
+    {
+        showLoading = true;
+
+        //Only try a password if we're a GM. The login function adapts
+        string? password = isGMLogin ? GMPassword : null;
+
+        try {
+            await signalRHub.InitializeConnectionAndJoinGame(GameName, displayName, discordUserObject, GMPassword);
+
+        }
+        catch (Exception ex)
+        {
+            snackBar.Add($"Error Connecting : {ex.Message}", Severity.Error);
+            showLoading = false;
+            return;
+            //No need to close the dialog, they will want to try again probably.
+        }
+
+        snackBar.Add($"Logged into {GameName}", Severity.Success);
+        MudDialog.Close<Tuple<string, string?, string>>(new Tuple<string, string?, string>(GameName, GMPassword, displayName));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}
+

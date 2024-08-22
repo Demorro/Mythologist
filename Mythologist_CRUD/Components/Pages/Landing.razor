@@ -1,0 +1,102 @@
+﻿@page "/"
+
+@using MudBlazor
+@using Mythologist_CRUD.Components
+@using Mythologist_CRUD.Components.Dialogs
+@using Mythologist_CRUD.Components.Layout
+@using SharedLogic.Services
+
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject NavigationManager NavManager
+@inject IConfiguration configuration
+@inject IDatabaseConnectionService dbConnection
+
+<div style="height: 100vh; display: flex; justify-content: center; align-items: center;">
+    <MudStack Class="d-flex justify-center" Style="align-items: center;">
+        @* The pl-1 (left pad) is to offset how "Create" and "Login" don't have the same character count. To keep it looking centered' *@
+        <MudText Class="pl-1" Typo="Typo.h4">Mythologist</MudText>
+        <MudSpacer></MudSpacer>
+        <MudButtonGroup Color="Color.Primary" Size="Size.Large" Variant="Variant.Text" >
+            <MudButton @onclick="NewGameButtonClicked" StartIcon="@Icons.Material.Filled.Add" IconColor="Color.Success">Create</MudButton>
+            <MudButton @onclick="LoginButtonClicked" StartIcon="@Icons.Material.Filled.Login" IconColor="Color.Primary">Login</MudButton>
+        </MudButtonGroup>
+        <MudSpacer></MudSpacer>
+        <MudText Class="pl-1">Prep sessions. Play myths.</MudText>
+    </MudStack>
+</div>
+
+<style>
+    .blur-dialog-background {
+        backdrop-filter: blur(6px);
+    }
+</style>
+
+
+@code {
+
+    private async Task NewGameButtonClicked()
+    {
+        var options = new DialogOptions { BackgroundClass = "blur-dialog-background", BackdropClick = false };
+        var parameters = new DialogParameters<NewGameDialog> {};
+        var dialog = await DialogService.ShowAsync<NewGameDialog>("New Game", parameters, options);
+        var result = await dialog.Result;
+
+        // After a new game is created, immediately login and redirect to the logged in landing page
+        if (result != null && !result.Canceled && result.Data != null)
+        {
+            Tuple<string, string> gameNameAndGmPassword = result.Data as Tuple<string, string>;
+            LoginAndRedirect(gameNameAndGmPassword.Item1, gameNameAndGmPassword.Item2);
+        }
+    }
+
+    private async Task LoginButtonClicked()
+    {
+        var options = new DialogOptions { BackgroundClass = "blur-dialog-background", BackdropClick = false };
+        var parameters = new DialogParameters<LoginToGameDialog> {};
+        var dialog = await DialogService.ShowAsync<LoginToGameDialog>("Login", parameters, options);
+
+        var result = await dialog.Result;
+
+        // After a new game is created, immediately login and redirect to the logged in landing page
+        if (result != null && !result.Canceled && result.Data != null)
+        {
+            Tuple<string, string> gameNameAndGmPassword = result.Data as Tuple<string, string>;
+            Console.WriteLine("Logging in");
+            LoginAndRedirect(gameNameAndGmPassword.Item1, gameNameAndGmPassword.Item2);
+        }
+    }
+
+
+    private async Task LoginAndRedirect(string gameName, string GMPassword)
+    {
+        var setNameTask = sessionStorage.SetItemAsync("GameName", gameName);
+        var setPasswordTask = sessionStorage.SetItemAsync("GMPassword", GMPassword);
+        await setNameTask;
+        await setPasswordTask;
+
+        //The dialog should have already confirmed that you're allowed to log in
+        NavManager.NavigateTo("/scenelist");
+    }
+
+    [CascadingParameter]
+    public MainLayout Layout { get; set; }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender){
+            //Just cleanup when we arrive in case there's storage lying around
+            var setNameTask = sessionStorage.SetItemAsync<string?>("GameName", null);
+            var setPasswordTask = sessionStorage.SetItemAsync<string?>("GMPassword", null);
+            await setNameTask;
+            await setPasswordTask;
+
+
+            //You can back into this page and the header will still show the game name
+            Layout.SetGMPassword(null);
+            Layout.SetHeaderName("");
+            Layout.SetNavMenuEnabled(false);
+        }
+    }
+
+}

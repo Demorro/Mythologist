@@ -1,0 +1,59 @@
+﻿@using Mythologist_Client_WASM.Client.Infos
+
+@inject ISignalRHubClientService signalRHub
+
+<!-- The way this works is that they are regular toggle buttons if you'r the GM
+     If the client though, it'll display the greyed out versions of just the ones
+     that are active, to prevent users thinking they can click them.
+-->
+<MudStack Row="true" Spacing="0">
+    @if (!NotTheGm() || @GameSettings.MusicEnabled)
+    {
+        <MudTooltip Text="Background audio">
+            <MudToggleIconButton @bind-Toggled="@GameSettings.MusicEnabled"
+            @bind-Toggled:after="SettingsChanged"
+                                 Disabled=@NotTheGm()
+            Icon="@Icons.Material.Filled.MusicOff" Color="@Color.Dark"
+            ToggledIcon="@Icons.Material.Filled.MusicNote" ToggledColor="@Color.Success"
+            Class="ml-n1 mr-n1" />
+        </MudTooltip>
+    }
+</MudStack>
+
+@code {
+    public bool EnableDisableMusicToggle { get; set; }
+
+    [Parameter]
+    public string? GameName { get; set; }
+
+    [Parameter]
+    public GameSettingsInfo GameSettings { get; set; }
+
+    [Parameter]
+    public EventCallback<GameSettingsInfo> GameSettingsChanged { get; set; }
+
+    [Parameter]
+    public ClientInfo? LocalClient { get; set; }
+
+    private bool NotTheGm()
+    {
+        if (LocalClient == null)
+        {
+            return true;
+        }
+
+        return !LocalClient.isGM;
+    }
+
+
+    private async Task SettingsChanged()
+    {
+        if (GameName == null)
+        {
+            throw new Exception("Settings Toggler needs GameName set as parameter");
+        }
+
+        await signalRHub.UpdateGameSettings(GameName, GameSettings);
+    }
+
+}

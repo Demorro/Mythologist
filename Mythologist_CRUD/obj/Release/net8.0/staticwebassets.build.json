@@ -1,0 +1,77 @@
+{
+  "Version": 1,
+  "Hash": "2PIxXTk4Jy5IXVnfOgXd1/USC/bFWhG4MdyBQwq1mmA=",
+  "Source": "Mythologist_CRUD",
+  "BasePath": "_content/Mythologist_CRUD",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "Mythologist_CRUD\\wwwroot",
+      "Source": "Mythologist_CRUD",
+      "ContentRoot": "C:\\Dev\\Mythologist\\Mythologist_CRUD\\wwwroot\\",
+      "BasePath": "_content/Mythologist_CRUD",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [
+    {
+      "Identity": "C:\\Dev\\Mythologist\\Mythologist_CRUD\\wwwroot\\favicon.ico",
+      "SourceId": "Mythologist_CRUD",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Dev\\Mythologist\\Mythologist_CRUD\\wwwroot\\",
+      "BasePath": "_content/Mythologist_CRUD",
+      "RelativePath": "favicon.ico",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\favicon.ico"
+    },
+    {
+      "Identity": "C:\\Users\\ellio\\.nuget\\packages\\mudblazor\\7.4.0\\staticwebassets\\MudBlazor.min.css",
+      "SourceId": "MudBlazor",
+      "SourceType": "Package",
+      "ContentRoot": "C:\\Users\\ellio\\.nuget\\packages\\mudblazor\\7.4.0\\staticwebassets\\",
+      "BasePath": "_content/MudBlazor",
+      "RelativePath": "MudBlazor.min.css",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "C:\\Users\\ellio\\.nuget\\packages\\mudblazor\\7.4.0\\staticwebassets\\MudBlazor.min.css"
+    },
+    {
+      "Identity": "C:\\Users\\ellio\\.nuget\\packages\\mudblazor\\7.4.0\\staticwebassets\\MudBlazor.min.js",
+      "SourceId": "MudBlazor",
+      "SourceType": "Package",
+      "ContentRoot": "C:\\Users\\ellio\\.nuget\\packages\\mudblazor\\7.4.0\\staticwebassets\\",
+      "BasePath": "_content/MudBlazor",
+      "RelativePath": "MudBlazor.min.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "C:\\Users\\ellio\\.nuget\\packages\\mudblazor\\7.4.0\\staticwebassets\\MudBlazor.min.js"
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+﻿@using Mythologist_Client_WASM.Client.Infos
+@using SharedLogic.Model
+
+<!-- Now we're not doing stupid shit with the scene select, this can probably be much simpler-->
+<style>
+    .mainContentContainer {
+        max-width: 100vw;
+        min-width: 100vw;
+        height: auto;
+        max-height: calc(100vh - 50px);
+        min-height: calc(100vh - 50px);
+        width: auto;
+        align-items: center;
+        object-fit: contain;
+        justify-content: center;
+        display: flex;
+        position: relative
+    }
+
+    .backgroundImage {
+        max-width: 100%;
+        max-height: calc(100vh - 50px);
+        width: auto;
+        overflow: hidden;
+    }
+
+    .contentGrid {
+        height: auto;
+        max-height: calc(100vh - 50px);
+        min-height: calc(100vh - 50px);
+        width: 100vw;
+        align-items: center;
+        position: absolute;
+        top: 25px;
+        left: 0px;
+    }
+
+    .shadow-outlined {
+        text-shadow: 0.05em 0 black, 0 0.05em black, -0.05em 0 black, 0 -0.05em black, -0.05em -0.05em black, -0.05em 0.05em black, 0.05em -0.05em black, 0.05em 0.05em black;
+    }
+
+</style>
+
+
+<div class="mainContentContainer">
+    <MudGrid Class="contentGrid" Justify="Justify.Center">
+        <MudItem xs="12" Class="d-flex justify-center" Style="align-self:start; margin-top:20px; padding-top:0px;">
+            @if (@GameInfo.gameSettings.showSceneTitle)
+            {
+
+                <MudText Typo="Typo.h4" Class="shadow-outlined">@CurrentScene.id</MudText>
+
+            }
+        </MudItem>
+
+        <!-- Bottom Row -->
+        <MudItem xs="12" Class="d-flex justify-center" Style="align-self:end; margin-bottom:24px;">
+            <MudStack Row="true" Justify="Justify.Center" AlignItems="AlignItems.Center">
+                @foreach (ClientInfo client in ClientsInScene(@CurrentScene.id))
+                {
+                <PlayerPlate Client="client"></PlayerPlate>
+                }
+            </MudStack>
+        </MudItem>
+    </MudGrid>
+    <MudImage Class="backgroundImage" Src="@CurrentScene?.backgroundImageUri?.ToString()" ObjectPosition="ObjectPosition.Center" ObjectFit="ObjectFit.ScaleDown"></MudImage>
+</div>
+@code {
+
+    [Parameter]
+    public GameInfo? GameInfo { get; set; }
+
+    [Parameter]
+    public SceneModel? CurrentScene { get; set; }
+
+    [Parameter]
+    public List<ClientInfo>? ConnectedClients { get; set; }
+
+    private List<ClientInfo> ClientsInScene(string sceneId)
+    {
+        if (ConnectedClients == null)
+        {
+            return new List<ClientInfo>();
+        }
+
+        return ConnectedClients.Where(x => x.currentSceneID == sceneId).ToList();
+    }
+
+}

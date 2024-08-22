@@ -1,0 +1,62 @@
+﻿@using Mythologist_Client_WASM.Client.Infos
+
+@inject ISignalRHubClientService signalRHub;
+
+<MudStack Row="true" Spacing="0" Style="width:50%;">
+    <MudTextField @bind-Value="SendValue" Margin="Margin.Dense" Label="Message" Variant="Variant.Outlined" Immediate="true" OnKeyDown="SendMessageClicked"></MudTextField>
+    <MudSelect T="ClientInfo" @bind-SelectedValues="SelectedClients" Variant="Variant.Outlined" Margin="Margin.Dense" SelectAll="true" Label="Send to" MultiSelection="true" ToStringFunc="@converter" AnchorOrigin="Origin.BottomCenter" Style="width:10%">
+        @if ((Clients != null) && (LocalClient != null))
+        {
+            @foreach (var player in Clients)
+            {
+                @if (player.signalRConnectionID != LocalClient.signalRConnectionID)
+                {
+                    <MudSelectItem T="ClientInfo" Value="@player">@player.userName</MudSelectItem>
+                }
+            }
+        }
+    </MudSelect>
+</MudStack>
+
+@code {
+    [Parameter]
+    public List<ClientInfo> Clients { get; set; }
+
+    [Parameter]
+    public ClientInfo LocalClient { get; set; }
+
+    Func<ClientInfo, string> converter = p => p?.userName;
+
+    [Parameter]
+    public string GameName { get; set; }
+
+    private string? SendValue { get; set; }
+    private IEnumerable<ClientInfo> SelectedClients { get; set; } = new HashSet<ClientInfo>();
+
+    private string GetMultiSelectionText(List<ClientInfo> selectedValues)
+    {
+        return String.Join(", ", selectedValues.Select(x => x.userName));
+    }
+
+    private void SendMessageClicked(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            EventInfo sendEvent = new EventInfo
+                {
+                    EEventType = EventInfo.EventType.SendText,
+                    Text = SendValue,
+                    Sender = LocalClient,
+                    TargetConnectionIds = GetTargetConnectionIds()
+                };
+
+            signalRHub.SendEvent(GameName, sendEvent);
+            SendValue = "";
+        }
+    }
+
+    private List<string>? GetTargetConnectionIds()
+    {
+        return SelectedClients.Select(x => x.signalRConnectionID).ToList();
+    }
+}

@@ -1,0 +1,147 @@
+﻿@page "/"
+
+@using MudBlazor
+@using MudExtensions
+@using Mythologist_Client_WASM
+@using Mythologist_Client_WASM.Client.Dialogs
+@using Mythologist_Client_WASM.Client.Services
+@using Mythologist_Client_WASM.Client.Utils
+@using SharedLogic.Model
+@using MudExtensions.Utilities
+
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject NavigationManager NavManager
+@inject IConfiguration configuration
+@inject ISignalRHubClientService signalRHub
+
+
+<style>
+    .shadow-outlined-white {
+        text-shadow: 0.03em 0 Snow, 0 0.03em Snow, -0.03em 0 Snow, 0 -0.03em Snow, -0.03em -0.03em Snow, -0.03em 0.03em Snow, 0.03em -0.03em Snow, 0.03em 0.03em Snow;
+    }
+
+
+
+</style>
+
+<MudAnimate Selector=".titleanimId" Duration="1.5" Delay="0" AnimationType="AnimationType.Fade" Value="1" ValueSecondary="0" Infinite="false" />
+<MudAnimate Selector=".buttonsAnimId" Duration="2.5" Delay="0" AnimationType="AnimationType.Fade" Value="1" ValueSecondary="0" Infinite="false" />
+<MudAnimate Selector=".taglineAnimId" Duration="3.5" Delay="0" AnimationType="AnimationType.Fade" Value="1" ValueSecondary="0" Infinite="false" />
+
+
+@if (musicalStringUrl != null)
+{
+    <audio @key="@forceAudioUpdate" id="loading-sting" autoplay>
+        <source src="@musicalStringUrl" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+}
+
+<div style="height: 100vh; display: flex; justify-content: center; align-items: center; ">
+    <MudStack Class="d-flex justify-center" Style="align-items:center;" Spacing="4">
+        <!-- Pointer events mean sometimes the title is focused, which in some browsers gives you this awful outline on some fonts -->
+        <MudText Typo="Typo.h1" Class="titleanimId">Mythologist</MudText>
+
+        <MudStack Row="true" Spacing="2" >
+            <MudFocusTrap DefaultFocus="DefaultFocus.LastChild">
+                <MudButton Color="Color.Secondary" Class="buttonsAnimId" Style="font-size:1.2rem; min-width:250px" Variant="Variant.Filled" @onclick="GMButtonClicked">I am a Game Master</MudButton>
+                <MudButton Color="Color.Primary" Class="buttonsAnimId" Style="font-size:1.2rem; min-width:250px" Variant="Variant.Filled" @onclick="PlayerButtonClicked">I am a Player</MudButton>
+            </MudFocusTrap>
+        </MudStack>
+        <MudText Typo="Typo.subtitle1" Class="mt-2 taglineAnimId">Prep Sessions. Play Myths.</MudText>
+    </MudStack>
+    
+</div>
+
+<style>
+    .blur-dialog-background {
+        backdrop-filter: blur(6px);
+    }
+</style>
+
+
+@code {
+
+
+    private string? discordClientID = null;
+    private HubConnection? hubconnection;
+    private string? musicalStringUrl;
+    private int forceAudioUpdate = 0;
+
+    protected override void OnInitialized()
+    {
+        musicalStringUrl = configuration["LandingMusicalStingUrl"];
+        //StateHasChanged();
+        forceAudioUpdate++;
+    }
+
+
+    private async Task PlayerButtonClicked()
+    {
+
+        var options = new DialogOptions { BackgroundClass = "blur-dialog-background", BackdropClick = false };
+        var parameters = new DialogParameters<LoginAsPlayerOrGMDialog> { { x => x.isGMLogin, false } };
+        var dialog = await DialogService.ShowAsync<LoginAsPlayerOrGMDialog>(null, parameters, options);
+        DialogResult? gameNameAndGMPasswordAndDisplayNameResult = null;
+        try {
+            gameNameAndGMPasswordAndDisplayNameResult = await dialog.Result;
+        } catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+
+        // After a new game is created, immediately login and redirect to the logged in landing page
+        if (gameNameAndGMPasswordAndDisplayNameResult != null && !gameNameAndGMPasswordAndDisplayNameResult.Canceled && gameNameAndGMPasswordAndDisplayNameResult.Data != null)
+        {
+            Tuple<string, string?, string> gameNameGMPasswordAndDisplayName = gameNameAndGMPasswordAndDisplayNameResult.Data as Tuple<string, string?, string>;
+            await JoinGameAsPlayer(gameNameGMPasswordAndDisplayName.Item1, gameNameGMPasswordAndDisplayName.Item3);
+        }
+    }
+
+    private async Task GMButtonClicked()
+    {
+        var options = new DialogOptions { BackgroundClass = "blur-dialog-background", BackdropClick = false };
+        var parameters = new DialogParameters<LoginAsPlayerOrGMDialog> { { x => x.isGMLogin, true } };
+        var dialog = await DialogService.ShowAsync<LoginAsPlayerOrGMDialog>(null, parameters, options);
+        DialogResult? gameNameAndGMPasswordAndDisplayNameResult = null;
+        try{
+            gameNameAndGMPasswordAndDisplayNameResult = await dialog.Result;
+        } catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+
+        // After a new game is created, immediately login and redirect to the logged in landing page
+        if (gameNameAndGMPasswordAndDisplayNameResult != null && !gameNameAndGMPasswordAndDisplayNameResult.Canceled && gameNameAndGMPasswordAndDisplayNameResult.Data != null)
+        {
+            //gameName, GMPassword, Scene
+            Tuple<string, string?, string> gameNameGMPasswordAndDisplayName = gameNameAndGMPasswordAndDisplayNameResult.Data as Tuple<string, string?, string>;
+            await JoinGameAsGM(gameNameGMPasswordAndDisplayName.Item1, gameNameGMPasswordAndDisplayName.Item2, gameNameGMPasswordAndDisplayName.Item3);
+        }
+    }
+
+
+    private async Task JoinGameAsPlayer(string gameName, string displayName)
+    {
+        await SetStorageVariables(gameName, displayName, discordClientID, null);
+        NavManager.NavigateTo("/playerSceneView");
+    }
+
+    private async Task JoinGameAsGM(string gameName, string GMPassword, string displayName)
+    {
+        await SetStorageVariables(gameName, displayName, discordClientID, GMPassword);
+        NavManager.NavigateTo("/playerSceneView");
+    }
+
+    private async Task SetStorageVariables(string gameName, string userName, string? discordClientID, string? GMPassword)
+    {
+        await sessionStorage.SetItemAsync<string>("GameName", gameName);
+        await sessionStorage.SetItemAsync<string>("UserName", userName);
+        await sessionStorage.SetItemAsync<string?>("DiscordClientID", discordClientID);
+        await sessionStorage.SetItemAsync<string?>("GMPassword", GMPassword);
+    }
+
+
+}

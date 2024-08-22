@@ -1,0 +1,27 @@
+﻿@using MudBlazor
+
+<MudDialog DefaultFocus="DefaultFocus.FirstChild">
+    <DialogContent>
+        <MudStack Row="true">
+            <MudTextField @bind-Value="SceneName" Label="Name" Variant="Variant.Text"></MudTextField>
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Success" OnClick="Submit">Create</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private MudDialogInstance MudDialog { get; set; }
+
+    public string SceneName { get; set; }
+
+    private void Submit() {
+        MudDialog.Close<string>(SceneName);
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}
+

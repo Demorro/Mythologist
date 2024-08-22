@@ -1,0 +1,3 @@
+How the javascript interop for the discord lib works : https://brianlagunas.com/using-npm-packages-in-blazor/
+We have two different index.js files, one for the discord activity, and one for the web version.
+We choose the one to use in package.json, via a build configuration.

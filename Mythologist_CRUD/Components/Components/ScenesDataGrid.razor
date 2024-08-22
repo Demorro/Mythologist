@@ -1,0 +1,122 @@
+﻿@using SharedLogic.Services
+@using SharedLogic.Model
+@using Mythologist_CRUD.Components
+@using Mythologist_CRUD.Components.Dialogs
+@using MudBlazor
+
+@inject ISnackbar snackBar
+@inject IDialogService DialogService
+@inject IDatabaseConnectionService dbConnection;
+@inject NavigationManager NavManager
+
+<MudStack>
+    <MudDataGrid T="SceneModel" Items="@dbConnection.AllScenes()">
+        <Columns>
+            <PropertyColumn Property="x => x.id" Title="Name" />
+            <TemplateColumn>
+                <CellTemplate>
+                    <MudButton @onclick="@(() => EditSceneButtonClicked(context.Item))" Size="@Size.Medium" Variant="@Variant.Filled" Color="@Color.Primary">Edit</MudButton>
+                </CellTemplate>
+            </TemplateColumn>
+            <TemplateColumn>
+                <CellTemplate>
+                    <MudButton @onclick="@(() => DeleteSceneButtonClicked(context.Item))" Disabled="!RequiredParamsSet()" Size="@Size.Medium" Variant="@Variant.Filled" Color="@Color.Error">Delete</MudButton>
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+    </MudDataGrid>
+    <MudStack Class="d-flex justify-start flex-grow-1 gap-4" Row="true">
+        <MudButton @onclick="@(() => NewSceneButtonClicked())" Disabled="!RequiredParamsSet()" Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.Add" Color="Color.Primary">New Scene</MudButton>
+    </MudStack>
+</MudStack>
+
+@code {
+    [Parameter]
+    public string? GameName { get; set; } = null;
+
+    private async Task NewSceneButtonClicked(){
+        var dialog = await DialogService.ShowAsync<NewSceneDialog>("New Scene");
+        var result = await dialog.Result;
+
+        if (!result!.Canceled)
+        {
+            string? newSceneName = result.Data as string;
+            if (newSceneName == null)
+            {
+                snackBar.Add($"Failed to add {newSceneName} to database", Severity.Error);
+            }
+            else
+            {
+                SceneModel newSceneModel = new SceneModel(newSceneName);
+                bool? addSceneSuccess = await AddSceneToDB(newSceneModel);
+                if (!addSceneSuccess.GetValueOrDefault(false))
+                {
+                    snackBar.Add($"Failed to add {newSceneModel.id} to database", Severity.Error);
+                }
+                else
+                {
+                    snackBar.Add($"{newSceneModel.id} Added", Severity.Success);
+                }
+            }
+        }
+    }
+
+    private bool RequiredParamsSet()
+    {
+        return GameName != null;
+    }
+
+    private async Task DeleteSceneButtonClicked(SceneModel sceneModel)
+    {
+        if (dbConnection.AllScenes().Count <= 1)
+        {
+            snackBar.Add("Games must have at least one scene");
+            return;
+        }
+
+        bool? result = await DialogService.ShowMessageBox(
+            "Are you sure?",
+            $"Once {sceneModel.id} is deleted it cannot be restored",
+            yesText: "Delete", cancelText: "Cancel");
+
+        if (result.GetValueOrDefault(false))
+        {
+            bool? deleteSuccess = await DeleteSceneFromDB(sceneModel);
+            if (!deleteSuccess.GetValueOrDefault(false))
+            {
+                snackBar.Add($"Failed to remove {sceneModel.id} from database", Severity.Error);
+            }
+            else
+            {
+                snackBar.Add($"{sceneModel.id} deleted", Severity.Success);
+            }
+        }
+    }
+
+    private void EditSceneButtonClicked(SceneModel sceneModel)
+    {
+        NavManager.NavigateTo($"editscene/{sceneModel.id}");
+    }
+
+    private async Task<bool> AddSceneToDB(SceneModel sceneModel)
+    {
+        if (!RequiredParamsSet())
+        {
+            return false;
+        }
+
+        await dbConnection.AddScene(GameName, sceneModel);
+        return true;
+    }
+
+    private async Task<bool> DeleteSceneFromDB(SceneModel sceneModel)
+    {
+        if (!RequiredParamsSet())
+        {
+            return false;
+        }
+
+        await dbConnection.RemoveScene(GameName, sceneModel);
+        return true;
+    }
+}

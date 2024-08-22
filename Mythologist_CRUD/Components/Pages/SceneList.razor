@@ -1,0 +1,42 @@
+﻿@page "/scenelist"
+@attribute [StreamRendering(true)]
+@using Mythologist_CRUD.Components.Layout
+@using SharedLogic.Services
+@using SharedLogic.Model
+@using Mythologist_CRUD.Components.Components
+
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject IConfiguration configuration
+@inject ISnackbar snackBar
+@inject IDatabaseConnectionService dbConnection;
+@inject NavigationManager navManager;
+
+<MudContainer MaxWidth="MaxWidth.Medium">
+	<MudText Typo="Typo.h3" Class="mb-4">Scenes</MudText>
+	<MudStack Spacing="10">
+		<MudText Typo="Typo.body1" Align="Align.Left">
+			Create and edit the scenes that will appear in your session.
+		</MudText>
+		<ScenesDataGrid GameName="@gameName"></ScenesDataGrid>
+
+	</MudStack>
+</MudContainer>
+
+@code {
+
+	[CascadingParameter]
+	public MainLayout Layout { get; set; }
+
+	private string? gameName = null;
+	private string? GMPassword = null;
+
+	// Due to pre-rendering in Blazor Server you can't perform any JS interop until the OnAfterRender lifecycle method.
+	// Taken from the SessionStorage docs, unknown if this is relevent to other stuff.
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender){
+			(gameName, GMPassword) = await Utils.Utils.PageSetup(sessionStorage, Layout, dbConnection, navManager, snackBar);
+			StateHasChanged();
+		}
+	}
+}

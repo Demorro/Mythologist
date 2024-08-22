@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "IMgHH8sJXzLWrVCMYqKLF9MSEEPSwDJSIuu0zknAMCI=",
+  "Source": "Mythologist_ContentServer",
+  "BasePath": "_content/Mythologist_ContentServer",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

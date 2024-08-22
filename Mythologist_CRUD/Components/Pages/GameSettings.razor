@@ -1,0 +1,88 @@
+﻿@page "/gamesettings"
+@attribute [StreamRendering(true)]
+@using Mythologist_CRUD.Components.Layout
+@using SharedLogic.Services
+@using SharedLogic.Model
+@using Mythologist_CRUD.Components.Components
+
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject IConfiguration configuration
+@inject ISnackbar snackBar
+@inject IDatabaseConnectionService dbConnection;
+@inject NavigationManager navManager;
+
+
+<MudContainer MaxWidth="MaxWidth.Medium">
+	<MudText Typo="Typo.h3" Class="mb-4">Game Settings</MudText>
+	<MudStack Spacing="10">
+		<MudText Typo="Typo.body1" Align="Align.Left">
+			Modify the behaviour of Mythologist to your GMing style.
+		</MudText>
+		<MudForm @bind-IsValid="@success">
+		<MudGrid>
+		<MudItem xs="6">
+		<MudTooltip Delay="700" Text="Whether the scenes assigned background music will play automatically upon a player entering a scene. If not, they will still be able to start playback manually.">
+			<MudCheckBox @bind-Value="gameSettings.autoplayAudio" Label="Autoplay Background Audio" Color="Color.Primary"></MudCheckBox>
+		</MudTooltip>
+		</MudItem>
+		<MudItem xs="6">
+					<MudTooltip Delay="700" Text="Whether the scenes assigned background music loop once it has finished playing.">
+			<MudCheckBox @bind-Value="gameSettings.loopAudio" Label="Loop Background Audio" Color="Color.Primary"></MudCheckBox>
+		</MudTooltip>
+		</MudItem>
+		<MudItem xs="6">
+					<MudTooltip Delay="700" Text="Whether the name of the current scene will be displayed to players in the scene.">
+			<MudCheckBox @bind-Value="gameSettings.showSceneTitle" Label="Display Scene Title" Color="Color.Primary"></MudCheckBox>
+		</MudTooltip>
+		</MudItem>
+		<MudItem xs="6">
+					<MudTooltip Delay="700" Text="Whether players may move themselves between scenes. If this is false, players will not be shown the scene selector panel at all.">
+			<MudCheckBox @bind-Value="gameSettings.playersCanMoveThemselvesBetweenScenes" Label="Players Can Move Themselves" Color="Color.Primary"></MudCheckBox>
+		</MudTooltip>
+		</MudItem>
+		<MudItem xs="12">
+					<MudTooltip Delay="700" Text=" The scene players will be placed into upon initially joining." RootClass="d-inline">
+			<MudSelect T="SceneModel" @bind-Value=gameSettings.defaultScene Label="Default Scene" Variant="Variant.Filled">
+				@foreach (SceneModel scene in @dbConnection.AllScenes())
+				{
+					<MudSelectItem Value="@scene" />
+				}
+			</MudSelect>
+		</MudTooltip>
+		</MudItem>
+		</MudGrid>
+		</MudForm>
+		<MudButton @onclick="SubmitSettings" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!success)" Class="ml-auto">Save</MudButton>
+
+	</MudStack>
+</MudContainer>
+
+
+@code {
+
+	private bool success = true;
+	private GameSettingsModel gameSettings = new GameSettingsModel();
+
+	[CascadingParameter]
+	public MainLayout Layout { get; set; }
+
+	private string? gameName = null;
+	private string? GMPassword = null;
+
+	// Due to pre-rendering in Blazor Server you can't perform any JS interop until the OnAfterRender lifecycle method.
+	// Taken from the SessionStorage docs, unknown if this is relevent to other stuff.
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender){
+			(gameName, GMPassword) = await Utils.Utils.PageSetup(sessionStorage, Layout, dbConnection, navManager, snackBar);
+			gameSettings = await dbConnection.GameSettings(gameName);
+			StateHasChanged();
+		}
+	}
+
+	private void SubmitSettings()
+	{
+		dbConnection.UpdateGameSettings(gameName, gameSettings);
+		snackBar.Add("Settings Saved", Severity.Success);
+	}
+}

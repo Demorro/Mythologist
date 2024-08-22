@@ -1,0 +1,49 @@
+﻿
+@font-face {
+    font-family: Agreloy;
+    src: url(/font/agreloy-font/Agreloy-262d.otf)
+}
+
+@font-face {
+    font-family: Vegur;
+    src: url(/font/vegur-font/Vegur-Yg1a.otf);
+}
+
+@font-face {
+    font-family: Vegur;
+    src: url(/font/vegur-font/VegurBold-rYOp.otf);
+    font-weight: bold
+}
+
+@font-face {
+    font-family: SuperNormal;
+    src: url(/font/dinofans-font/Dinofans-DYaR0.otf);
+}
+
+
+.mud-input {
+    font-family: 'Vegur', sans-serif;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.mud-input-label {
+    font-family: 'Vegur', sans-serif;
+    font-weight: bold;
+    opacity: 0.8;
+    font-size: 12px
+}
+
+.mud-snackbar {
+    font-family: 'Vegur', sans-serif;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+
+html, body {
+    overflow: hidden; /* Prevents both horizontal and vertical scrolling */
+    height: 100%; /* Ensures the body fills the entire viewport */
+    margin: 0; /* Removes any default margin */
+    padding: 0; /* Removes any default padding */
+}

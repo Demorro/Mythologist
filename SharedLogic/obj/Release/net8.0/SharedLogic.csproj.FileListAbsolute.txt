@@ -1,0 +1,17 @@
+C:\Dev\Mythologist\SharedLogic\bin\Release\net8.0\Microsoft.Azure.Cosmos.ServiceInterop.dll
+C:\Dev\Mythologist\SharedLogic\bin\Release\net8.0\Cosmos.CRTCompat.dll
+C:\Dev\Mythologist\SharedLogic\bin\Release\net8.0\msvcp140.dll
+C:\Dev\Mythologist\SharedLogic\bin\Release\net8.0\vcruntime140.dll
+C:\Dev\Mythologist\SharedLogic\bin\Release\net8.0\vcruntime140_1.dll
+C:\Dev\Mythologist\SharedLogic\bin\Release\net8.0\SharedLogic.deps.json
+C:\Dev\Mythologist\SharedLogic\bin\Release\net8.0\SharedLogic.dll
+C:\Dev\Mythologist\SharedLogic\bin\Release\net8.0\SharedLogic.pdb
+C:\Dev\Mythologist\SharedLogic\obj\Release\net8.0\SharedLogic.csproj.AssemblyReference.cache
+C:\Dev\Mythologist\SharedLogic\obj\Release\net8.0\SharedLogic.GeneratedMSBuildEditorConfig.editorconfig
+C:\Dev\Mythologist\SharedLogic\obj\Release\net8.0\SharedLogic.AssemblyInfoInputs.cache
+C:\Dev\Mythologist\SharedLogic\obj\Release\net8.0\SharedLogic.AssemblyInfo.cs
+C:\Dev\Mythologist\SharedLogic\obj\Release\net8.0\SharedLogic.csproj.CoreCompileInputs.cache
+C:\Dev\Mythologist\SharedLogic\obj\Release\net8.0\SharedLogic.dll
+C:\Dev\Mythologist\SharedLogic\obj\Release\net8.0\refint\SharedLogic.dll
+C:\Dev\Mythologist\SharedLogic\obj\Release\net8.0\SharedLogic.pdb
+C:\Dev\Mythologist\SharedLogic\obj\Release\net8.0\ref\SharedLogic.dll

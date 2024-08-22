@@ -1,0 +1,85 @@
+﻿@using MudBlazor
+@using SharedLogic.Services
+
+@inject IConfiguration configuration
+@inject ISnackbar Snackbar
+@inject IDatabaseConnectionService dbConnection
+
+@*We get an annoying scrollbar is we dont do the overflow thing, cause of the complicated password field thinking it's taller than it is*@
+<MudDialog DefaultFocus="DefaultFocus.FirstChild" ContentStyle="overflow-y: hidden;">
+    <DialogContent>
+        <MudStack>
+            <MudTextField @bind-Value="GameName" Label="Game Name" Variant="Variant.Text"></MudTextField>
+            <MudTextField @bind-Value="GMPassword" Label="GM Password" Variant="Variant.Text" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="TogglePasswordVisible" AdornmentAriaLabel="Show Password" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Disabled="@showLoading" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Disabled="@showLoading" Color="Color.Success" OnClick="Submit">Login</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@if (@showLoading)
+{
+    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Size="Size.Medium" />
+}
+
+@code {
+    #region Password Display
+    bool isShow = false;
+    InputType PasswordInput = InputType.Password;
+    string PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+    void TogglePasswordVisible()
+    {
+        @if (isShow)
+        {
+            isShow = false;
+            PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+            PasswordInput = InputType.Password;
+        }
+        else
+        {
+            isShow = true;
+            PasswordInputIcon = Icons.Material.Filled.Visibility;
+            PasswordInput = InputType.Text;
+        }
+    }
+    #endregion
+
+    [CascadingParameter]
+    private MudDialogInstance MudDialog { get; set; }
+
+    public string GameName { get; set; }
+    public string GMPassword { get; set; }
+
+    private bool showLoading = false;
+
+    private async Task Submit()
+    {
+        showLoading = true;
+
+        try
+        {
+            bool verified = await dbConnection.VerifyLogin(GameName, GMPassword);
+            if (!verified){
+                Snackbar.Add("Invalid Password", Severity.Error);
+                showLoading = false;
+                //No need to close the dialog, they will want to try again probably.
+                return;
+            }
+        }
+        catch (Exception ex)
+        {
+            //Just defensive programming, especially as this is likely the first time we hit the DB
+            Snackbar.Add(ex.Message, Severity.Error);
+            MudDialog.Cancel();
+            return;
+        }
+
+        Snackbar.Add($"Logged into {GameName}", Severity.Success);
+        MudDialog.Close<Tuple<string, string>>(new Tuple<string, string>(GameName, GMPassword));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}
+

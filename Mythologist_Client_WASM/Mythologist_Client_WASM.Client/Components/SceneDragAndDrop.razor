@@ -1,0 +1,159 @@
+﻿@using Mythologist_Client_WASM.Client.Infos
+
+@inject ISignalRHubClientService signalRHub
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject IJSRuntime jsRuntime;
+<MudDropContainer @ref=dropContainer T="ClientInfo" CanDrop=@CanDrop Items=@ConnectedClients ItemsSelector="@((item,dropzone) => item.currentSceneID == dropzone)" ItemDropped="MoveClientToScene" CanDropClass="mud-border-primary">
+    <ChildContent>
+
+        <div class="d-flex overflow-x-scroll pb-2" style="justify-content: safe center; align-items: end">
+            <div style="min-width:10px; width:10px;"></div>  <!--For niceness, leave a bit of padding at the side of the scene scroll -->
+            @foreach (var sceneName in @SceneNames)
+            {
+                if ((@ConnectedClients != null) && (@LocalClient != null))
+                {
+                    //Only show ALL the scenes if we've got the option toggled, or if we're the GM who can always see them.
+                    //Otherwise only show the scenes players are in.
+                    if ((@ConnectedClients.Exists(x => x.currentSceneID == sceneName)) || @SeeAllScenes || @LocalClient.isGM)
+                    {
+                        //Annoying! The reason we have to set a min height here is that the bloody MudDropContainer has a bug where a data binding wont refresh it.
+                        //For that reason we do the reset-data thing in the OnParametersSet method. Which mean for a frame the container would be "empty".
+                        //THIS means that the container would flash back to 0px height, which looks awful. So, we need to keep it artificially as high as the damn
+                        //player plates.
+                        <MudStack Class="d-flex justify-center" Style="align-items: center; min-height:125px;" Spacing="0">
+                            <MudText Typo="Typo.subtitle1" Style="white-space: nowrap;">@sceneName</MudText>
+                            <MudDropZone @onmouseenter="mouseArgs => MouseOverDropZone(sceneName, mouseArgs)" @onmouseleave="mouseArgs => MouseOutDropZone(sceneName, mouseArgs)" T="ClientInfo" Identifier="@sceneName" Class="justify-center rounded border border-solid mud-border-lines-default mx-1 flex-grow-1 d-flex" Style="@($"min-width:{Math.Max(150, EstimatedTextWidth(@sceneName))}px; min-height:90px; max-height:90px; align-items: center;")">
+                                @if (dropZonesWithMouseOver.GetValueOrDefault(sceneName, false))
+                                {
+                                    @if ((@LocalClient.isGM) && (SceneIsEmpty(sceneName)))
+                                    {
+                                        <MudButton Variant="Variant.Filled" IconColor="Color.Primary" OnClick="() => GatherClientsToScene(sceneName)" StartIcon="@Icons.Material.Outlined.ZoomInMap" Size="Size.Medium" Style="">Gather</MudButton>
+                                    }
+                                }
+                            </MudDropZone>
+                        </MudStack>
+                    }
+                }
+            }
+            <div style="min-width:20px; width:20px;"></div>  <!--For niceness, leave a bit of padding at the side of the scene scroll -->
+        </div>
+
+    </ChildContent>
+    <ItemRenderer>
+        <PlayerPlate Client="@context"></PlayerPlate>
+    </ItemRenderer>
+</MudDropContainer>
+@code {
+    [Parameter]
+    public List<ClientInfo>? ConnectedClients { get; set; }
+    [Parameter]
+    public EventCallback<List<ClientInfo>?> ConnectedClientsChanged { get; set; }
+
+    [Parameter]
+    public List<string>? SceneNames { get; set; }
+
+    [Parameter]
+    public ClientInfo? LocalClient { get; set; }
+
+    //If false, we only see the scenes players happen to be in
+    [Parameter]
+    public bool SeeAllScenes { get; set; } = true;
+
+    //If false, players can never move anyone. The GM can always move everyone
+    [Parameter]
+    public bool PlayersCanMoveThemselves { get; set; } = true;
+
+    [Parameter]
+    public bool SceneDragDrawerOpen { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> SceneDragDrawerOpenChanged { get; set; }
+
+    private string? gameName;
+
+    private MudDropContainer<ClientInfo> dropContainer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        gameName = await sessionStorage.GetItemAsync<string>("GameName");
+    }
+
+    protected override void OnParametersSet()
+    {
+        dropContainer.Items = ConnectedClients;
+        dropContainer.Refresh();
+    }
+
+    //Key is the scene id. Mousing into the drop zone enables the bool, which allows us to render stuff when a mouse is hovering over
+    private Dictionary<string, bool> dropZonesWithMouseOver = new Dictionary<string, bool>();
+
+    void MouseOverDropZone(string sceneName, MouseEventArgs args)
+    {
+        dropZonesWithMouseOver[sceneName] = true;
+    }
+
+    void MouseOutDropZone(string sceneName, MouseEventArgs args)
+    {
+        dropZonesWithMouseOver[sceneName] = false;
+    }
+
+    private void ResetAllMouseDropZones()
+    {
+        foreach (var key in dropZonesWithMouseOver.Keys)
+        {
+            dropZonesWithMouseOver[key] = false;
+        }
+    }
+
+    private bool SceneIsEmpty(string sceneName)
+    {
+        if (ConnectedClients == null)
+        {
+            return true;
+        }
+
+        return !ConnectedClients.Any(x => x.currentSceneID == sceneName);
+    }
+
+    private async Task GatherClientsToScene(string sceneName)
+    {
+        if (ConnectedClients == null){
+            return;
+        }
+
+        List<Task> moveClientsToGMScene = new List<Task>();
+
+        foreach (var client in ConnectedClients)
+        {
+            moveClientsToGMScene.Add(signalRHub.ChangeClientScene(gameName, client.signalRConnectionID, sceneName));
+        }
+
+        await Task.WhenAll(moveClientsToGMScene);
+    }
+
+    private async Task MoveClientToScene(MudItemDropInfo<ClientInfo> dropItem)
+    {
+        ResetAllMouseDropZones(); //You can get the buttons to stay active if you drag out, so just be clean
+
+        if(gameName is null){ return; }
+
+        dropItem.Item.currentSceneID = dropItem.DropzoneIdentifier;
+        await signalRHub.ChangeClientScene(gameName, dropItem.Item.signalRConnectionID, dropItem.Item.currentSceneID);
+    }
+
+    private int EstimatedTextWidth(string name)
+    {
+        float width = name.Length * 10;
+        return (int)width;
+    }
+
+    private bool CanDrop(ClientInfo? clientInfo, string dunnoWhatThisIs)
+    {
+        if ((LocalClient == null) || (clientInfo == null))
+        {
+            return false;
+        }
+
+        return ((PlayersCanMoveThemselves && (clientInfo.signalRConnectionID == LocalClient.signalRConnectionID)) || LocalClient.isGM);
+    }
+}

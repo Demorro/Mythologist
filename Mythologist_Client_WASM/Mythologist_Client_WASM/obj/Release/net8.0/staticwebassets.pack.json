@@ -1,0 +1,25 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Dev\\Mythologist\\Mythologist_Client_WASM\\Mythologist_Client_WASM\\wwwroot\\favicon.ico",
+      "PackagePath": "staticwebassets\\favicon.ico"
+    },
+    {
+      "Id": "obj\\Release\\net8.0\\staticwebassets\\msbuild.Mythologist_Client_WASM.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Release\\net8.0\\staticwebassets\\msbuild.build.Mythologist_Client_WASM.props",
+      "PackagePath": "build\\Mythologist_Client_WASM.props"
+    },
+    {
+      "Id": "obj\\Release\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.Mythologist_Client_WASM.props",
+      "PackagePath": "buildMultiTargeting\\Mythologist_Client_WASM.props"
+    },
+    {
+      "Id": "obj\\Release\\net8.0\\staticwebassets\\msbuild.buildTransitive.Mythologist_Client_WASM.props",
+      "PackagePath": "buildTransitive\\Mythologist_Client_WASM.props"
+    }
+  ],
+  "ElementsToRemove": []
+}
