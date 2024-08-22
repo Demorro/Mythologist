@@ -22,16 +22,18 @@ jobs:
           dotnet-version: '8.x'
 
       - name: Build with dotnet
-        run: dotnet build Mythologist_Client_WASM/Mythologist_Client_WASM/Mythologist_Client_WASM.csproj --configuration ReleaseWeb
-
+        run: dotnet build --configuration ReleaseWeb
+        working-directory: ./Mythologist_Client_WASM/Mythologist_Client_WASM/
+        
       - name: dotnet publish
-        run: dotnet publish Mythologist_Client_WASM/Mythologist_Client_WASM/Mythologist_Client_WASM.csproj -c ReleaseWeb -o ${{env.DOTNET_ROOT}}/mythologist_client
-
+        run: dotnet publish -c ReleaseWeb -o ${{env.DOTNET_ROOT}}/myapp
+        working-directory: ./ Mythologist_Client_WASM/Mythologist_Client_WASM/
+        
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: ${{env.DOTNET_ROOT}}/mythologist_client
+          path: ${{env.DOTNET_ROOT}}/myapp
 
   deploy:
     runs-on: ubuntu-latest
