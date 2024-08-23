@@ -399,4 +399,5 @@ FodyWeavers.xsd
 
 #Build output
 **/bin/
-/**/obj/
+**/obj/
+.config/
