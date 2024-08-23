@@ -7,6 +7,7 @@
 
 <CascadingValue Value="this">
     <MudLayout>
+        <!--
         <MudAppBar Elevation="1">
          @if (navMenuEnabled){
             <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
@@ -15,6 +16,7 @@
             <MudSpacer />
             <MudIconButton Icon="@(DarkLightModeButtonIcon)" Color="Color.Inherit" OnClick="@DarkModeToggle" />
         </MudAppBar>
+        -->
         @if (navMenuEnabled){
             <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
                 <NavMenu />
