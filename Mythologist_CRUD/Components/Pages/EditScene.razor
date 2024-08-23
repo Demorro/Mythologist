@@ -106,59 +106,65 @@ else {
 
     protected async override Task OnInitializedAsync()
     {
-        gameName = await sessionStorage.GetItemAsync<string>("GameName");
-        var GMPassword = await sessionStorage.GetItemAsync<string>("GMPassword");
-
-        if (gameName == null)
+        try
         {
-            Snackbar.Add("Couldn't find game, redirecting.");
-            NavManager.NavigateTo("/");
-            return;
-        }
+            gameName = await sessionStorage.GetItemAsync<string>("GameName");
+            var GMPassword = await sessionStorage.GetItemAsync<string>("GMPassword");
 
-        bool verified = await dbConnection.VerifyLogin(gameName, GMPassword);
-        if (!verified)
-        {
-            Snackbar.Add("Not authorized to be here. The authorities have been informed.");
-            NavManager.NavigateTo("/");
-            return;
-        }
-
-        scene = dbConnection.AllScenes().Find(x => x.id == sceneName);
-
-        //Grab the metadata for all the media we can set in this panel
-        (blobServiceClient, gameContainer) = await BlobUtils.SetupOrVerifyBlobStorageGumph(gameName, configuration.GetConnectionString("blobStorage")!, blobServiceClient, gameContainer);
-        var getAllImagesTask = BlobUtils.GetMediaMetaData(gameName, SharedLogic.Utils.Constants.MediaItemType.Image, gameContainer, blobServiceClient);
-        var getAllAudioTask = BlobUtils.GetMediaMetaData(gameName, SharedLogic.Utils.Constants.MediaItemType.Audio, gameContainer, blobServiceClient);
-        var imagesAndAudio = await Task.WhenAll(getAllImagesTask, getAllAudioTask);
-        allAvailableImageMedia = imagesAndAudio[0];
-        allAvailableAudioMedia = imagesAndAudio[1];
-
-        //Set the dropdowns to what the database says
-        if (scene != null)
-        {
-            //Just taken from the passed in param. Sets the textedit.
-            renamedScene = sceneName;
-
-            if (scene.backgroundImageUri != null)
+            if (gameName == null)
             {
-                var fileName = Path.GetFileName(scene.backgroundImageUri.AbsolutePath);
-                SelectedBackgroundImage = allAvailableImageMedia.Find(x => x.Name == fileName);
-                if (SelectedBackgroundImage == null)
+                Snackbar.Add("Couldn't find game, redirecting.");
+                NavManager.NavigateTo("/");
+                return;
+            }
+
+            bool verified = await dbConnection.VerifyLogin(gameName, GMPassword);
+            if (!verified)
+            {
+                Snackbar.Add("Not authorized to be here. The authorities have been informed.");
+                NavManager.NavigateTo("/");
+                return;
+            }
+
+            scene = dbConnection.AllScenes().Find(x => x.id == sceneName);
+
+            //Grab the metadata for all the media we can set in this panel
+            (blobServiceClient, gameContainer) = await BlobUtils.SetupOrVerifyBlobStorageGumph(gameName, configuration.GetConnectionString("blobStorage")!, blobServiceClient, gameContainer);
+            var getAllImagesTask = BlobUtils.GetMediaMetaData(gameName, SharedLogic.Utils.Constants.MediaItemType.Image, gameContainer, blobServiceClient);
+            var getAllAudioTask = BlobUtils.GetMediaMetaData(gameName, SharedLogic.Utils.Constants.MediaItemType.Audio, gameContainer, blobServiceClient);
+            var imagesAndAudio = await Task.WhenAll(getAllImagesTask, getAllAudioTask);
+            allAvailableImageMedia = imagesAndAudio[0];
+            allAvailableAudioMedia = imagesAndAudio[1];
+
+            //Set the dropdowns to what the database says
+            if (scene != null)
+            {
+                //Just taken from the passed in param. Sets the textedit.
+                renamedScene = sceneName;
+
+                if (scene.backgroundImageUri != null)
                 {
-                    Snackbar.Add($"Couldn't find media for database reported background image '{fileName}'. Perhaps it has been deleted?");
+                    var fileName = Path.GetFileName(scene.backgroundImageUri.AbsolutePath);
+                    SelectedBackgroundImage = allAvailableImageMedia.Find(x => x.Name == fileName);
+                    if (SelectedBackgroundImage == null)
+                    {
+                        Snackbar.Add($"Couldn't find media for database reported background image '{fileName}'. Perhaps it has been deleted?");
+                    }
+                }
+                if (scene.backgroundMusicUri != null)
+                {
+                    var fileName = Path.GetFileName(scene.backgroundMusicUri.AbsolutePath);
+                    SelectedBackgroundAudio = allAvailableAudioMedia.Find(x => x.Name == fileName);
+
+                    if (SelectedBackgroundAudio == null)
+                    {
+                        Snackbar.Add($"Couldn't find media for database reported background audio '{fileName}'. Perhaps it has been deleted?");
+                    }
                 }
             }
-            if (scene.backgroundMusicUri != null)
-            {
-                var fileName = Path.GetFileName(scene.backgroundMusicUri.AbsolutePath);
-                SelectedBackgroundAudio = allAvailableAudioMedia.Find(x => x.Name == fileName);
-
-                if (SelectedBackgroundAudio == null)
-                {
-                    Snackbar.Add($"Couldn't find media for database reported background audio '{fileName}'. Perhaps it has been deleted?");
-                }
-            }
+        }
+        catch(Exception ex) {
+            Snackbar.Add($"Unexpected exception : {ex.Message}");
         }
     }
 
