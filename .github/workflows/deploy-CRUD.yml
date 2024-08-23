@@ -4,9 +4,6 @@
 name: Mythologist CRUD Blazor Server App - Build and Deploy to Azure App Service
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
