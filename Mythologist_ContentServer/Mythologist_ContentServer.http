@@ -1,6 +1,0 @@
-@Mythologist_ContentServer_HostAddress = http://localhost:5172
-
-GET {{Mythologist_ContentServer_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
