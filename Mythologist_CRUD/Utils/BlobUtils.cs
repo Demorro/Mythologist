@@ -104,7 +104,8 @@ namespace Mythologist_CRUD.Utils
 				throw new Exception("Expected non null blob service client");
 			}
 
-            return new Uri($"{blobServiceClient?.Uri}/{gameName}/{BlobUtils.MediaContainerPrefix(itemType)}{fileName}");
+			//Need to branch here? Wtf
+            return new Uri(blobServiceClient?.Uri, $"{gameName}/{BlobUtils.MediaContainerPrefix(itemType)}{fileName}");
         }
 
 
