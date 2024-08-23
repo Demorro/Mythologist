@@ -13,7 +13,7 @@
 @inject IConfiguration configuration
 @inject IDatabaseConnectionService dbConnection
 
-<div style="height: 100vh; display: flex; justify-content: center; align-items: center;">
+<div style="height: calc(100vh - 100px); display: flex; justify-content: center; align-items: center;">
     <MudStack Class="d-flex justify-center" Style="align-items: center;">
         @* The pl-1 (left pad) is to offset how "Create" and "Login" don't have the same character count. To keep it looking centered' *@
         <MudText Class="pl-1" Typo="Typo.h4">Mythologist</MudText>
