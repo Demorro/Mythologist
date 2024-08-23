@@ -104,8 +104,22 @@ namespace Mythologist_CRUD.Utils
 				throw new Exception("Expected non null blob service client");
 			}
 
-			//Need to branch here? Wtf
-            return new Uri(blobServiceClient?.Uri, $"{gameName}/{BlobUtils.MediaContainerPrefix(itemType)}{fileName}");
+			if (!(blobServiceClient.Uri.ToString().Contains("localhost") || blobServiceClient.Uri.ToString().Contains("127.0.0.1")))
+			{ 
+				//Remote (Azure)
+				return new Uri(blobServiceClient?.Uri, $"{gameName}/{BlobUtils.MediaContainerPrefix(itemType)}{fileName}");
+
+			}
+			else
+			{
+				// Local (Emulator)
+				// So. Honestly i dont know what the deal is here.
+				// Constructing the string this way fails on azure, because we end up adding two "/"s, makes sense, the blobServiceClient ends with a slash what you gonna do.
+				// HOWEVER. Locally, the Uri is something like "127.0.0.1/devstorageaccout1", which wont work in the above conception cause what it wants is the
+				// base URL. However, the above one DOES WORK online, and I dunno why, how come it dosen't need an account name, is that just an emulator thing?
+				// In any case, whatever it works just branch.
+				return new Uri($"{blobServiceClient?.Uri}/{gameName}/{BlobUtils.MediaContainerPrefix(itemType)}{fileName}");
+			}
         }
 
 
