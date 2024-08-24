@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using MudBlazor;
 using System.Drawing;
 using Color = System.Drawing.Color;
+using MudBlazor.Interfaces;
 
 namespace SharedLogic.Styling
 {
@@ -16,15 +17,11 @@ namespace SharedLogic.Styling
 
         public static MudTheme MythologistTheme()
         {
-            double hue = (rand.NextDouble() * 360);
-            double contrast = ((rand.NextDouble() * 0.5) - 0.5);
-            Console.WriteLine("Hue" + hue);
-            Console.WriteLine("Contrast" + contrast);
-            var pallette = ColorTheme.GenerateTheme((float)hue, (float)contrast, 0.0f);
-            PrintPallette(pallette);
             return new MudTheme()
             {
-                PaletteDark = pallette
+                PaletteDark = MythologistDarkPallete(),
+                Typography = MythologistTypo(),
+                LayoutProperties = new LayoutProperties()
             };
         }
 
@@ -57,117 +54,112 @@ namespace SharedLogic.Styling
             Console.WriteLine($"Divider : {pallette.Divider}");
             Console.WriteLine($"OverlayLight : {pallette.OverlayLight}");
         }
-    }
 
-    public class ColorTheme
-    {
-        public static PaletteDark GenerateTheme(float baseHue, float saturationShift = 0f, float brightnessShift = 0f)
+
+        static string SatinSheenGold = "#84a343";
+        static string SatinSheenGoldFaded = "#586d2c";
+        static string FernGreen = "#486336";
+        static string FernGreenFaded = "#304224";
+        static string Pumpkin = "#FA7921";
+        static string PrincetonOrange = "#FE9920";
+        static string IndigoDye = "#0C4767";
+        static string Ivory = "fefae0";
+
+        private static PaletteDark MythologistDarkPallete()
         {
-            var theme = new PaletteDark
-            {
-                Primary = AdjustColor(new HSBColor(baseHue, 0.7f, 0.8f), saturationShift, brightnessShift),
-                Surface = AdjustColor(new HSBColor(baseHue - 15, 0.5f, 0.2f), saturationShift, brightnessShift),
-                Background = AdjustColor(new HSBColor(baseHue - 20, 0.5f, 0.1f), saturationShift, brightnessShift),
-                BackgroundGray = AdjustColor(new HSBColor(baseHue - 20, 0.4f, 0.08f), saturationShift, brightnessShift),
-                AppbarText = AdjustColor(new HSBColor(baseHue + 45, 0.2f, 0.7f), saturationShift, brightnessShift),
-                AppbarBackground = AdjustColor(new HSBColor(baseHue - 20, 0.4f, 0.1f), saturationShift, brightnessShift),
-                DrawerBackground = AdjustColor(new HSBColor(baseHue - 20, 0.4f, 0.1f), saturationShift, brightnessShift),
-                ActionDefault = AdjustColor(new HSBColor(baseHue - 5, 0.3f, 0.5f), saturationShift, brightnessShift),
-                ActionDisabled = AdjustColor(new HSBColor(baseHue - 5, 0.1f, 0.7f), saturationShift, brightnessShift),
-                ActionDisabledBackground = AdjustColor(new HSBColor(baseHue - 30, 0.2f, 0.4f), saturationShift, brightnessShift),
-                TextPrimary = AdjustColor(new HSBColor(baseHue + 50, 0.2f, 0.85f), saturationShift, brightnessShift),
-                TextSecondary = AdjustColor(new HSBColor(baseHue + 30, 0.15f, 0.75f), saturationShift, brightnessShift),
-                TextDisabled = AdjustColor(new HSBColor(baseHue + 50, 0.2f, 0.85f, 0.2f), saturationShift, brightnessShift),
-                DrawerIcon = AdjustColor(new HSBColor(baseHue + 45, 0.2f, 0.7f), saturationShift, brightnessShift),
-                DrawerText = AdjustColor(new HSBColor(baseHue + 45, 0.2f, 0.7f), saturationShift, brightnessShift),
-                GrayLight = AdjustColor(new HSBColor(baseHue - 10, 0.3f, 0.25f), saturationShift, brightnessShift),
-                GrayLighter = AdjustColor(new HSBColor(baseHue - 15, 0.5f, 0.2f), saturationShift, brightnessShift),
-                Info = AdjustColor(new HSBColor(baseHue + 120, 0.5f, 0.7f), saturationShift, brightnessShift),
-                Success = AdjustColor(new HSBColor(baseHue + 90, 0.5f, 0.6f), saturationShift, brightnessShift),
-                Warning = AdjustColor(new HSBColor(baseHue + 40, 0.7f, 0.8f), saturationShift, brightnessShift),
-                Error = AdjustColor(new HSBColor(baseHue, 0.7f, 0.7f), saturationShift, brightnessShift),
-                LinesDefault = AdjustColor(new HSBColor(baseHue - 15, 0.4f, 0.3f), saturationShift, brightnessShift),
-                TableLines = AdjustColor(new HSBColor(baseHue - 15, 0.4f, 0.3f), saturationShift, brightnessShift),
-                Divider = AdjustColor(new HSBColor(baseHue - 20, 0.4f, 0.2f), saturationShift, brightnessShift),
-                OverlayLight = AdjustColor(new HSBColor(baseHue - 15, 0.5f, 0.2f, 0.5f), saturationShift, brightnessShift),
+            return new PaletteDark() {
+                Primary = SatinSheenGold,
+                Secondary = FernGreen,
+                Tertiary = Pumpkin,
+                PrimaryContrastText = Ivory,
+                SecondaryContrastText = Ivory,
+                TertiaryContrastText = Ivory,
+                Surface = "rgba(16,20,22,0.9)",
+                Background = "#0f1417",
+                BackgroundGray = "#171c1f",
+                AppbarText = "#f8fbfe",
+                AppbarBackground = "#101416",
+                DrawerBackground = "rgba(16,20,22,1.0)",
+                ActionDefault = SatinSheenGoldFaded,
+                ActionDisabled = "#36434a",
+                ActionDisabledBackground = "#0b0f11",
+                TextPrimary = "#f8fbfe",
+                TextSecondary = "#c3ccd3",
+                TextDisabled = "#9ba4ab",
+                DrawerIcon = "#E4B363",
+                DrawerText = "#E8E9EB",
+                GrayLight = "#E0DFD5",
+                GrayLighter = "#E0DFD5",
+                Info = Ivory,
+                Success = SatinSheenGold,
+                Warning = "#e3890f",
+                Error = "#b63030",
+                LinesDefault = "rgba(155,164,171,0.14)",
+                TableLines = "rgba(155,164,171,0.14)",
+                Divider = "rgba(155,164,171,0.14)",
+                OverlayLight = "#FFFFFFAA"
             };
-
-            return theme;
         }
 
-        private static string AdjustColor(HSBColor hsbColor, float saturationShift, float brightnessShift)
-        {
-            hsbColor.Saturation = Math.Max(0, Math.Min(1, hsbColor.Saturation + saturationShift));
-            hsbColor.Brightness = Math.Max(0, Math.Min(1, hsbColor.Brightness + brightnessShift));
-            return ColorTranslator.ToHtml(hsbColor.ToColor());
-        }
-    }
-
-    public struct HSBColor
-    {
-        public float Hue { get; set; }
-        public float Saturation { get; set; }
-        public float Brightness { get; set; }
-        public float Alpha { get; set; }
-
-        public HSBColor(float hue, float saturation, float brightness, float alpha = 1.0f)
-        {
-            Hue = hue;
-            Saturation = saturation;
-            Brightness = brightness;
-            Alpha = alpha;
-        }
-
-        public Color ToColor()
-        {
-            int r = 0, g = 0, b = 0;
-            if (Saturation == 0)
-            {
-                r = g = b = (int)(Brightness * 255.0f + 0.5f);
-            }
-            else
-            {
-                float h = (Hue == 360) ? 0 : Hue / 60;
-                int i = (int)Math.Floor(h);
-                float f = h - i;
-                float p = Brightness * (1.0f - Saturation);
-                float q = Brightness * (1.0f - Saturation * f);
-                float t = Brightness * (1.0f - (Saturation * (1.0f - f)));
-                switch (i)
+        //You'll need to deploy the fonts and .css into the individual wwwroot folders
+        public static Typography MythologistTypo() {
+             return new Typography() {
+                H1 = new H1(){
+                        FontFamily = new[] { "Agreloy", "serif" },
+                },
+                H2 = new H2()
                 {
-                    case 0:
-                        r = (int)(Brightness * 255.0f + 0.5f);
-                        g = (int)(t * 255.0f + 0.5f);
-                        b = (int)(p * 255.0f + 0.5f);
-                        break;
-                    case 1:
-                        r = (int)(q * 255.0f + 0.5f);
-                        g = (int)(Brightness * 255.0f + 0.5f);
-                        b = (int)(p * 255.0f + 0.5f);
-                        break;
-                    case 2:
-                        r = (int)(p * 255.0f + 0.5f);
-                        g = (int)(Brightness * 255.0f + 0.5f);
-                        b = (int)(t * 255.0f + 0.5f);
-                        break;
-                    case 3:
-                        r = (int)(p * 255.0f + 0.5f);
-                        g = (int)(q * 255.0f + 0.5f);
-                        b = (int)(Brightness * 255.0f + 0.5f);
-                        break;
-                    case 4:
-                        r = (int)(t * 255.0f + 0.5f);
-                        g = (int)(p * 255.0f + 0.5f);
-                        b = (int)(Brightness * 255.0f + 0.5f);
-                        break;
-                    default:
-                        r = (int)(Brightness * 255.0f + 0.5f);
-                        g = (int)(p * 255.0f + 0.5f);
-                        b = (int)(q * 255.0f + 0.5f);
-                        break;
+                        FontFamily = new[] { "Agreloy", "serif" },
+                        FontSize = "4.5rem"
+
+                },
+                H3 = new H3()
+                {
+                        FontFamily = new[] { "SuperNormal", "serif" }
+                },
+                H4 = new H4()
+                {
+                        FontFamily = new[] { "SuperNormal", "serif" }
+                },
+                H5 = new H5()
+                {
+                        FontFamily = new[] { "SuperNormal", "serif" }
+                },
+                Body1 = new Body1()
+                {
+                        FontFamily = new[] { "Vegur", "sans-serif" },
+                },
+                Body2 = new Body2()
+                {
+                        FontFamily = new[] { "Vegur", "sans-serif" },
+                },
+                Subtitle1 = new Subtitle1()
+                {
+                        FontFamily = new[] { "SuperNormal", "sans-serif" },
+                },
+                Subtitle2 = new Subtitle2()
+                {
+                        FontFamily = new[] { "Vegur", "sans-serif" },
+                        FontSize = "1.1rem",
+                },
+                Button = new Button()
+                {
+                        FontFamily = new[] { "SuperNormal", "sans-serif" },
+                        FontSize = "1rem",
+                },
+                Input = new Input()
+                {
+                        FontFamily = new[] { "Vegur", "sans-serif" },
+                },
+                Caption = new Caption()
+                {
+                        FontFamily = new[] { "Vegur", "sans-serif" },
+                },
+                Overline = new Overline()
+                {
+                        FontFamily = new[] { "Vegur", "sans-serif" },
                 }
-            }
-            return Color.FromArgb((int)(Alpha * 255.0f + 0.5f), r, g, b);
+            };
         }
     }
 }

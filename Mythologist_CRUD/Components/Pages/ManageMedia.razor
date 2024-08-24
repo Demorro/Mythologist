@@ -20,19 +20,19 @@
 @inject NavigationManager navManager
 
 <MudContainer MaxWidth="MaxWidth.Medium">
-	<MudText Typo="Typo.h3" Align="Align.Left" Class="mb-4">Manage Media</MudText>
+	<MudText Typo="Typo.h4" Align="Align.Left" Class="mb-4">Manage Media</MudText>
 	<MudStack Spacing="10">
 		<MudText Typo="Typo.body1" Align="Align.Left">
 			Upload sounds and images for use in your session. 
 		</MudText>
 		<MudPaper Class="pa-4">
-			<MudText Typo="Typo.h6" Color=Color.Primary Class="mb-2">Images</MudText>
+			<MudText Typo="Typo.h5" Color=Color.Inherit Class="mb-2">Images</MudText>
 			<MudGrid>
 				<MudItem xs="6">
 					<MudList T="string" SelectedValue="@SelectedImage?.Name" SelectedValueChanged="OnSelectedImageChanged" SelectionMode="SelectionMode.SingleSelection" Class="overflow-y-scroll" Style="max-height:300px">
 						@foreach (var imageName in imageNames)
 						{
-							<MudListItem Icon="@Icons.Material.Filled.Image" Value=@imageName Text=@imageName Dense="true"> </MudListItem>
+							<MudListItem Icon="@Icons.Material.Filled.Image" IconColor="Color.Primary" Value=@imageName Text=@imageName Dense="true"> </MudListItem>
 						}
 					</MudList>
 					@foreach (var uploadingImageFile in @uploadingImageFiles)
@@ -70,13 +70,13 @@
 		</MudPaper>
 
 		<MudPaper Class="pa-4">
-			<MudText Typo="Typo.h6" Color=Color.Primary Class="mb-2">Audio</MudText>
+			<MudText Typo="Typo.h5" Color=Color.Inherit Class="mb-2">Audio</MudText>
 			<MudGrid Style="align-items: center">
 				<MudItem xs="6">
 					<MudList SelectedValue="@SelectedAudio?.Name" T="string" SelectedValueChanged="OnSelectedAudioChanged" SelectionMode="SelectionMode.SingleSelection" Class="overflow-y-scroll" Style="max-height:300px">
 						@foreach (var audioName in audioNames)
 						{
-							<MudListItem Icon="@Icons.Material.Filled.AudioFile" Value=@audioName Text=@audioName Dense="true"></MudListItem>
+							<MudListItem Icon="@Icons.Material.Filled.AudioFile" IconColor="Color.Primary" Value=@audioName Text=@audioName Dense="true"></MudListItem>
 						}
 					</MudList>
 					@foreach (var uploadingAudioFile in @uploadingAudioFiles)

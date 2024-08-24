@@ -10,17 +10,13 @@
 @inject NavigationManager NavManager
 
 <MudStack>
-    <MudDataGrid T="SceneModel" Items="@dbConnection.AllScenes()">
+    <MudDataGrid T="SceneModel" Items="@dbConnection.AllScenes()" Class="styled-table-cell">
         <Columns>
             <PropertyColumn Property="x => x.id" Title="Name" />
-            <TemplateColumn>
-                <CellTemplate>
-                    <MudButton @onclick="@(() => EditSceneButtonClicked(context.Item))" Size="@Size.Medium" Variant="@Variant.Filled" Color="@Color.Primary">Edit</MudButton>
-                </CellTemplate>
-            </TemplateColumn>
-            <TemplateColumn>
-                <CellTemplate>
-                    <MudButton @onclick="@(() => DeleteSceneButtonClicked(context.Item))" Disabled="!RequiredParamsSet()" Size="@Size.Medium" Variant="@Variant.Filled" Color="@Color.Error">Delete</MudButton>
+            <TemplateColumn CellClass="d-flex justify-end">
+                <CellTemplate >
+                    <MudButton @onclick="@(() => EditSceneButtonClicked(context.Item))" Size="@Size.Medium" Variant="@Variant.Filled" Color="@Color.Primary" Style="margin-left:5px; margin-right:5px">Edit</MudButton>
+                    <MudButton @onclick="@(() => DeleteSceneButtonClicked(context.Item))" Disabled="!RequiredParamsSet()" Size="@Size.Medium" Variant="@Variant.Filled" Color="@Color.Error" Style="margin-left:5px; margin-right:5px">Delete</MudButton>
                 </CellTemplate>
             </TemplateColumn>
         </Columns>

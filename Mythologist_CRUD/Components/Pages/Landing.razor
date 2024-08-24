@@ -13,17 +13,18 @@
 @inject IConfiguration configuration
 @inject IDatabaseConnectionService dbConnection
 
-<div style="height: calc(100vh - 100px); display: flex; justify-content: center; align-items: center;">
-    <MudStack Class="d-flex justify-center" Style="align-items: center;">
-        @* The pl-1 (left pad) is to offset how "Create" and "Login" don't have the same character count. To keep it looking centered' *@
-        <MudText Class="pl-1" Typo="Typo.h4">Mythologist</MudText>
-        <MudSpacer></MudSpacer>
-        <MudButtonGroup Color="Color.Primary" Size="Size.Large" Variant="Variant.Text" >
-            <MudButton @onclick="NewGameButtonClicked" StartIcon="@Icons.Material.Filled.Add" IconColor="Color.Success">Create</MudButton>
-            <MudButton @onclick="LoginButtonClicked" StartIcon="@Icons.Material.Filled.Login" IconColor="Color.Primary">Login</MudButton>
-        </MudButtonGroup>
-        <MudSpacer></MudSpacer>
-        <MudText Class="pl-1">Prep sessions. Play myths.</MudText>
+<div style="height: calc(100vh - 120px); display: flex; justify-content: center; align-items: center;">
+    <MudStack Class="d-flex justify-center" Style="align-items:center; margin-top:-30px" Spacing="4">
+        <!-- Pointer events mean sometimes the title is focused, which in some browsers gives you this awful outline on some fonts -->
+        <MudText Typo="Typo.h2" Class="titleanimId">Mythologist Creator</MudText>
+
+        <MudStack Row="true" Spacing="2">
+            <MudFocusTrap DefaultFocus="DefaultFocus.LastChild">
+                <MudButton Color="Color.Secondary" Class="buttonsAnimId" Style="font-size:1.2rem; min-width:250px" StartIcon="@Icons.Material.Filled.Add" Variant="Variant.Filled" @onclick="NewGameButtonClicked">Create</MudButton>
+                <MudButton Color="Color.Primary" Class="buttonsAnimId" Style="font-size:1.2rem; min-width:250px" StartIcon="@Icons.Material.Filled.Login" Variant="Variant.Filled" @onclick="LoginButtonClicked">Login</MudButton>
+            </MudFocusTrap>
+        </MudStack>
+        <MudText Typo="Typo.subtitle1" Class="mt-2 taglineAnimId">Prep Sessions. Play Myths.</MudText>
     </MudStack>
 </div>
 

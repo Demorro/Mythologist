@@ -6,7 +6,7 @@
 
 @font-face {
     font-family: Vegur;
-    src: url(/font/vegur-font/Vegur-Yg1a.otf)
+    src: url(/font/vegur-font/Vegur-Yg1a.otf);
 }
 
 @font-face {
@@ -40,9 +40,13 @@
     font-size: 16px;
 }
 
+.mud-table-cell {
+    font-family: 'Vegur', sans-serif;
+    font-size: 16px;
+}
+
 
 html, body {
-    overflow: hidden; /* Prevents both horizontal and vertical scrolling */
     height: 100%; /* Ensures the body fills the entire viewport */
     margin: 0; /* Removes any default margin */
     padding: 0; /* Removes any default padding */
