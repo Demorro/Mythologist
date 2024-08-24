@@ -196,11 +196,11 @@
 			switch (itemType)
 			{
 				case Constants.MediaItemType.Image:
-					SelectedImage = null;
-					break;
+				SelectedImage = null;
+				break;
 				case Constants.MediaItemType.Audio:
-					SelectedAudio = null;
-					break;
+				SelectedAudio = null;
+				break;
 			}
 			return;
 		}
@@ -211,12 +211,12 @@
 		switch (itemType)
 		{
 			case Constants.MediaItemType.Image:
-				SelectedImage = new BlobUtils.MediaMetadata(selectedItemName, url, fileSizeInBytes);
-				return;
+			SelectedImage = new BlobUtils.MediaMetadata(selectedItemName, url, fileSizeInBytes);
+			return;
 			case Constants.MediaItemType.Audio:
-				SelectedAudio = new BlobUtils.MediaMetadata(selectedItemName, url, fileSizeInBytes);
-				ForceAudioUpdate++;
-				return;
+			SelectedAudio = new BlobUtils.MediaMetadata(selectedItemName, url, fileSizeInBytes);
+			ForceAudioUpdate++;
+			return;
 		}
 
 		throw new Exception($"Unexpected item type {itemType}");
@@ -231,35 +231,35 @@
 			return;
 		}
 
-		(blobServiceClient, gameContainer) = await BlobUtils.SetupOrVerifyBlobStorageGumph(gameName, configuration.GetConnectionString("blobStorage")!, blobServiceClient, gameContainer);
-
-		List<Task<Azure.Response<BlobContentInfo>>> uploadTasks = new List<Task<Azure.Response<BlobContentInfo>>>();
-		List<string> uploadingFileNames = new List<string>();
-
-		double tempStorageAmount = ImageStorageUsedTotalMB + AudioStorageUsedTotalMB; //Keep track of our working storage so we can not queue tasks that would blow away the limit
-		foreach (var file in files)
+		try
 		{
-			if (file == null)
-			{
-				continue;
-			}
+			(blobServiceClient, gameContainer) = await BlobUtils.SetupOrVerifyBlobStorageGumph(gameName, configuration.GetConnectionString("blobStorage")!, blobServiceClient, gameContainer);
 
-			if (!Constants.AllowedFormat(file.Name, itemType))
-			{
-				snackBar.Add($"'{file.Name}' is not a supported file type");
-				continue;
-			}
+			List<Task<Azure.Response<BlobContentInfo>>> uploadTasks = new List<Task<Azure.Response<BlobContentInfo>>>();
+			List<string> uploadingFileNames = new List<string>();
 
-			double fileSize = file.Size;
-			double fileSizeInMB = fileSize / (1024 * 1024);
-			if ((tempStorageAmount + fileSizeInMB) >= StorageLimitUpperBoundMB)
+			double tempStorageAmount = ImageStorageUsedTotalMB + AudioStorageUsedTotalMB; //Keep track of our working storage so we can not queue tasks that would blow away the limit
+			foreach (var file in files)
 			{
-				snackBar.Add($"Storage Limit Reached. Cannot Upload '{file.Name}'");
-				continue;
-			}
+				if (file == null)
+				{
+					continue;
+				}
 
-			try
-			{
+				if (!Constants.AllowedFormat(file.Name, itemType))
+				{
+					snackBar.Add($"'{file.Name}' is not a supported file type");
+					continue;
+				}
+
+				double fileSize = file.Size;
+				double fileSizeInMB = fileSize / (1024 * 1024);
+				if ((tempStorageAmount + fileSizeInMB) >= StorageLimitUpperBoundMB)
+				{
+					snackBar.Add($"Storage Limit Reached. Cannot Upload '{file.Name}'");
+					continue;
+				}
+
 				bool fileAlreadyExists = itemType switch
 				{
 					Constants.MediaItemType.Image => imageNames.Contains(file.Name),
@@ -280,33 +280,33 @@
 					AddLoadingSpinner(file.Name, itemType);
 				}
 			}
-			catch (Exception ex)
-			{
-				snackBar.Add(ex.Message, Severity.Error);
-			}
-		}
 
-		var results = await Task.WhenAll(uploadTasks);
+			var results = await Task.WhenAll(uploadTasks);
 
-		for (int i = 0; i < results.Length; ++i)
-		{
-			RemoveLoadingSpinner(uploadingFileNames[i], itemType);
+			for (int i = 0; i < results.Length; ++i)
+			{
+				RemoveLoadingSpinner(uploadingFileNames[i], itemType);
 
-			if (results[i] == null)
-			{
-				snackBar.Add($"Unexpected Error Uploading File '{uploadingFileNames[i]}'", Severity.Error);
-			}
-			else
-			{
-				if (results[i].GetRawResponse().IsError)
+				if (results[i] == null)
 				{
-					snackBar.Add($"Unexpected Uploading File '{uploadingFileNames[i]}' : {results[i].GetRawResponse().ReasonPhrase}", Severity.Error);
+					snackBar.Add($"Unexpected Error Uploading File '{uploadingFileNames[i]}'", Severity.Error);
 				}
 				else
 				{
-					snackBar.Add($"Uploaded'{uploadingFileNames[i]}'", Severity.Success);
+					if (results[i].GetRawResponse().IsError)
+					{
+						snackBar.Add($"Unexpected Uploading File '{uploadingFileNames[i]}' : {results[i].GetRawResponse().ReasonPhrase}", Severity.Error);
+					}
+					else
+					{
+						snackBar.Add($"Uploaded'{uploadingFileNames[i]}'", Severity.Success);
+					}
 				}
 			}
+		}
+		catch (Exception ex) {
+			snackBar.Add(ex.Message, Severity.Error);
+			return;
 		}
 
 		await UpdateMediaListings(itemType);
@@ -318,11 +318,11 @@
 		switch (itemType)
 		{
 			case Constants.MediaItemType.Image:
-				uploadingImageFiles.Add(fileName);
-				break;
+			uploadingImageFiles.Add(fileName);
+			break;
 			case Constants.MediaItemType.Audio:
-				uploadingAudioFiles.Add(fileName);
-				break;
+			uploadingAudioFiles.Add(fileName);
+			break;
 		}
 	}
 
@@ -331,11 +331,11 @@
 		switch (itemType)
 		{
 			case Constants.MediaItemType.Image:
-				uploadingImageFiles.Remove(fileName);
-				break;
+			uploadingImageFiles.Remove(fileName);
+			break;
 			case Constants.MediaItemType.Audio:
-				uploadingAudioFiles.Remove(fileName);
-				break;
+			uploadingAudioFiles.Remove(fileName);
+			break;
 		}
 	}
 
@@ -359,22 +359,30 @@
 			return;
 		}
 
-		(blobServiceClient, gameContainer) = await BlobUtils.SetupOrVerifyBlobStorageGumph(gameName, configuration.GetConnectionString("blobStorage")!, blobServiceClient, gameContainer);
-
-		var response = await gameContainer.DeleteBlobAsync(selectedItem.ContainerLocalUrl(itemType));
-
-		if (response.IsError)
+		try
 		{
-			snackBar.Add($"Error Deleting Item: {response.ReasonPhrase}", Severity.Error);
-		}
-		else
-		{
-			//Change the index of the list so it dosen't just deselect and be awkward.
-			DeletedElementListReselectBehaviour(itemType, selectedItem);
-			snackBar.Add($"Deleted '{selectedItem.Name}'", Severity.Success);
-			await UpdateMediaListings(itemType);
+			(blobServiceClient, gameContainer) = await BlobUtils.SetupOrVerifyBlobStorageGumph(gameName, configuration.GetConnectionString("blobStorage")!, blobServiceClient, gameContainer);
 
+			var response = await gameContainer.DeleteBlobAsync(selectedItem.ContainerLocalUrl(itemType));
+
+			if (response.IsError)
+			{
+				snackBar.Add($"Error Deleting Item: {response.ReasonPhrase}", Severity.Error);
+			}
+			else
+			{
+				//Change the index of the list so it dosen't just deselect and be awkward.
+				DeletedElementListReselectBehaviour(itemType, selectedItem);
+				snackBar.Add($"Deleted '{selectedItem.Name}'", Severity.Success);
+				await UpdateMediaListings(itemType);
+
+			}
 		}
+		catch (Exception ex) {
+			snackBar.Add(ex.Message, Severity.Error);
+			return;
+		}
+
 	}
 
 	// When something is deleted, we want to at least try and select another element so we dont get the
@@ -384,27 +392,27 @@
 		switch (itemType)
 		{
 			case Constants.MediaItemType.Image:
-				int newImageIndex = imageNames.IndexOf(selectedItem.Name) - 1;
-				if (newImageIndex >= 0)
-				{
-					OnSelectedImageChanged(imageNames[newImageIndex]);
-				}
-				else
-				{
-					OnSelectedImageChanged(null);
-				}
-				break;
+			int newImageIndex = imageNames.IndexOf(selectedItem.Name) - 1;
+			if (newImageIndex >= 0)
+			{
+				OnSelectedImageChanged(imageNames[newImageIndex]);
+			}
+			else
+			{
+				OnSelectedImageChanged(null);
+			}
+			break;
 			case Constants.MediaItemType.Audio:
-				int newAudioIndex = audioNames.IndexOf(selectedItem.Name) - 1;
-				if (newAudioIndex >= 0)
-				{
-					OnSelectedAudioChanged(audioNames[newAudioIndex]);
-				}
-				else
-				{
-					OnSelectedAudioChanged(null);
-				}
-				break;
+			int newAudioIndex = audioNames.IndexOf(selectedItem.Name) - 1;
+			if (newAudioIndex >= 0)
+			{
+				OnSelectedAudioChanged(audioNames[newAudioIndex]);
+			}
+			else
+			{
+				OnSelectedAudioChanged(null);
+			}
+			break;
 		}
 	}
 	#endregion
@@ -416,9 +424,9 @@
 		switch (itemType)
 		{
 			case Constants.MediaItemType.Image:
-				return ImageUpload;
+			return ImageUpload;
 			case Constants.MediaItemType.Audio:
-				return AudioUpload;
+			return AudioUpload;
 		}
 
 		throw new Exception("Unknown item type");
@@ -429,9 +437,9 @@
 	{
 		switch(itemType){
 			case Constants.MediaItemType.Image:
-				return SelectedImage;
+			return SelectedImage;
 			case Constants.MediaItemType.Audio:
-				return SelectedAudio;
+			return SelectedAudio;
 		}
 
 		throw new Exception("Unknown item type");
@@ -443,44 +451,51 @@
 		switch (itemType)
 		{
 			case Constants.MediaItemType.Image:
-				imageNames.Clear();
-				ImageStorageUsedTotalMB = 0;
-				break;
+			imageNames.Clear();
+			ImageStorageUsedTotalMB = 0;
+			break;
 			case Constants.MediaItemType.Audio:
-				audioNames.Clear();
-				AudioStorageUsedTotalMB = 0;
-				break;
+			audioNames.Clear();
+			AudioStorageUsedTotalMB = 0;
+			break;
 		}
 
-		//Remove elements of prescribed type from the filesize dict, they all live in the filesize dict with their prefix, so use that.
-		var keysToRemove = fileSizesInBytes.Keys.Where(k => k.StartsWith(BlobUtils.MediaContainerPrefix(itemType))).ToList();
-		foreach (var key in keysToRemove)
+		try
 		{
-			fileSizesInBytes.Remove(key);
-		}
-
-		(blobServiceClient, gameContainer) = await BlobUtils.SetupOrVerifyBlobStorageGumph(gameName, configuration.GetConnectionString("blobStorage")!, blobServiceClient, gameContainer);
-		List<BlobUtils.MediaMetadata> metaDatas = await BlobUtils.GetMediaMetaData(gameName, itemType, gameContainer, blobServiceClient);
-
-		foreach (BlobUtils.MediaMetadata metadata in metaDatas)
-		{
-			//Add the filesize to the filesizes dict
-			fileSizesInBytes.TryAdd(BlobUtils.MediaContainerPrefix(itemType) + metadata.Name, metadata.FileSizeInBytes);
-
-			switch (itemType)
+			//Remove elements of prescribed type from the filesize dict, they all live in the filesize dict with their prefix, so use that.
+			var keysToRemove = fileSizesInBytes.Keys.Where(k => k.StartsWith(BlobUtils.MediaContainerPrefix(itemType))).ToList();
+			foreach (var key in keysToRemove)
 			{
-				case Constants.MediaItemType.Image:
+				fileSizesInBytes.Remove(key);
+			}
+
+			(blobServiceClient, gameContainer) = await BlobUtils.SetupOrVerifyBlobStorageGumph(gameName, configuration.GetConnectionString("blobStorage")!, blobServiceClient, gameContainer);
+			List<BlobUtils.MediaMetadata> metaDatas = await BlobUtils.GetMediaMetaData(gameName, itemType, gameContainer, blobServiceClient);
+
+			foreach (BlobUtils.MediaMetadata metadata in metaDatas)
+			{
+				//Add the filesize to the filesizes dict
+				fileSizesInBytes.TryAdd(BlobUtils.MediaContainerPrefix(itemType) + metadata.Name, metadata.FileSizeInBytes);
+
+				switch (itemType)
+				{
+					case Constants.MediaItemType.Image:
 					imageNames.Add(metadata.Name);
 					ImageStorageUsedTotalMB += metadata.FileSizeInBytes / (1024 * 1024);
 					break;
-				case Constants.MediaItemType.Audio:
+					case Constants.MediaItemType.Audio:
 					audioNames.Add(metadata.Name);
 					AudioStorageUsedTotalMB += metadata.FileSizeInBytes / (1024 * 1024);
 					break;
+				}
 			}
-		}
 
-		StateHasChanged();
+			StateHasChanged();
+		}
+		catch (Exception ex) {
+			snackBar.Add(ex.Message, Severity.Error);
+			return;
+		}
 	}
 
 	#endregion
