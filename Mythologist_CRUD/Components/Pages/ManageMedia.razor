@@ -27,88 +27,92 @@
 		</MudText>
 		<MudPaper Class="pa-4">
 			<MudText Typo="Typo.h5" Color=Color.Inherit Class="mb-2">Images</MudText>
-			<MudGrid>
-				<MudItem xs="6">
-					<MudList T="string" SelectedValue="@SelectedImage?.Name" SelectedValueChanged="OnSelectedImageChanged" SelectionMode="SelectionMode.SingleSelection" Class="overflow-y-scroll" Style="max-height:300px">
-						@foreach (var imageName in imageNames)
+			<MudExtensions.MudLoading @bind-Loading="loadingImages">
+				<MudGrid>
+					<MudItem xs="6">
+						<MudList T="string" SelectedValue="@SelectedImage?.Name" SelectedValueChanged="OnSelectedImageChanged" SelectionMode="SelectionMode.SingleSelection" Class="overflow-y-scroll" Style="max-height:300px">
+							@foreach (var imageName in imageNames)
+							{
+								<MudListItem Icon="@Icons.Material.Filled.Image" IconColor="Color.Primary" Value=@imageName Text=@imageName Dense="true"> </MudListItem>
+							}
+						</MudList>
+						@foreach (var uploadingImageFile in @uploadingImageFiles)
 						{
-							<MudListItem Icon="@Icons.Material.Filled.Image" IconColor="Color.Primary" Value=@imageName Text=@imageName Dense="true"> </MudListItem>
+							<MudStack Row="true">
+								<MudProgressCircular Color="Color.Default" Indeterminate="true" Size="Size.Small"></MudProgressCircular>
+								<MudText Typo="Typo.body2">@uploadingImageFile</MudText>
+							</MudStack>
 						}
-					</MudList>
-					@foreach (var uploadingImageFile in @uploadingImageFiles)
-					{
-						<MudStack Row="true">
-							<MudProgressCircular Color="Color.Default" Indeterminate="true" Size="Size.Small"></MudProgressCircular>
-							<MudText Typo="Typo.body2">@uploadingImageFile</MudText>
+					</MudItem>
+					<MudItem xs="6">
+						<MudPaper Height="300px" Width="100%" Class="d-flex" Style="max-height:300px; align-items: center; background: rgba(0,0,0,0.25)">
+							@if (SelectedImage != null)
+							{
+								<MudImage Src=@SelectedImage?.FullUrl Fluid="true" ObjectFit="ObjectFit.Contain" Style="max-height:300px; display: block; margin-left: auto; margin-right: auto;"></MudImage>
+							}
+						</MudPaper>
+					</MudItem>
+					<MudItem xs="6">
+						<MudStack Row="true" Class="d-flex">
+							<MudFileUpload @ref="ImageUpload" T="IReadOnlyList<IBrowserFile>" FilesChanged=@(async (x) => await UploadImages(x)) Accept=@DataValidation.AllowedImageFormatString() MaximumFileCount=20 Class="d-flex flex-grow-1">
+								<ActivatorContent>
+									<MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.UploadFile" Color="Color.Primary" FullWidth="true" Class="d-flex flex-grow-1">Upload</MudButton>
+								</ActivatorContent>
+							</MudFileUpload>
+							<MudButton Variant="Variant.Filled" OnClick="DeleteSelectedImage" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Class="d-flex flex-grow-1" Disabled="SelectedImage == null">Delete</MudButton>
 						</MudStack>
-					}
-				</MudItem>
-				<MudItem xs="6">
-					<MudPaper Height="300px" Width="100%" Class="d-flex" Style="max-height:300px; align-items: center; background: rgba(0,0,0,0.25)">
-						@if (SelectedImage != null)
-						{
-							<MudImage Src=@SelectedImage?.FullUrl Fluid="true" ObjectFit="ObjectFit.Contain" Style="max-height:300px; display: block; margin-left: auto; margin-right: auto;"></MudImage>
-						}
-					</MudPaper>
-				</MudItem>
-				<MudItem xs="6">
-					<MudStack Row="true" Class="d-flex">
-						<MudFileUpload @ref="ImageUpload" T="IReadOnlyList<IBrowserFile>" FilesChanged=@(async (x) => await UploadImages(x)) Accept=@DataValidation.AllowedImageFormatString() MaximumFileCount=20 Class="d-flex flex-grow-1">
-							<ActivatorContent>
-								<MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.UploadFile" Color="Color.Primary" FullWidth="true" Class="d-flex flex-grow-1">Upload</MudButton>
-							</ActivatorContent>
-						</MudFileUpload>
-						<MudButton Variant="Variant.Filled" OnClick="DeleteSelectedImage" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Class="d-flex flex-grow-1" Disabled="SelectedImage == null">Delete</MudButton>
-					</MudStack>
-				</MudItem>
-				<MudItem xs="6">
-					<MudStack Class="d-flex"> <!--Stack is so i can get a flex element ot make the allignment work-->
-						<MudText Typo="Typo.button" Align="Align.Center">@SelectedImage?.FileSizeStr</MudText>
-					</MudStack>
-				</MudItem>
-			</MudGrid>
+					</MudItem>
+					<MudItem xs="6">
+						<MudStack Class="d-flex"> <!--Stack is so i can get a flex element ot make the allignment work-->
+							<MudText Typo="Typo.button" Align="Align.Center">@SelectedImage?.FileSizeStr</MudText>
+						</MudStack>
+					</MudItem>
+				</MudGrid>
+			</MudExtensions.MudLoading>
 		</MudPaper>
 
 		<MudPaper Class="pa-4">
 			<MudText Typo="Typo.h5" Color=Color.Inherit Class="mb-2">Audio</MudText>
-			<MudGrid Style="align-items: center">
-				<MudItem xs="6">
-					<MudList SelectedValue="@SelectedAudio?.Name" T="string" SelectedValueChanged="OnSelectedAudioChanged" SelectionMode="SelectionMode.SingleSelection" Class="overflow-y-scroll" Style="max-height:300px">
-						@foreach (var audioName in audioNames)
+			<MudExtensions.MudLoading Loading=@loadingAudio>
+				<MudGrid Style="align-items: center">
+					<MudItem xs="6">
+						<MudList SelectedValue="@SelectedAudio?.Name" T="string" SelectedValueChanged="OnSelectedAudioChanged" SelectionMode="SelectionMode.SingleSelection" Class="overflow-y-scroll" Style="max-height:300px">
+							@foreach (var audioName in audioNames)
+							{
+								<MudListItem Icon="@Icons.Material.Filled.AudioFile" IconColor="Color.Primary" Value=@audioName Text=@audioName Dense="true"></MudListItem>
+							}
+						</MudList>
+						@foreach (var uploadingAudioFile in @uploadingAudioFiles)
 						{
-							<MudListItem Icon="@Icons.Material.Filled.AudioFile" IconColor="Color.Primary" Value=@audioName Text=@audioName Dense="true"></MudListItem>
+							<MudStack Row="true">
+								<MudProgressCircular Color="Color.Default" Indeterminate="true" Size="Size.Small"></MudProgressCircular>
+								<MudText>@uploadingAudioFile</MudText>
+							</MudStack>
 						}
-					</MudList>
-					@foreach (var uploadingAudioFile in @uploadingAudioFiles)
-					{
-						<MudStack Row="true">
-							<MudProgressCircular Color="Color.Default" Indeterminate="true" Size="Size.Small"></MudProgressCircular>
-							<MudText>@uploadingAudioFile</MudText>
+					</MudItem>
+					<MudItem xs="6">
+						<audio @key="@ForceAudioUpdate" id="audio-player" controls style="display: block; margin-left: auto; margin-right: auto;">
+							<source src="@SelectedAudio?.FullUrl">
+							Your browser does not support the audio element.
+						</audio>
+					</MudItem>
+					<MudItem xs="6">
+						<MudStack Row="true" Class="d-flex">
+							<MudFileUpload @ref="AudioUpload" T="IReadOnlyList<IBrowserFile>" FilesChanged=@(async (x) => await UploadAudio(x)) Accept=@DataValidation.AllowedAudioFormatString() MaximumFileCount=20 Class="d-flex flex-grow-1">
+								<ActivatorContent>
+									<MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.UploadFile" Color="Color.Primary" FullWidth="true" Class="d-flex flex-grow-1">Upload</MudButton>
+								</ActivatorContent>
+							</MudFileUpload>
+							<MudButton Variant="Variant.Filled" OnClick="DeleteSelectedAudio" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Class="d-flex flex-grow-1" Disabled="SelectedAudio == null">Delete</MudButton>
 						</MudStack>
-					}
-				</MudItem>
-				<MudItem xs="6">
-					<audio @key="@ForceAudioUpdate" id="audio-player" controls style="display: block; margin-left: auto; margin-right: auto;">
-						<source src="@SelectedAudio?.FullUrl">
-						Your browser does not support the audio element.
-					</audio>
-				</MudItem>
-				<MudItem xs="6">
-					<MudStack Row="true" Class="d-flex">
-						<MudFileUpload @ref="AudioUpload" T="IReadOnlyList<IBrowserFile>" FilesChanged=@(async (x) => await UploadAudio(x)) Accept=@DataValidation.AllowedAudioFormatString() MaximumFileCount=20 Class="d-flex flex-grow-1">
-							<ActivatorContent>
-								<MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.UploadFile" Color="Color.Primary" FullWidth="true" Class="d-flex flex-grow-1">Upload</MudButton>
-							</ActivatorContent>
-						</MudFileUpload>
-						<MudButton Variant="Variant.Filled" OnClick="DeleteSelectedAudio" StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Class="d-flex flex-grow-1" Disabled="SelectedAudio == null">Delete</MudButton>
-					</MudStack>
-				</MudItem>
-				<MudItem xs="6">
-					<MudStack Class="d-flex"> <!--Stack is so i can get a flex element ot make the allignment work-->
-						<MudText Typo="Typo.button" Align="Align.Center">@SelectedAudio?.FileSizeStr</MudText>
-					</MudStack>
-				</MudItem>
-			</MudGrid>
+					</MudItem>
+					<MudItem xs="6">
+						<MudStack Class="d-flex"> <!--Stack is so i can get a flex element ot make the allignment work-->
+							<MudText Typo="Typo.button" Align="Align.Center">@SelectedAudio?.FileSizeStr</MudText>
+						</MudStack>
+					</MudItem>
+				</MudGrid>
+			</MudExtensions.MudLoading>
 		</MudPaper>
 
 		<MudPaper Class="pa-4">
@@ -134,6 +138,10 @@
 
 	private List<string> imageNames = new List<string>();
 	private List<string> audioNames = new List<string>();
+
+	//Set to false one update media listings has finished
+	private bool loadingImages = true;
+	private bool loadingAudio = true;
 
 	//Files that are currently being uploaded, so we can display spinners
 	private List<string> uploadingImageFiles = new List<string>();
@@ -173,7 +181,10 @@
 			(gameName, GMPassword) = await Utils.PageSetup(sessionStorage, Layout, dbConnection, navManager, snackBar);
 			storageGuid = await dbConnection.StorageGuid(gameName);
 			await UpdateMediaListings(Constants.MediaItemType.Image);
+			loadingImages = false;
 			await UpdateMediaListings(Constants.MediaItemType.Audio);
+			loadingAudio = false;
+			StateHasChanged();
 		}
 	}
 
