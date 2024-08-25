@@ -76,6 +76,11 @@
 
     private async Task DeleteSceneButtonClicked(SceneModel sceneModel)
     {
+        if (allScenes == null) {
+            snackBar.Add("Unexpected null scenes list");
+            return;
+        }
+
         if (allScenes.Count <= 1) {
             snackBar.Add("Games must have at least one scene");
             return;
@@ -112,7 +117,7 @@
             return false;
         }
 
-        await dbConnection.AddScene(GameName, sceneModel);
+        await dbConnection.AddScene(GameName!, sceneModel);
         return true;
     }
 
@@ -123,7 +128,7 @@
             return false;
         }
 
-        await dbConnection.RemoveScene(GameName, sceneModel);
+        await dbConnection.RemoveScene(GameName!, sceneModel);
         return true;
     }
 }

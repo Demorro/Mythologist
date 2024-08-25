@@ -25,7 +25,7 @@
                         <MudTextField @bind-Value="renamedScene" Label="Scene Name" Variant="Variant.Filled" Validation="@(new Func<string, string?>(DataValidation.SanitizeStringMudBlazorValidation))"></MudTextField>
                     </MudItem>
                     <MudItem xs="6">
-                        <MudSelect T="BlobUtils.MediaMetadata" @bind-Value=SelectedBackgroundAudio @bind-Value:after="ForceAudioRefresh" Label="Background Audio" Variant="Variant.Filled" Validation="@(new Func<BlobUtils.MediaMetadata, string>(ValidateMediaDropdown))">
+                        <MudSelect T="BlobUtils.MediaMetadata" @bind-Value=SelectedBackgroundAudio @bind-Value:after="ForceAudioRefresh" Label="Background Audio" Variant="Variant.Filled" Validation="@(new Func<BlobUtils.MediaMetadata, string?>(ValidateMediaDropdown))">
                             <MudSelectItem T="BlobUtils.MediaMetadata" Value="@(null)">No Audio</MudSelectItem>
                             @foreach (BlobUtils.MediaMetadata item in allAvailableAudioMedia)
                             {
@@ -40,7 +40,7 @@
                         </audio>
                     </MudItem>
                     <MudItem xs="12">
-                    <MudSelect T="BlobUtils.MediaMetadata" @bind-Value=SelectedBackgroundImage Label="Background Image" Variant="Variant.Filled" Validation="@(new Func<BlobUtils.MediaMetadata, string>(ValidateMediaDropdown))">
+                    <MudSelect T="BlobUtils.MediaMetadata" @bind-Value=SelectedBackgroundImage Label="Background Image" Variant="Variant.Filled" Validation="@(new Func<BlobUtils.MediaMetadata, string?>(ValidateMediaDropdown))">
                         <MudSelectItem T="BlobUtils.MediaMetadata" Value="@(null)">No Image</MudSelectItem>
                         @foreach (BlobUtils.MediaMetadata item in allAvailableImageMedia)
                         {
@@ -69,7 +69,7 @@
 </MudExtensions.MudLoading>
 @code {
 
-    private string ValidateMediaDropdown(BlobUtils.MediaMetadata value)
+    private string? ValidateMediaDropdown(BlobUtils.MediaMetadata value)
     {
         // A validator is good if it returns null, otherwise return a string that is the error you want to display on the form
         // At the moment, all is good, but leaving this setup cause i'll forget
@@ -83,7 +83,7 @@
     bool success;
     [Parameter]
     public string? sceneName { get; set; }
-    private string renamedScene;
+    private string? renamedScene;
 
     private string? gameName;
 
@@ -122,6 +122,12 @@
             if (!verified)
             {
                 Snackbar.Add("Not authorized to be here. The authorities have been informed.");
+                NavManager.NavigateTo("/");
+                return;
+            }
+
+            if (sceneName == null) {
+                Snackbar.Add("Expected sceneName to have been set in EditScene component.");
                 NavManager.NavigateTo("/");
                 return;
             }
@@ -177,11 +183,16 @@
             return;
         }
 
+        if (gameName == null || scene == null || renamedScene == null) {
+            Snackbar.Add("Unexpected invalid form state", Severity.Error);
+            return;
+        }
+
         (blobServiceClient, gameContainer) = await BlobUtils.SetupOrVerifyBlobStorageGumph(storageGuid, configuration.GetConnectionString("blobStorage")!, blobServiceClient, gameContainer);
 
         if (sceneName != renamedScene)
         {
-            await dbConnection.RenameScene(gameName, scene!, renamedScene);
+            await dbConnection.RenameScene(gameName, scene, renamedScene);
         }
 
         SceneModel updatedScene = scene!;

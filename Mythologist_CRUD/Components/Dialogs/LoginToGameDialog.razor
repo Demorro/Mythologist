@@ -2,7 +2,7 @@
 @using SharedLogic.Services
 
 @inject IConfiguration configuration
-@inject ISnackbar Snackbar
+@inject ISnackbar snackBar
 @inject IDatabaseConnectionService dbConnection
 
 @*We get an annoying scrollbar is we dont do the overflow thing, cause of the complicated password field thinking it's taller than it is*@
@@ -47,10 +47,10 @@
     #endregion
 
     [CascadingParameter]
-    private MudDialogInstance MudDialog { get; set; }
+    private MudDialogInstance? MudDialog { get; set; }
 
-    public string GameName { get; set; }
-    public string GMPassword { get; set; }
+    public string? GameName { get; set; }
+    public string? GMPassword { get; set; }
 
     private bool showLoading = false;
 
@@ -58,11 +58,21 @@
     {
         showLoading = true;
 
+        if (GameName == null) {
+            snackBar.Add("Unexpected null GameName");
+            return;
+        }
+
+        if (GMPassword == null) {
+            snackBar.Add("Unexpected null GMPassword");
+            return;
+        }
+
         try
         {
             bool verified = await dbConnection.VerifyLogin(GameName, GMPassword);
             if (!verified){
-                Snackbar.Add("Invalid Password", Severity.Error);
+                snackBar.Add("Invalid Password", Severity.Error);
                 showLoading = false;
                 //No need to close the dialog, they will want to try again probably.
                 return;
@@ -71,15 +81,15 @@
         catch (Exception ex)
         {
             //Just defensive programming, especially as this is likely the first time we hit the DB
-            Snackbar.Add(ex.Message, Severity.Error);
-            MudDialog.Cancel();
+            snackBar.Add(ex.Message, Severity.Error);
+            MudDialog?.Cancel();
             return;
         }
 
-        Snackbar.Add($"Logged into {GameName}", Severity.Success);
-        MudDialog.Close<Tuple<string, string>>(new Tuple<string, string>(GameName, GMPassword));
+        snackBar.Add($"Logged into {GameName}", Severity.Success);
+        MudDialog?.Close<Tuple<string, string>>(new Tuple<string, string>(GameName, GMPassword));
     }
 
-    private void Cancel() => MudDialog.Cancel();
+    private void Cancel() => MudDialog?.Cancel();
 }
 

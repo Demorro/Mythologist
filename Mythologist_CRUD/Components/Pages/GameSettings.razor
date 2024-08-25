@@ -67,7 +67,7 @@
 	private List<SceneModel> allScenes = new List<SceneModel>();
 
 	[CascadingParameter]
-	public MainLayout Layout { get; set; }
+	public MainLayout? Layout { get; set; }
 
 	private string? gameName = null;
 	private string? GMPassword = null;
@@ -77,7 +77,7 @@
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
 		if (firstRender){
-			(gameName, GMPassword) = await Utils.Utils.PageSetup(sessionStorage, Layout, dbConnection, navManager, snackBar);
+			(gameName, GMPassword) = await Utils.Utils.PageSetup(sessionStorage, Layout!, dbConnection, navManager, snackBar);
 			gameSettings = await dbConnection.GameSettings(gameName);
 			allScenes = await dbConnection.AllScenes(gameName);
 			loading = false;
@@ -87,6 +87,11 @@
 
 	private void SubmitSettings()
 	{
+		if(gameName == null) {
+			snackBar.Add("Unexpected null gameName");
+			return;
+		}
+
 		dbConnection.UpdateGameSettings(gameName, gameSettings);
 		snackBar.Add("Settings Saved", Severity.Success);
 	}

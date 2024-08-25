@@ -24,10 +24,10 @@ namespace Mythologist_Client_WASM.Api
 
             var parameters = new Dictionary<string, string>
             {
-                { "client_id", clientId },
-                { "client_secret", clientSecret },
+                { "client_id", clientId! },
+                { "client_secret", clientSecret! },
                 { "grant_type", "authorization_code" },
-                { "code", request.Code }
+                { "code", request.Code! }
             };
 
             var content = new FormUrlEncodedContent(parameters);
@@ -42,17 +42,21 @@ namespace Mythologist_Client_WASM.Api
 
             var tokenResponse = System.Text.Json.JsonSerializer.Deserialize<TokenResponse>(responseString);
 
+            if (tokenResponse == null) {
+                return BadRequest(new { error = "Invalid token response" });
+            }
+
             return Ok(new { access_token = tokenResponse.access_token });
         }
 
         public class TokenRequest
         {
-            public string Code { get; set; }
+            public string? Code { get; set; }
         }
 
         public class TokenResponse
         {
-            public string access_token { get; set; }
+            public string? access_token { get; set; }
         }
     }
 }

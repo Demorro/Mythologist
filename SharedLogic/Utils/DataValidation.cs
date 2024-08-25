@@ -81,7 +81,7 @@ namespace SharedLogic.Utils
 			}
 		}
 
-        public static string SanitizeString(string text) {
+        public static string SanitizeString(string? text) {
 			if (text == null) {
                 throw new Exception("Text is null");
             }

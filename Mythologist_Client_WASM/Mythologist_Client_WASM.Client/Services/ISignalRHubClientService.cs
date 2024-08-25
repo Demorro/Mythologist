@@ -37,6 +37,5 @@ namespace Mythologist_Client_WASM.Client.Services
 
         public string GetConnectionID();
 
-        public IAsyncEnumerable<byte[]> GetBackgroundAudioStream(string gameName, string sceneName, CancellationToken token);
     }
 }

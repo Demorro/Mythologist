@@ -25,7 +25,7 @@
 @code {
 
 	[CascadingParameter]
-	public MainLayout Layout { get; set; }
+	public MainLayout? Layout { get; set; }
 
 	private string? gameName = null;
 	private string? GMPassword = null;
@@ -35,7 +35,7 @@
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
 		if (firstRender){
-			(gameName, GMPassword) = await Utils.Utils.PageSetup(sessionStorage, Layout, dbConnection, navManager, snackBar);
+			(gameName, GMPassword) = await Utils.Utils.PageSetup(sessionStorage, Layout!, dbConnection, navManager, snackBar);
 			StateHasChanged();
 		}
 	}

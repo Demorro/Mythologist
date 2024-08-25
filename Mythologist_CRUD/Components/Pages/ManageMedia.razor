@@ -169,13 +169,13 @@
 	}
 
 	[CascadingParameter]
-	public MainLayout Layout { get; set; }
+	public MainLayout? Layout { get; set; }
 	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
 		if (firstRender)
 		{
 
-			(gameName, GMPassword) = await Utils.PageSetup(sessionStorage, Layout, dbConnection, navManager, snackBar);
+			(gameName, GMPassword) = await Utils.PageSetup(sessionStorage, Layout!, dbConnection, navManager, snackBar);
 			storageGuid = await dbConnection.StorageGuid(gameName);
 			await UpdateMediaListings(Constants.MediaItemType.Image);
 			await UpdateMediaListings(Constants.MediaItemType.Audio);
@@ -198,7 +198,12 @@
 	//The real logic
 	private void OnSelectedItemChanged(string? selectedItemName, Constants.MediaItemType itemType)
 	{
-		BlobUtils.MediaMetadata selectedItem = SelectedItem(itemType);
+		BlobUtils.MediaMetadata? selectedItem = SelectedItem(itemType);
+
+		if (selectedItem == null) {
+			snackBar.Add("Unexpected null selected item");
+			return;
+		}
 
 		if (selectedItemName == null)
 		{
@@ -333,7 +338,10 @@
 		}
 
 		await UpdateMediaListings(itemType);
-		await UploadHtmlElement(itemType)?.ClearAsync();
+		var upload = UploadHtmlElement(itemType);
+		if (upload != null) {
+			await upload.ClearAsync();
+		}
 	}
 
 	private void AddLoadingSpinner(string fileName, Constants.MediaItemType itemType)

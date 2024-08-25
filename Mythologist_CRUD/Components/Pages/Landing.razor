@@ -6,7 +6,7 @@
 @using Mythologist_CRUD.Components.Layout
 @using SharedLogic.Services
 
-@inject ISnackbar Snackbar
+@inject ISnackbar snackBar
 @inject IDialogService DialogService
 @inject Blazored.SessionStorage.ISessionStorageService sessionStorage
 @inject NavigationManager NavManager
@@ -47,8 +47,12 @@
         // After a new game is created, immediately login and redirect to the logged in landing page
         if (result != null && !result.Canceled && result.Data != null)
         {
-            Tuple<string, string> gameNameAndGmPassword = result.Data as Tuple<string, string>;
-            LoginAndRedirect(gameNameAndGmPassword.Item1, gameNameAndGmPassword.Item2);
+            Tuple<string, string>? gameNameAndGmPassword = result.Data as Tuple<string, string>;
+            if (gameNameAndGmPassword == null) {
+                snackBar.Add("Unexpected null dialog return");
+                return;
+            }
+            await LoginAndRedirect(gameNameAndGmPassword.Item1, gameNameAndGmPassword.Item2);
         }
     }
 
@@ -63,9 +67,12 @@
         // After a new game is created, immediately login and redirect to the logged in landing page
         if (result != null && !result.Canceled && result.Data != null)
         {
-            Tuple<string, string> gameNameAndGmPassword = result.Data as Tuple<string, string>;
-            Console.WriteLine("Logging in");
-            LoginAndRedirect(gameNameAndGmPassword.Item1, gameNameAndGmPassword.Item2);
+            Tuple<string, string>? gameNameAndGmPassword = result.Data as Tuple<string, string>;
+            if (gameNameAndGmPassword == null) {
+                snackBar.Add("Unexpected null dialog return");
+                return;
+            }
+            await LoginAndRedirect(gameNameAndGmPassword.Item1, gameNameAndGmPassword.Item2);
         }
     }
 
@@ -82,7 +89,7 @@
     }
 
     [CascadingParameter]
-    public MainLayout Layout { get; set; }
+    public MainLayout? Layout { get; set; }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender){
@@ -94,9 +101,9 @@
 
 
             //You can back into this page and the header will still show the game name
-            Layout.SetGMPassword(null);
-            Layout.SetHeaderName("");
-            Layout.SetNavMenuEnabled(false);
+            Layout?.SetGMPassword(null);
+            Layout?.SetHeaderName("");
+            Layout?.SetNavMenuEnabled(false);
         }
     }
 

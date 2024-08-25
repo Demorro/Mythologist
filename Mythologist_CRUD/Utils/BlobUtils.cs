@@ -71,7 +71,7 @@ namespace Mythologist_CRUD.Utils
             }
 
             // Overrides for Equals, GetHashCode and ToString are important for MudSelect
-            public override bool Equals(object o)
+            public override bool Equals(object? o)
             {
                 var other = o as MediaMetadata;
                 return other?.Name == Name;
@@ -107,7 +107,7 @@ namespace Mythologist_CRUD.Utils
 			if (!(blobServiceClient.Uri.ToString().Contains("localhost") || blobServiceClient.Uri.ToString().Contains("127.0.0.1")))
 			{ 
 				//Remote (Azure)
-				return new Uri(blobServiceClient?.Uri, $"{storageGuid.ToString()}/{BlobUtils.MediaContainerPrefix(itemType)}{fileName}");
+				return new Uri(blobServiceClient.Uri, $"{storageGuid.ToString()}/{BlobUtils.MediaContainerPrefix(itemType)}{fileName}");
 
 			}
 			else

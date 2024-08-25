@@ -3,7 +3,7 @@
 @using SharedLogic.Utils
 
 @inject IConfiguration configuration
-@inject ISnackbar Snackbar
+@inject ISnackbar snackBar
 @inject IDatabaseConnectionService dbConnection
 
 <MudDialog DefaultFocus="DefaultFocus.FirstChild" ContentStyle="overflow-y: hidden;">
@@ -48,10 +48,10 @@
     #endregion
 
     [CascadingParameter]
-    private MudDialogInstance MudDialog { get; set; }
+    private MudDialogInstance? MudDialog { get; set; }
 
-    public string GameName { get; set; }
-    public string GMPassword { get; set; }
+    public string? GameName { get; set; }
+    public string? GMPassword { get; set; }
 
     private bool showLoading = false;
 
@@ -59,21 +59,30 @@
 
         showLoading = true;
 
+        if(GameName == null) {
+            snackBar.Add("Unexpected null GameName");
+            return;
+        }
+        if(GMPassword == null) {
+            snackBar.Add("Unexpected null GMPassword");
+            return;
+        }
+
         try
         {
             await dbConnection.CreateNewGame(DataValidation.SanitizeString(GameName), DataValidation.SanitizeString(GMPassword));
         }
         catch (Exception ex)
         {
-            Snackbar.Add(ex.Message, Severity.Error);
-            MudDialog.Cancel();
+            snackBar.Add(ex.Message, Severity.Error);
+            MudDialog?.Cancel();
             return;
         }
 
-        Snackbar.Add($"{GameName} Created", Severity.Success);
-        MudDialog.Close<Tuple<string, string>>(new Tuple<string, string>(GameName, GMPassword));
+        snackBar.Add($"{GameName} Created", Severity.Success);
+        MudDialog?.Close<Tuple<string, string>>(new Tuple<string, string>(GameName, GMPassword));
     }
 
-    private void Cancel() => MudDialog.Cancel();
+    private void Cancel() => MudDialog?.Cancel();
 }
 

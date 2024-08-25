@@ -14,14 +14,14 @@
 
 @code {
     [CascadingParameter]
-    private MudDialogInstance MudDialog { get; set; }
+    private MudDialogInstance? MudDialog { get; set; }
 
-    public string SceneName { get; set; }
+    public string? SceneName { get; set; }
 
     private void Submit() {
-        MudDialog.Close<string>(SceneName);
+        MudDialog?.Close<string?>(SceneName);
     }
 
-    private void Cancel() => MudDialog.Cancel();
+    private void Cancel() => MudDialog?.Cancel();
 }
 
