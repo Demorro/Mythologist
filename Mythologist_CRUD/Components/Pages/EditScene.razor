@@ -14,11 +14,8 @@
 @inject IConfiguration configuration
 @inject ISnackbar Snackbar
 
-@if (scene == null)
-{
-    <MudText>Scene `@sceneName` not found</MudText>
-}
-else {
+
+<MudExtensions.MudLoading Loading="isLoading()">
     <MudContainer MaxWidth="MaxWidth.Medium">
         <MudStack>
             <MudText>Editing Scene `@sceneName`</MudText>
@@ -51,7 +48,7 @@ else {
                         }
                     </MudSelect>
                     </MudItem>
-                     <MudItem xs="12">
+                        <MudItem xs="12">
                     <MudPaper Height="300px" Width="100%" Class="d-flex" Style="max-height:300px; align-items: center; background: rgba(0,0,0,0.25)">
                         @if (@SelectedBackgroundImage != null)
                         {
@@ -69,7 +66,7 @@ else {
             </MudStack>
         </MudStack>
     </MudContainer>
-}
+</MudExtensions.MudLoading>
 @code {
 
     //By "wrappedAttribute" we mean that Validation can take an Attribute type directly, but we're using a function that used the attribute cause we wanna append extra checks
@@ -78,6 +75,10 @@ else {
         // A validator is good if it returns null, otherwise return a string that is the error you want to display on the form
         // At the moment, all is good, but leaving this setup cause i'll forget
         return null;
+    }
+
+    private bool isLoading(){
+        return scene == null;
     }
 
     bool success;
