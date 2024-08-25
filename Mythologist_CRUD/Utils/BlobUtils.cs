@@ -13,11 +13,11 @@ namespace Mythologist_CRUD.Utils
 		// You wanna set the clients on the outside to the return values, so you don't end up making new ones every time
 		// Not a great pattern tbh, could be cleaner if async let you have out params.
 		// You'll wanna all this before you do blob stuff generally. I dunno man, i'm not you're dad.
-		public static async Task<(BlobServiceClient, BlobContainerClient)> SetupOrVerifyBlobStorageGumph(string gameName, string connectionString, BlobServiceClient? blobServiceClient, BlobContainerClient? gameContainer)
+		public static async Task<(BlobServiceClient, BlobContainerClient)> SetupOrVerifyBlobStorageGumph(Guid? storageGuid, string connectionString, BlobServiceClient? blobServiceClient, BlobContainerClient? gameContainer)
 		{
-			if (gameName == null)
+			if (storageGuid == null)
 			{
-				throw new Exception("Expected gameName to be populated");
+				throw new Exception("Expected storageGuid to be populated");
 			}
 			if (connectionString == null)
 			{
@@ -30,7 +30,7 @@ namespace Mythologist_CRUD.Utils
 			}
 			if (gameContainer == null)
 			{
-				gameContainer = blobServiceClient.GetBlobContainerClient(gameName);
+				gameContainer = blobServiceClient.GetBlobContainerClient(storageGuid.ToString());
 
 				if (!await gameContainer.ExistsAsync())
 				{
@@ -97,7 +97,7 @@ namespace Mythologist_CRUD.Utils
             }
         };
 
-		public static Uri MakeFullStorageUri(BlobServiceClient? blobServiceClient, string gameName, Constants.MediaItemType itemType, string fileName)
+		public static Uri MakeFullStorageUri(BlobServiceClient? blobServiceClient, Guid storageGuid, Constants.MediaItemType itemType, string fileName)
 		{
 			if (blobServiceClient == null)
 			{
@@ -107,7 +107,7 @@ namespace Mythologist_CRUD.Utils
 			if (!(blobServiceClient.Uri.ToString().Contains("localhost") || blobServiceClient.Uri.ToString().Contains("127.0.0.1")))
 			{ 
 				//Remote (Azure)
-				return new Uri(blobServiceClient?.Uri, $"{gameName}/{BlobUtils.MediaContainerPrefix(itemType)}{fileName}");
+				return new Uri(blobServiceClient?.Uri, $"{storageGuid.ToString()}/{BlobUtils.MediaContainerPrefix(itemType)}{fileName}");
 
 			}
 			else
@@ -118,13 +118,13 @@ namespace Mythologist_CRUD.Utils
 				// HOWEVER. Locally, the Uri is something like "127.0.0.1/devstorageaccout1", which wont work in the above conception cause what it wants is the
 				// base URL. However, the above one DOES WORK online, and I dunno why, how come it dosen't need an account name, is that just an emulator thing?
 				// In any case, whatever it works just branch.
-				return new Uri($"{blobServiceClient?.Uri}/{gameName}/{BlobUtils.MediaContainerPrefix(itemType)}{fileName}");
+				return new Uri($"{blobServiceClient?.Uri}/{storageGuid.ToString()}/{BlobUtils.MediaContainerPrefix(itemType)}{fileName}");
 			}
         }
 
 
         //The thing to call if you want a list of files available for your game.
-        public static async Task<List<MediaMetadata>> GetMediaMetaData(string gameName, Constants.MediaItemType itemType, BlobContainerClient? gameContainer, BlobServiceClient? blobServiceClient)
+        public static async Task<List<MediaMetadata>> GetMediaMetaData(Guid? storageGuid, Constants.MediaItemType itemType, BlobContainerClient? gameContainer, BlobServiceClient? blobServiceClient)
 		{
 			if (gameContainer == null)
 			{
@@ -133,6 +133,10 @@ namespace Mythologist_CRUD.Utils
 			if (blobServiceClient == null)
 			{
 				throw new Exception("Expected non-null BlobServiceClient");
+			}
+			if (storageGuid == null)
+			{
+				throw new Exception("Expected non-null StorageGuid");
 			}
 
 			List<MediaMetadata> metaDatas = new List<MediaMetadata>();
@@ -146,7 +150,7 @@ namespace Mythologist_CRUD.Utils
 				//Remove the "images/" from the front so we just store the actual file name
 				MediaMetadata mediaMetadata = new MediaMetadata(
 					filename,
-					BlobUtils.MakeFullStorageUri(blobServiceClient, gameName, itemType, filename).ToString(),
+					BlobUtils.MakeFullStorageUri(blobServiceClient, storageGuid.Value, itemType, filename).ToString(),
 					sizeBytes);
 
 				metaDatas.Add(mediaMetadata);

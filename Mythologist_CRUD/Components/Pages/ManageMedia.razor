@@ -53,7 +53,7 @@
 				</MudItem>
 				<MudItem xs="6">
 					<MudStack Row="true" Class="d-flex">
-						<MudFileUpload @ref="ImageUpload" T="IReadOnlyList<IBrowserFile>" FilesChanged=@(async (x) => await UploadImages(x)) Accept=@Constants.AllowedImageFormatString() MaximumFileCount=20 Class="d-flex flex-grow-1">
+						<MudFileUpload @ref="ImageUpload" T="IReadOnlyList<IBrowserFile>" FilesChanged=@(async (x) => await UploadImages(x)) Accept=@DataValidation.AllowedImageFormatString() MaximumFileCount=20 Class="d-flex flex-grow-1">
 							<ActivatorContent>
 								<MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.UploadFile" Color="Color.Primary" FullWidth="true" Class="d-flex flex-grow-1">Upload</MudButton>
 							</ActivatorContent>
@@ -95,7 +95,7 @@
 				</MudItem>
 				<MudItem xs="6">
 					<MudStack Row="true" Class="d-flex">
-						<MudFileUpload @ref="AudioUpload" T="IReadOnlyList<IBrowserFile>" FilesChanged=@(async (x) => await UploadAudio(x)) Accept=@Constants.AllowedAudioFormatString() MaximumFileCount=20 Class="d-flex flex-grow-1">
+						<MudFileUpload @ref="AudioUpload" T="IReadOnlyList<IBrowserFile>" FilesChanged=@(async (x) => await UploadAudio(x)) Accept=@DataValidation.AllowedAudioFormatString() MaximumFileCount=20 Class="d-flex flex-grow-1">
 							<ActivatorContent>
 								<MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.UploadFile" Color="Color.Primary" FullWidth="true" Class="d-flex flex-grow-1">Upload</MudButton>
 							</ActivatorContent>
@@ -128,6 +128,7 @@
 	private string? gameName;
 	private string? GMPassword;
 
+	private Guid? storageGuid;
 	private BlobServiceClient? blobServiceClient;
 	private BlobContainerClient? gameContainer;
 
@@ -170,6 +171,7 @@
 		{
 
 			(gameName, GMPassword) = await Utils.PageSetup(sessionStorage, Layout, dbConnection, navManager, snackBar);
+			storageGuid = await dbConnection.StorageGuid(gameName);
 			await UpdateMediaListings(Constants.MediaItemType.Image);
 			await UpdateMediaListings(Constants.MediaItemType.Audio);
 		}
@@ -205,7 +207,12 @@
 			return;
 		}
 
-		var url = BlobUtils.MakeFullStorageUri(blobServiceClient, gameName, itemType, selectedItemName).ToString();
+		if (storageGuid == null) {
+			snackBar.Add("Expected storage guid. Cannot access blob storage", Severity.Error);
+			return;
+		}
+
+		var url = BlobUtils.MakeFullStorageUri(blobServiceClient, storageGuid.Value, itemType, selectedItemName).ToString();
 		double fileSizeInBytes = fileSizesInBytes.GetValueOrDefault($"{BlobUtils.MediaContainerPrefix(itemType)}{selectedItemName}", 0.0);
 
 		switch (itemType)
@@ -233,7 +240,12 @@
 
 		try
 		{
-			(blobServiceClient, gameContainer) = await BlobUtils.SetupOrVerifyBlobStorageGumph(gameName, configuration.GetConnectionString("blobStorage")!, blobServiceClient, gameContainer);
+			if (storageGuid == null) {
+				snackBar.Add("Expected storage guid. Cannot access blob storage", Severity.Error);
+				return;
+			}
+
+			(blobServiceClient, gameContainer) = await BlobUtils.SetupOrVerifyBlobStorageGumph(storageGuid, configuration.GetConnectionString("blobStorage")!, blobServiceClient, gameContainer);
 
 			List<Task<Azure.Response<BlobContentInfo>>> uploadTasks = new List<Task<Azure.Response<BlobContentInfo>>>();
 			List<string> uploadingFileNames = new List<string>();
@@ -246,7 +258,7 @@
 					continue;
 				}
 
-				if (!Constants.AllowedFormat(file.Name, itemType))
+				if (!DataValidation.AllowedFormat(file.Name, itemType))
 				{
 					snackBar.Add($"'{file.Name}' is not a supported file type");
 					continue;
@@ -361,7 +373,7 @@
 
 		try
 		{
-			(blobServiceClient, gameContainer) = await BlobUtils.SetupOrVerifyBlobStorageGumph(gameName, configuration.GetConnectionString("blobStorage")!, blobServiceClient, gameContainer);
+			(blobServiceClient, gameContainer) = await BlobUtils.SetupOrVerifyBlobStorageGumph(storageGuid, configuration.GetConnectionString("blobStorage")!, blobServiceClient, gameContainer);
 
 			var response = await gameContainer.DeleteBlobAsync(selectedItem.ContainerLocalUrl(itemType));
 
@@ -469,8 +481,8 @@
 				fileSizesInBytes.Remove(key);
 			}
 
-			(blobServiceClient, gameContainer) = await BlobUtils.SetupOrVerifyBlobStorageGumph(gameName, configuration.GetConnectionString("blobStorage")!, blobServiceClient, gameContainer);
-			List<BlobUtils.MediaMetadata> metaDatas = await BlobUtils.GetMediaMetaData(gameName, itemType, gameContainer, blobServiceClient);
+			(blobServiceClient, gameContainer) = await BlobUtils.SetupOrVerifyBlobStorageGumph(storageGuid, configuration.GetConnectionString("blobStorage")!, blobServiceClient, gameContainer);
+			List<BlobUtils.MediaMetadata> metaDatas = await BlobUtils.GetMediaMetaData(storageGuid, itemType, gameContainer, blobServiceClient);
 
 			foreach (BlobUtils.MediaMetadata metadata in metaDatas)
 			{

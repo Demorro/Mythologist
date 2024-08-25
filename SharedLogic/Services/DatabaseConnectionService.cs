@@ -272,5 +272,12 @@ namespace SharedLogic.Services
 			return model?.gameSettings;
 
 		}
+
+        public async Task<Guid> StorageGuid(string gameName) {
+            Microsoft.Azure.Cosmos.Database database = await GetDatabaseLazy();
+			var gameDataContainer = await GetGameDataContainer(database);
+			var model = await GameDataModelFromDB(gameName, new PartitionKey(gameName), gameDataContainer);
+			return model.storageID;
+        }
 	}
 }

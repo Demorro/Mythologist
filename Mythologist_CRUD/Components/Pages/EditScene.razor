@@ -9,7 +9,6 @@
 @using SharedLogic.Utils
 
 @inject IDatabaseConnectionService dbConnection
-@inject IDataValidatorService dataValidator
 @inject NavigationManager NavManager
 @inject Blazored.SessionStorage.ISessionStorageService sessionStorage
 @inject IConfiguration configuration
@@ -89,6 +88,7 @@ else {
     private string? gameName;
 
     private SceneModel? scene;
+    private Guid? storageGuid;
 
     private BlobServiceClient? blobServiceClient;
     private BlobContainerClient? gameContainer;
@@ -127,11 +127,12 @@ else {
             }
 
             scene = dbConnection.AllScenes().Find(x => x.id == sceneName);
+            storageGuid = await dbConnection.StorageGuid(gameName);
 
             //Grab the metadata for all the media we can set in this panel
-            (blobServiceClient, gameContainer) = await BlobUtils.SetupOrVerifyBlobStorageGumph(gameName, configuration.GetConnectionString("blobStorage")!, blobServiceClient, gameContainer);
-            var getAllImagesTask = BlobUtils.GetMediaMetaData(gameName, SharedLogic.Utils.Constants.MediaItemType.Image, gameContainer, blobServiceClient);
-            var getAllAudioTask = BlobUtils.GetMediaMetaData(gameName, SharedLogic.Utils.Constants.MediaItemType.Audio, gameContainer, blobServiceClient);
+            (blobServiceClient, gameContainer) = await BlobUtils.SetupOrVerifyBlobStorageGumph(storageGuid, configuration.GetConnectionString("blobStorage")!, blobServiceClient, gameContainer);
+            var getAllImagesTask = BlobUtils.GetMediaMetaData(storageGuid, SharedLogic.Utils.Constants.MediaItemType.Image, gameContainer, blobServiceClient);
+            var getAllAudioTask = BlobUtils.GetMediaMetaData(storageGuid, SharedLogic.Utils.Constants.MediaItemType.Audio, gameContainer, blobServiceClient);
             var imagesAndAudio = await Task.WhenAll(getAllImagesTask, getAllAudioTask);
             allAvailableImageMedia = imagesAndAudio[0];
             allAvailableAudioMedia = imagesAndAudio[1];
@@ -171,7 +172,12 @@ else {
 
     public async Task SubmitForm()
     {
-        (blobServiceClient, gameContainer) = await BlobUtils.SetupOrVerifyBlobStorageGumph(gameName, configuration.GetConnectionString("blobStorage")!, blobServiceClient, gameContainer);
+        if (storageGuid == null) {
+            Snackbar.Add("Expected storage guid. Cannot access blob storage", Severity.Error);
+            return;
+        }
+
+        (blobServiceClient, gameContainer) = await BlobUtils.SetupOrVerifyBlobStorageGumph(storageGuid, configuration.GetConnectionString("blobStorage")!, blobServiceClient, gameContainer);
 
         if (sceneName != renamedScene)
         {
@@ -179,8 +185,8 @@ else {
         }
 
         SceneModel updatedScene = scene!;
-        updatedScene.backgroundImageUri = SelectedBackgroundImage != null ? BlobUtils.MakeFullStorageUri(blobServiceClient, gameName, Constants.MediaItemType.Image, SelectedBackgroundImage.Name) : null;
-        updatedScene.backgroundMusicUri = SelectedBackgroundAudio != null ? BlobUtils.MakeFullStorageUri(blobServiceClient, gameName, Constants.MediaItemType.Audio, SelectedBackgroundAudio.Name) : null;
+        updatedScene.backgroundImageUri = SelectedBackgroundImage != null ? BlobUtils.MakeFullStorageUri(blobServiceClient, storageGuid.Value, Constants.MediaItemType.Image, SelectedBackgroundImage.Name) : null;
+        updatedScene.backgroundMusicUri = SelectedBackgroundAudio != null ? BlobUtils.MakeFullStorageUri(blobServiceClient, storageGuid.Value, Constants.MediaItemType.Audio, SelectedBackgroundAudio.Name) : null;
 
         await dbConnection.UpdateScene(gameName, updatedScene);
         BackToSceneList();

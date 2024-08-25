@@ -15,8 +15,8 @@ namespace SharedLogic.Services
         Task UpdateScene(string gameName, SceneModel updatedScene);
         Task RemoveScene(string gameName, SceneModel sceneToDelete);
         Task UpdateGameSettings(string gameName, GameSettingsModel settings);
-
         Task<GameSettingsModel> GameSettings(string gameName);
+        Task<Guid> StorageGuid(string gameName);
 
 	}
 }

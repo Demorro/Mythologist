@@ -15,7 +15,6 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddSingleton<IDatabaseConnectionService, DatabaseConnectionService>(provider => new DatabaseConnectionService(builder.Configuration));
-builder.Services.AddSingleton<IDataValidatorService, DataValidatorService>(provider => new DataValidatorService());
 
 builder.Services.AddBlazoredSessionStorage(config => {
     config.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
