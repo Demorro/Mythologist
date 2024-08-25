@@ -126,7 +126,7 @@
                 return;
             }
 
-            scene = dbConnection.AllScenes().Find(x => x.id == sceneName);
+            scene = await dbConnection.Scene(gameName, sceneName);
             storageGuid = await dbConnection.StorageGuid(gameName);
 
             //Grab the metadata for all the media we can set in this panel

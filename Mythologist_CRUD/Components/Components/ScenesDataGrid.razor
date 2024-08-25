@@ -9,26 +9,38 @@
 @inject IDatabaseConnectionService dbConnection;
 @inject NavigationManager NavManager
 
-<MudStack>
-    <MudDataGrid T="SceneModel" Items="@dbConnection.AllScenes()" Class="styled-table-cell">
-        <Columns>
-            <PropertyColumn Property="x => x.id" Title="Name" />
-            <TemplateColumn CellClass="d-flex justify-end">
-                <CellTemplate >
-                    <MudButton @onclick="@(() => EditSceneButtonClicked(context.Item))" Size="@Size.Medium" Variant="@Variant.Filled" Color="@Color.Primary" Style="margin-left:5px; margin-right:5px">Edit</MudButton>
-                    <MudButton @onclick="@(() => DeleteSceneButtonClicked(context.Item))" Disabled="!RequiredParamsSet()" Size="@Size.Medium" Variant="@Variant.Filled" Color="@Color.Error" Style="margin-left:5px; margin-right:5px">Delete</MudButton>
-                </CellTemplate>
-            </TemplateColumn>
-        </Columns>
-    </MudDataGrid>
-    <MudStack Class="d-flex justify-start flex-grow-1 gap-4" Row="true">
-        <MudButton @onclick="@(() => NewSceneButtonClicked())" Disabled="!RequiredParamsSet()" Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.Add" Color="Color.Primary">New Scene</MudButton>
+<MudExtensions.MudLoading Loading="loading">
+    <MudStack>
+        <MudDataGrid T="SceneModel" Items="allScenes" Class="styled-table-cell">
+            <Columns>
+                <PropertyColumn Property="x => x.id" Title="Name" />
+                <TemplateColumn CellClass="d-flex justify-end">
+                    <CellTemplate >
+                        <MudButton @onclick="@(() => EditSceneButtonClicked(context.Item))" Size="@Size.Medium" Variant="@Variant.Filled" Color="@Color.Primary" Style="margin-left:5px; margin-right:5px">Edit</MudButton>
+                        <MudButton @onclick="@(() => DeleteSceneButtonClicked(context.Item))" Disabled="!RequiredParamsSet()" Size="@Size.Medium" Variant="@Variant.Filled" Color="@Color.Error" Style="margin-left:5px; margin-right:5px">Delete</MudButton>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </MudDataGrid>
+        <MudStack Class="d-flex justify-start flex-grow-1 gap-4" Row="true">
+            <MudButton @onclick="@(() => NewSceneButtonClicked())" Disabled="!RequiredParamsSet()" Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.Add" Color="Color.Primary">New Scene</MudButton>
+        </MudStack>
     </MudStack>
-</MudStack>
+</MudExtensions.MudLoading>
 
 @code {
     [Parameter]
     public string? GameName { get; set; } = null;
+
+    private List<SceneModel>? allScenes = null;
+    private bool loading = true;
+
+    protected override async Task OnParametersSetAsync() {
+        if (GameName != null) {
+            allScenes = await dbConnection.AllScenes(GameName);
+            loading = false;
+        }
+    }
 
     private async Task NewSceneButtonClicked(){
         var dialog = await DialogService.ShowAsync<NewSceneDialog>("New Scene");
@@ -64,8 +76,7 @@
 
     private async Task DeleteSceneButtonClicked(SceneModel sceneModel)
     {
-        if (dbConnection.AllScenes().Count <= 1)
-        {
+        if (allScenes.Count <= 1) {
             snackBar.Add("Games must have at least one scene");
             return;
         }

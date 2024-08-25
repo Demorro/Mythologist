@@ -6,6 +6,7 @@ namespace Mythologist_Client_WASM.Client.Services
 {
     public interface ISignalRHubClientService
     {
+        public Task StopAnyConnections();
         public Task InitializeConnectionAndJoinGame(string gameName, string userName, Utils.DiscordUser? discordUserObject, string? GMPassword);
 
         public delegate void NotifyOfClientsCallback(List<ClientInfo> clients);
@@ -19,7 +20,7 @@ namespace Mythologist_Client_WASM.Client.Services
         public void InjectNotifyOfGameSettingsInfoDelegate(NotifyOfGameSettingsInfoCallback callback);
 
         public delegate void NotifyEventInfoCallback(EventInfo eventInfo);
-        public void InjectNotfyEventInfoDelegate(NotifyEventInfoCallback callback);
+        public void InjectNotifyEventInfoDelegate(NotifyEventInfoCallback callback);
 
         public delegate void NotifyOfServerErrorCallback(string message);
         public void InjectNotifyOfServerErrorDelegate(NotifyOfServerErrorCallback callback);

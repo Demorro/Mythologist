@@ -95,26 +95,28 @@
         SceneDragOpen = false;
     }
 
-    protected override async Task OnInitializedAsync()
-    {
+    protected override async Task OnInitializedAsync() {
+
         gameName = await sessionStorage.GetItemAsync<string>("GameName");
         userName = await sessionStorage.GetItemAsync<string>("UserName");
         discordClientID = await sessionStorage.GetItemAsync<string>("DiscordClientID");
         GMPassword = await sessionStorage.GetItemAsync<string>("GMPassword");
 
-        try {
-            signalRHub.InjectNotifyOfClientsDelegate(NotifyOfClientsUpdate);
+        try
+        {
             signalRHub.InjectNotifyOfGameInfoDelegate(NotifyOfGameInfo);
+            signalRHub.InjectNotifyOfClientsDelegate(NotifyOfClientsUpdate);
             signalRHub.InjectNotifyOfGameSettingsInfoDelegate(NotifyOfGameSettingsInfo);
-            signalRHub.InjectNotfyEventInfoDelegate(NotifyOfEventInfo);
+            signalRHub.InjectNotifyEventInfoDelegate(NotifyOfEventInfo);
             signalRHub.InjectNotifyOfServerErrorDelegate(NotifyOfServerError);
             await signalRHub.RequestRefreshGameState(gameName);
+
         }
-        catch(Exception ex){
+        catch (Exception ex)
+        {
             Console.WriteLine($"{ex.Message}, Navigating back to home page");
             NavManager.NavigateTo("/");
         }
-
     }
 
     private void NotifyOfClientsUpdate(List<ClientInfo> clients)

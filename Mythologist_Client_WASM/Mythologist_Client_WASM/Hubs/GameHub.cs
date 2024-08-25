@@ -72,8 +72,7 @@ namespace Mythologist_Client_WASM.Hubs
 				var groupName = gameName;
 				await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
 				clients.Add(groupName, Context.ConnectionId, username, discordClientID, avatarUrl, isGM);
-                await database.HydrateForGame(gameName); //Important or Scenes dont get populated (see database service it's bad)
-                var allScenes = database.AllScenes();
+                var allScenes = await database.AllScenes(gameName);
 
                 try
                 {
@@ -123,8 +122,7 @@ namespace Mythologist_Client_WASM.Hubs
 		{
 			ClientInfo thisClient = clients.GetClient(gameName, Context.ConnectionId);
 
-			await database.HydrateForGame(gameName); //Important or Scenes dont get populated (see database service it's bad)
-            var allScenes = database.AllScenes();
+            var allScenes = await database.AllScenes(gameName);
 			var gameSettings = await database.GameSettings(gameName);
 			try
 			{
@@ -137,18 +135,12 @@ namespace Mythologist_Client_WASM.Hubs
 			}
             GameInfo gameInfo = new GameInfo { scenes = allScenes, gameSettings = gameSettings };
 
-            List<Task> refreshTasks = new List<Task>();
-            SceneChangeInfo sceneChangeInfo = new SceneChangeInfo
-            {
-                newSceneId = thisClient.currentSceneID!,
-                timeSinceMusicStart = 0.0f //TODO, this.
-            };
+			FullGameStateInfo fullState  = new FullGameStateInfo(){
+				allClients = clients.GetClientsInGameAsList(gameName),
+				gameInfo = gameInfo
+			};
 
-			refreshTasks.Add(Clients.Client(Context.ConnectionId).SendAsync("NotifyOfGameInfo", gameInfo));
-            refreshTasks.Add(Clients.Client(Context.ConnectionId).SendAsync("NotifyOfClients", clients.GetClientsInGameAsList(gameName)));
-			refreshTasks.Add(Clients.Client(Context.ConnectionId).SendAsync("NotifyOfGameSettingsInfo", lastKnownStates.LastKnownSettings()));
-
-			await Task.WhenAll(refreshTasks);
+			await Clients.Client(Context.ConnectionId).SendAsync("NotifyOfFullGameState", fullState);
         }
 
 		public async Task ChangeGameSettings(string gameName, GameSettingsInfo settingsInfo)

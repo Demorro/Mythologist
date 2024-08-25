@@ -42,8 +42,6 @@ namespace Mythologist_CRUD.Utils
                 return ("", "");
             }
 
-            await dbConnection.HydrateForGame(gameName);
-
             layout.SetHeaderName(gameName);
             layout.SetNavMenuEnabled(true);
             layout.SetGMPassword(gmPassword);

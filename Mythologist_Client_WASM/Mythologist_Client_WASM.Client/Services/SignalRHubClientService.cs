@@ -26,38 +26,59 @@ namespace Mythologist_Client_WASM.Client.Services
             this.navManager = _navManager;
         }
 
+        public async Task StopAnyConnections() {
+            if(gameHubConnection != null) {
+                await gameHubConnection.StopAsync();
+                await gameHubConnection.DisposeAsync();
+                gameHubConnection = null;
+            }
+
+            InjectNotifyEventInfoDelegate(null);
+            InjectNotifyOfClientsDelegate(null);
+            InjectNotifyOfGameInfoDelegate(null);
+            InjectNotifyOfGameSettingsInfoDelegate(null);
+            InjectNotifyEventInfoDelegate(null);
+            InjectNotifyOfServerErrorDelegate(null);
+        }
+
         /*
          * Call early. Probably on landing
          */
         public async Task InitializeConnectionAndJoinGame(string gameName, string userName, Utils.DiscordUser? discordUserObject, string? GMPassword)
         {
-            if (gameHubConnection == null)
-            {
-                gameHubConnection = new HubConnectionBuilder().WithUrl(navManager.ToAbsoluteUri(GAME_ENDPOINT)).Build();
-
-                gameHubConnection.On<List<ClientInfo>>("NotifyOfClients", NotifyOfClients);
-                gameHubConnection.On<GameInfo>("NotifyOfGameInfo", NotifyOfGameInfo);
-                gameHubConnection.On<GameSettingsInfo>("NotifyOfGameSettingsInfo", NotifyOfGameSettingsInfo);
-                gameHubConnection.On<EventInfo>("NotifyOfEventInfo", NotifyOfEventInfo);
-                gameHubConnection.On<string>("NotifyOfServerError", NotifyOfServerError);
-
-                await gameHubConnection.StartAsync();
-                this.gameName = gameName;
+            if(gameHubConnection != null) {
+                await gameHubConnection.DisposeAsync();
             }
+
+            gameHubConnection = new HubConnectionBuilder().WithUrl(navManager.ToAbsoluteUri(GAME_ENDPOINT)).Build();
+
+            gameHubConnection.On<FullGameStateInfo>("NotifyOfFullGameState", NotifyOfFullGameState);
+            gameHubConnection.On<List<ClientInfo>>("NotifyOfClients", NotifyOfClients);
+            gameHubConnection.On<GameInfo>("NotifyOfGameInfo", NotifyOfGameInfo);
+            gameHubConnection.On<GameSettingsInfo>("NotifyOfGameSettingsInfo", NotifyOfGameSettingsInfo);
+            gameHubConnection.On<EventInfo>("NotifyOfEventInfo", NotifyOfEventInfo);
+            gameHubConnection.On<string>("NotifyOfServerError", NotifyOfServerError);
+
+            await gameHubConnection.StartAsync();
+            this.gameName = gameName;
            
             SuccessOrFailInfo joinSuccess = await gameHubConnection.InvokeAsync<SuccessOrFailInfo>("JoinGame", gameName, userName, discordUserObject?.Id, discordUserObject?.AvatarUrl(), GMPassword);
 
             if (!joinSuccess.successful)
             {
                 await gameHubConnection.DisposeAsync();
-                await audioStreamHubConnection.DisposeAsync();
                 gameHubConnection = null;
-                audioStreamHubConnection = null;
                 this.gameName = null;
                 throw new Exception(joinSuccess.message);
             }
         }
 
+        private void NotifyOfFullGameState(FullGameStateInfo fullState) {
+            //Gameinfo needs to be first as client reaction depends on it
+            NotifyOfGameInfo(fullState.gameInfo);
+            NotifyOfClients(fullState.allClients);
+        }
+        
         public async Task RequestRefreshGameState(string gameName)
         {
             if (gameHubConnection == null)
@@ -126,7 +147,7 @@ namespace Mythologist_Client_WASM.Client.Services
 
         public ISignalRHubClientService.NotifyEventInfoCallback notifyOfEventInfoCallback = null;
 
-        public void InjectNotfyEventInfoDelegate(ISignalRHubClientService.NotifyEventInfoCallback callback)
+        public void InjectNotifyEventInfoDelegate(ISignalRHubClientService.NotifyEventInfoCallback callback)
         {
             notifyOfEventInfoCallback = callback;
         }

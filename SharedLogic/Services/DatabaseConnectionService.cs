@@ -7,19 +7,11 @@ namespace SharedLogic.Services
     public class DatabaseConnectionService : IDatabaseConnectionService
     {
         private CosmosClient cosmosClient;
-        private Microsoft.Azure.Cosmos.Database? database = null;
         private IConfiguration configuration;
 
-        private Microsoft.Azure.Cosmos.Container gamesContainer = null;
-        private GameModel? gameModel = null;
-
-        private List<SceneModel> _allScenes = new List<SceneModel>();
-        public List<SceneModel> AllScenes() { return _allScenes; }
-
-        public SceneModel? Scene(string sceneID) {
-            SceneModel? scene = AllScenes().Find(x => x.id == sceneID);
-            return scene;
-        }
+        //Lazily populated in HydrateForGame. The conceit being that each session only goes into one game.
+        private Microsoft.Azure.Cosmos.Database? database = null;
+        private Microsoft.Azure.Cosmos.Container? gamesContainer = null;
 
         public DatabaseConnectionService(string cosmosConnectionString)
         {
@@ -93,31 +85,28 @@ namespace SharedLogic.Services
 
         private async Task<GameModel?> GameDataModelFromDB(string gameName, Microsoft.Azure.Cosmos.PartitionKey partitionKey, Microsoft.Azure.Cosmos.Container gameDataContainer)
         {
-            // Hey look an exception for control-flow. How am I meant to do this nicely CosmosAPI? ANSWER ME!?
-            bool itemAlreadyExists = false;
-            GameModel gameData = null;
             try
             {
-                gameData = await gameDataContainer.ReadItemAsync<GameModel>(gameName, partitionKey);
-                gameModel = gameData;
-                itemAlreadyExists = true;
+                return await gameDataContainer.ReadItemAsync<GameModel>(gameName, partitionKey);
             }
             catch (Exception)
             {
-                itemAlreadyExists = false;
+                return null;
             }
-
-            return itemAlreadyExists ? gameModel : null;
         }
 
-        public async Task HydrateForGame(string gameName)
-        {
-            var db = await GetDatabaseLazy();
-            var container = await GetGameDataContainer(db);
-            var model = await GameDataModelFromDB(gameName, new PartitionKey(gameName), container);
-            _allScenes = model.scenes;
-
+        public async Task<List<SceneModel>> AllScenes(string gameName) {
+            Microsoft.Azure.Cosmos.Database database = await GetDatabaseLazy();
+            var gameDataContainer = await GetGameDataContainer(database);
+            var model = await GameDataModelFromDB(gameName, new PartitionKey(gameName), gameDataContainer);
+            return model.scenes; 
         }
+
+        public async Task<SceneModel?> Scene(string gameName, string sceneID) {
+            SceneModel? scene = (await AllScenes(gameName)).Find(x => x.id == sceneID);
+            return scene;
+        }
+
         public async Task CreateNewGame(string gameName, string GMPassword)
         {
             Microsoft.Azure.Cosmos.Database database = await GetDatabaseLazy();
@@ -180,7 +169,6 @@ namespace SharedLogic.Services
 
             //Consider partial document update to keep costs down
             model.scenes.Add(newScene);
-            _allScenes = model.scenes;
             await gameDataContainer.ReplaceItemAsync<GameModel>(model, gameName);
         }
 
@@ -204,7 +192,6 @@ namespace SharedLogic.Services
             model.scenes[index] = oldScene;
 
             //Consider partial document update to keep costs down
-            _allScenes = model.scenes;
             await gameDataContainer.ReplaceItemAsync<GameModel>(model, gameName);
         }
 
@@ -227,7 +214,6 @@ namespace SharedLogic.Services
             model.scenes[index] = updatedScene;
 
             //Consider partial document update to keep costs down
-            _allScenes = model.scenes;
             await gameDataContainer.ReplaceItemAsync<GameModel>(model, gameName);
         }
 
@@ -244,7 +230,6 @@ namespace SharedLogic.Services
 
             //Consider partial document update to keep costs down
             model.scenes.RemoveAll(x => x.id.Equals(sceneToDelete.id));
-            _allScenes = model.scenes;
             await gameDataContainer.ReplaceItemAsync<GameModel>(model, gameName);
         }
 
