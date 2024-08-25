@@ -200,11 +200,6 @@
 	{
 		BlobUtils.MediaMetadata? selectedItem = SelectedItem(itemType);
 
-		if (selectedItem == null) {
-			snackBar.Add("Unexpected null selected item");
-			return;
-		}
-
 		if (selectedItemName == null)
 		{
 			switch (itemType)
