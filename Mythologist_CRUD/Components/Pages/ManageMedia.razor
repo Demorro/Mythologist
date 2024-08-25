@@ -271,6 +271,10 @@
 					continue;
 				}
 
+				if (DataValidation.SanitizeStringWithErrorSnackbar(file.Name, snackBar) == null) {
+					continue;
+				}
+
 				double fileSize = file.Size;
 				double fileSizeInMB = fileSize / (1024 * 1024);
 				if ((tempStorageAmount + fileSizeInMB) >= StorageLimitUpperBoundMB)

@@ -1,5 +1,6 @@
 ﻿@using MudBlazor
 @using SharedLogic.Services
+@using SharedLogic.Utils
 
 @inject IConfiguration configuration
 @inject ISnackbar Snackbar
@@ -60,7 +61,7 @@
 
         try
         {
-            await dbConnection.CreateNewGame(GameName, GMPassword);
+            await dbConnection.CreateNewGame(DataValidation.SanitizeString(GameName), DataValidation.SanitizeString(GMPassword));
         }
         catch (Exception ex)
         {

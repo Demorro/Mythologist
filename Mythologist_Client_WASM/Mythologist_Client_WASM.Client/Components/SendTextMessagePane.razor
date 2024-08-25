@@ -1,6 +1,8 @@
 ﻿@using Mythologist_Client_WASM.Client.Infos
+@using SharedLogic.Utils
 
 @inject ISignalRHubClientService signalRHub;
+@inject ISnackbar snackBar
 
 <MudStack Row="true" Spacing="0" Style="width:50%;">
     <MudTextField @bind-Value="SendValue" Margin="Margin.Dense" Label="Message" Variant="Variant.Outlined" Immediate="true" OnKeyDown="SendMessageClicked"></MudTextField>
@@ -42,6 +44,10 @@
     {
         if (e.Key == "Enter")
         {
+            if (DataValidation.SanitizeMessageStringWithErrorSnackbar(SendValue, snackBar) == null) {
+                return;
+            }
+
             EventInfo sendEvent = new EventInfo
                 {
                     EEventType = EventInfo.EventType.SendText,

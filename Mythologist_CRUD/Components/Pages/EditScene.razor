@@ -22,7 +22,7 @@
             <MudForm @bind-IsValid="@success">
                 <MudGrid Justify="Justify.Center">
                     <MudItem xs="12">
-                    <MudTextField @bind-Value="renamedScene" Label="Scene Name" Variant="Variant.Filled"></MudTextField>
+                        <MudTextField @bind-Value="renamedScene" Label="Scene Name" Variant="Variant.Filled" Validation="@(new Func<string, string?>(DataValidation.SanitizeStringMudBlazorValidation))"></MudTextField>
                     </MudItem>
                     <MudItem xs="6">
                         <MudSelect T="BlobUtils.MediaMetadata" @bind-Value=SelectedBackgroundAudio @bind-Value:after="ForceAudioRefresh" Label="Background Audio" Variant="Variant.Filled" Validation="@(new Func<BlobUtils.MediaMetadata, string>(ValidateMediaDropdown))">
@@ -69,7 +69,6 @@
 </MudExtensions.MudLoading>
 @code {
 
-    //By "wrappedAttribute" we mean that Validation can take an Attribute type directly, but we're using a function that used the attribute cause we wanna append extra checks
     private string ValidateMediaDropdown(BlobUtils.MediaMetadata value)
     {
         // A validator is good if it returns null, otherwise return a string that is the error you want to display on the form
