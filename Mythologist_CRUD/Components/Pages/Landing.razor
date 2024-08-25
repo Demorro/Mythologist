@@ -16,15 +16,17 @@
 <div style="height: calc(100vh - 120px); display: flex; justify-content: center; align-items: center;">
     <MudStack Class="d-flex justify-center" Style="align-items:center; margin-top:-60px" Spacing="4">
         <!-- Pointer events mean sometimes the title is focused, which in some browsers gives you this awful outline on some fonts -->
-        <MudText Typo="Typo.h1" Class="titleanimId" Style="max-width:800px; display: flex; justify-content:center; flex-direction:column; text-align:center;">Mythologist Creator</MudText>
+
+        <MudText Typo="Typo.h4" Color="Color.Primary" Style="margin-right:-610px; margin-bottom:-45px; transform: rotate(10deg);">Creator</MudText>
+        <MudText Typo="Typo.h1" Style="max-width:800px; display: flex; justify-content:center; flex-direction:column; text-align:center;">Mythologist</MudText>
 
         <MudStack Row="true" Spacing="2">
             <MudFocusTrap DefaultFocus="DefaultFocus.LastChild">
-                <MudButton Color="Color.Secondary" Class="buttonsAnimId" Style="font-size:1.2rem; min-width:250px" StartIcon="@Icons.Material.Filled.Add" Variant="Variant.Filled" @onclick="NewGameButtonClicked">Create</MudButton>
-                <MudButton Color="Color.Primary" Class="buttonsAnimId" Style="font-size:1.2rem; min-width:250px" StartIcon="@Icons.Material.Filled.Login" Variant="Variant.Filled" @onclick="LoginButtonClicked">Login</MudButton>
+                <MudButton Color="Color.Secondary" Style="font-size:1.2rem; min-width:250px" Variant="Variant.Filled" @onclick="NewGameButtonClicked">Create</MudButton>
+                <MudButton Color="Color.Primary" Style="font-size:1.2rem; min-width:250px" Variant="Variant.Filled" @onclick="LoginButtonClicked">Login</MudButton>
             </MudFocusTrap>
         </MudStack>
-        <MudText Typo="Typo.subtitle1" Class="mt-2 taglineAnimId">Prep Sessions. Play Myths.</MudText>
+        <MudText Typo="Typo.subtitle1" Class="mt-2">Prep Sessions. Play Myths.</MudText>
     </MudStack>
 </div>
 
