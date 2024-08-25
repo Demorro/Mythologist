@@ -30,7 +30,7 @@
 				<MudText Typo="Typo.h5" Color=Color.Inherit Class="mb-2">Images</MudText>
 					<MudGrid>
 						<MudItem xs="6">
-							<MudList T="string" SelectedValue="@SelectedImage?.Name" SelectedValueChanged="OnSelectedImageChanged" SelectionMode="SelectionMode.SingleSelection" Class="overflow-y-scroll" Style="max-height:300px">
+						<MudList T="string" SelectedValue="@SelectedImage?.Name" SelectedValueChanged="OnSelectedImageChanged" SelectionMode="SelectionMode.SingleSelection" @onkeyup="KeyboardEventHandlerImages" Class="overflow-y-scroll" Style="max-height:300px">
 								@foreach (var imageName in imageNames)
 								{
 									<MudListItem Icon="@Icons.Material.Filled.Image" IconColor="Color.Primary" Value=@imageName Text=@imageName Dense="true"> </MudListItem>
@@ -74,7 +74,7 @@
 				<MudText Typo="Typo.h5" Color=Color.Inherit Class="mb-2">Audio</MudText>
 					<MudGrid Style="align-items: center">
 						<MudItem xs="6">
-							<MudList SelectedValue="@SelectedAudio?.Name" T="string" SelectedValueChanged="OnSelectedAudioChanged" SelectionMode="SelectionMode.SingleSelection" Class="overflow-y-scroll" Style="max-height:300px">
+						<MudList SelectedValue="@SelectedAudio?.Name" T="string" SelectedValueChanged="OnSelectedAudioChanged" SelectionMode="SelectionMode.SingleSelection" @onkeyup="KeyboardEventHandlerAudio" Class="overflow-y-scroll" Style="max-height:300px">
 								@foreach (var audioName in audioNames)
 								{
 									<MudListItem Icon="@Icons.Material.Filled.AudioFile" IconColor="Color.Primary" Value=@audioName Text=@audioName Dense="true"></MudListItem>
@@ -375,10 +375,13 @@
 			return;
 		}
 
+		DialogOptions closeOnEscape = new() { CloseOnEscapeKey = true };
+
 		bool? result = await dialogService.ShowMessageBox(
 			"Are you sure?",
 			$"Deleting `{selectedItem.Name}`",
-			yesText: "Delete", cancelText: "Cancel");
+			yesText: "Delete", cancelText: "Cancel",
+		    options: closeOnEscape);
 
 		if (result == null)
 		{
@@ -439,6 +442,18 @@
 				OnSelectedAudioChanged(null);
 			}
 			break;
+		}
+	}
+
+	private async Task KeyboardEventHandlerImages(KeyboardEventArgs args) {
+		if (args.Key == "Delete") {
+			await DeleteSelectedItem(Constants.MediaItemType.Image);
+		}
+	}
+
+	private async Task KeyboardEventHandlerAudio(KeyboardEventArgs args) {
+		if (args.Key == "Delete") {
+			await DeleteSelectedItem(Constants.MediaItemType.Audio);
 		}
 	}
 	#endregion

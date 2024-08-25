@@ -29,8 +29,8 @@
 </MudExtensions.MudLoading>
 
 @code {
-    [Parameter]
-    public string? GameName { get; set; } = null;
+        [Parameter]
+        public string? GameName { get; set; } = null;
 
     private List<SceneModel>? allScenes = null;
     private bool loading = true;
@@ -46,12 +46,25 @@
         var dialog = await DialogService.ShowAsync<NewSceneDialog>("New Scene");
         var result = await dialog.Result;
 
+        if (GameName == null) {
+            snackBar.Add("Unexpected null GameName");
+            return;
+        }
+        if (allScenes == null) {
+            snackBar.Add("Unexpected null scene list");
+            return;
+        }
+
         if (!result!.Canceled)
         {
             string? newSceneName = result.Data as string;
             if (newSceneName == null)
             {
                 snackBar.Add($"Failed to add {newSceneName} to database", Severity.Error);
+            }
+            else if (allScenes.Exists(x => x.id.ToLower() == newSceneName.ToLower()))
+            {
+                snackBar.Add($"'{newSceneName}' already exists", Severity.Error);
             }
             else
             {
@@ -64,9 +77,12 @@
                 else
                 {
                     snackBar.Add($"{newSceneModel.id} Added", Severity.Success);
+                    allScenes = await dbConnection.AllScenes(GameName);
                 }
             }
         }
+
+
     }
 
     private bool RequiredParamsSet()
@@ -86,6 +102,11 @@
             return;
         }
 
+        if (GameName == null) {
+            snackBar.Add("Unexpected null GameName");
+            return;
+        }
+
         bool? result = await DialogService.ShowMessageBox(
             "Are you sure?",
             $"Once {sceneModel.id} is deleted it cannot be restored",
@@ -101,6 +122,7 @@
             else
             {
                 snackBar.Add($"{sceneModel.id} deleted", Severity.Success);
+                allScenes = await dbConnection.AllScenes(GameName);
             }
         }
     }

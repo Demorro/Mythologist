@@ -10,18 +10,15 @@
 @inject IDiscordApiService discordApi
 
 @*We get an annoying scrollbar is we dont do the overflow thing, cause of the complicated password field thinking it's taller than it is*@
-<MudDialog DefaultFocus="DefaultFocus.FirstChild" ContentStyle="overflow-y: hidden;">
+<MudDialog DefaultFocus="DefaultFocus.FirstChild" ContentStyle="overflow-y: hidden;" @onkeyup="KeyboardEventHandler">
     <DialogContent>
         <MudStack>
-            @if (!Utils.Utils.IsDiscord())
-            {
-                <MudTextField @bind-Value="displayName" Label="Display Name" Variant="Variant.Text"></MudTextField>
-            }
-            <MudFocusTrap DefaultFocus="DefaultFocus.FirstChild">
-                <MudTextField @bind-Value="GameName" Label="Game Name" Variant="Variant.Text"></MudTextField>
-            </MudFocusTrap>
+            <MudTextField @bind-Value="GameName" Label="Game Name" Variant="Variant.Text" AutoFocus="true"></MudTextField>
             @if (isGMLogin){
                 <MudTextField @bind-Value="GMPassword" Label="GM Password" Variant="Variant.Text" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon" AdornmentColor="Color.Primary" OnAdornmentClick="TogglePasswordVisible" AdornmentAriaLabel="Show Password" />
+            }
+            @if (!Utils.Utils.IsDiscord()) {
+                <MudTextField @bind-Value="displayName" Label="Display Name" Variant="Variant.Text"></MudTextField>
             }
         </MudStack>
     </DialogContent>
@@ -54,8 +51,8 @@
             isShow = true;
             PasswordInputIcon = Icons.Material.Filled.Visibility;
             PasswordInput = InputType.Text;
+            }
         }
-    }
     #endregion
 
     private string displayName = Utils.Utils.RandomName();
@@ -116,5 +113,12 @@
     }
 
     private void Cancel() => MudDialog.Cancel();
+
+    private async Task KeyboardEventHandler(KeyboardEventArgs args) {
+        if (args.Key == "Enter")
+        {
+            await Submit();
+        }
+    }
 }
 

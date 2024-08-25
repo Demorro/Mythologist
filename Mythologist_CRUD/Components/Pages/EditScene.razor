@@ -155,7 +155,7 @@
                     SelectedBackgroundImage = allAvailableImageMedia.Find(x => x.Name == fileName);
                     if (SelectedBackgroundImage == null)
                     {
-                        Snackbar.Add($"Couldn't find media for database reported background image '{fileName}'. Perhaps it has been deleted?");
+                        Snackbar.Add($"Couldn't find media for background image '{fileName}'. Perhaps it has been deleted?");
                     }
                 }
                 if (scene.backgroundMusicUri != null)
@@ -165,7 +165,7 @@
 
                     if (SelectedBackgroundAudio == null)
                     {
-                        Snackbar.Add($"Couldn't find media for database reported background audio '{fileName}'. Perhaps it has been deleted?");
+                        Snackbar.Add($"Couldn't find media for background audio '{fileName}'. Perhaps it has been deleted?");
                     }
                 }
             }

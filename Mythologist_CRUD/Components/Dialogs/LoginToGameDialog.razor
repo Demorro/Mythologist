@@ -6,7 +6,7 @@
 @inject IDatabaseConnectionService dbConnection
 
 @*We get an annoying scrollbar is we dont do the overflow thing, cause of the complicated password field thinking it's taller than it is*@
-<MudDialog DefaultFocus="DefaultFocus.FirstChild" ContentStyle="overflow-y: hidden;">
+<MudDialog DefaultFocus="DefaultFocus.FirstChild" ContentStyle="overflow-y: hidden;" @onkeyup="KeyboardEventHandler">
     <DialogContent>
         <MudStack>
             <MudTextField @bind-Value="GameName" Label="Game Name" Variant="Variant.Text"></MudTextField>
@@ -91,5 +91,11 @@
     }
 
     private void Cancel() => MudDialog?.Cancel();
+
+    private async Task KeyboardEventHandler(KeyboardEventArgs args) {
+        if (args.Key == "Enter") {
+            await Submit();
+        }
+    }
 }
 
