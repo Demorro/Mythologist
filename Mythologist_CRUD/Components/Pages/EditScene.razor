@@ -210,7 +210,7 @@
         SceneModel updatedScene = scene!;
         updatedScene.backgroundImageUri = SelectedBackgroundImage != null ? BlobUtils.MakeFullStorageUri(blobServiceClient, storageGuid.Value, Constants.MediaItemType.Image, SelectedBackgroundImage.Name) : null;
         updatedScene.backgroundMusicUri = SelectedBackgroundAudio != null ? BlobUtils.MakeFullStorageUri(blobServiceClient, storageGuid.Value, Constants.MediaItemType.Audio, SelectedBackgroundAudio.Name) : null;
-        updatedScene.charactersIdsInScene = SelectedCharactersIdsInScene.ToList();
+        updatedScene.charactersIdsInScene = SelectedCharactersIdsInScene == null ? new List<string>() : SelectedCharactersIdsInScene.ToList();
 
         await dbConnection.UpdateScene(gameName, updatedScene);
         BackToSceneList();
