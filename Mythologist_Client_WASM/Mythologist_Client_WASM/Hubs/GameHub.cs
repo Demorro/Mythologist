@@ -122,8 +122,11 @@ namespace Mythologist_Client_WASM.Hubs
 		{
 			ClientInfo thisClient = clients.GetClient(gameName, Context.ConnectionId);
 
+			// Tempted to parralelize this but fuck knows how the caching would work if this is the first entry.
             var allScenes = await database.AllScenes(gameName);
+			List<CharacterModel> allCharacters = await database.AllCharacters(gameName);
 			var gameSettings = await database.GameSettings(gameName);
+
 			try
 			{
 				EnsureClientIsInScene(allScenes, thisClient, gameSettings);
@@ -133,7 +136,7 @@ namespace Mythologist_Client_WASM.Hubs
 				await Clients.Client(Context.ConnectionId).SendAsync("NotifyOfServerError", ex.Message);
 				return;
 			}
-            GameInfo gameInfo = new GameInfo { scenes = allScenes, gameSettings = gameSettings };
+            GameInfo gameInfo = new GameInfo { scenes = allScenes, gameSettings = gameSettings, characters = allCharacters };
 
 			FullGameStateInfo fullState  = new FullGameStateInfo(){
 				allClients = clients.GetClientsInGameAsList(gameName),

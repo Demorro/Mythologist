@@ -12,7 +12,7 @@
         public Uri? backgroundMusicUri { get; set; }
 
 		//The characters that are in this scene
-		public List<CharacterModel> charactersInScene { get; set; }
+		public List<string> charactersIdsInScene { get; set; }
 
 		// Overrides for Equals, GetHashCode and ToString are important for MudSelect
 		public override bool Equals(object o)

@@ -13,7 +13,6 @@ namespace Mythologist_Client_WASM.Client.Services
     public class SignalRHubClientService : ISignalRHubClientService
     {
         private HubConnection? gameHubConnection;
-        private HubConnection? audioStreamHubConnection;
         private NavigationManager navManager;
 
         private const string GAME_ENDPOINT = "/gamehub";
@@ -34,8 +33,8 @@ namespace Mythologist_Client_WASM.Client.Services
             }
 
             InjectNotifyEventInfoDelegate(null);
-            InjectNotifyOfClientsDelegate(null);
             InjectNotifyOfGameInfoDelegate(null);
+            InjectNotifyOfClientsDelegate(null);
             InjectNotifyOfGameSettingsInfoDelegate(null);
             InjectNotifyEventInfoDelegate(null);
             InjectNotifyOfServerErrorDelegate(null);
@@ -53,8 +52,8 @@ namespace Mythologist_Client_WASM.Client.Services
             gameHubConnection = new HubConnectionBuilder().WithUrl(navManager.ToAbsoluteUri(GAME_ENDPOINT)).Build();
 
             gameHubConnection.On<FullGameStateInfo>("NotifyOfFullGameState", NotifyOfFullGameState);
-            gameHubConnection.On<List<ClientInfo>>("NotifyOfClients", NotifyOfClients);
             gameHubConnection.On<GameInfo>("NotifyOfGameInfo", NotifyOfGameInfo);
+            gameHubConnection.On<List<ClientInfo>>("NotifyOfClients", NotifyOfClients);
             gameHubConnection.On<GameSettingsInfo>("NotifyOfGameSettingsInfo", NotifyOfGameSettingsInfo);
             gameHubConnection.On<EventInfo>("NotifyOfEventInfo", NotifyOfEventInfo);
             gameHubConnection.On<string>("NotifyOfServerError", NotifyOfServerError);
@@ -89,24 +88,7 @@ namespace Mythologist_Client_WASM.Client.Services
             await gameHubConnection.InvokeAsync("RefreshGameState", gameName);
         }
 
-        public ISignalRHubClientService.NotifyOfClientsCallback? notifyOfClientsCallback = null;
-
-        public void InjectNotifyOfClientsDelegate(ISignalRHubClientService.NotifyOfClientsCallback callback)
-        {
-            notifyOfClientsCallback = callback;
-        }
-
-        private void NotifyOfClients(List<ClientInfo> clients)
-        {
-            if (notifyOfClientsCallback is null)
-            {
-                Console.WriteLine("Warning! No client notify callback! Call InjectNotifyOfClientsDelegate");
-                return;
-            }
-
-            notifyOfClientsCallback(clients);
-        }
-
+        
         public ISignalRHubClientService.NotifyOfGameInfoCallback? notifyOfGameInfoCallback = null;
 
         public void InjectNotifyOfGameInfoDelegate(ISignalRHubClientService.NotifyOfGameInfoCallback callback)
@@ -125,6 +107,24 @@ namespace Mythologist_Client_WASM.Client.Services
             }
 
             notifyOfGameInfoCallback(gameInfo);
+        }
+
+        public ISignalRHubClientService.NotifyOfClientsCallback? notifyOfClientsCallback = null;
+
+        public void InjectNotifyOfClientsDelegate(ISignalRHubClientService.NotifyOfClientsCallback callback)
+        {
+            notifyOfClientsCallback = callback;
+        }
+
+        private void NotifyOfClients(List<ClientInfo> clients)
+        {
+            if (notifyOfClientsCallback is null)
+            {
+                Console.WriteLine("Warning! No client notify callback! Call InjectNotifyOfClientsDelegate");
+                return;
+            }
+
+            notifyOfClientsCallback(clients);
         }
 
         public ISignalRHubClientService.NotifyOfGameSettingsInfoCallback notifyOfGameSettingsInfoCallback = null;
@@ -219,16 +219,6 @@ namespace Mythologist_Client_WASM.Client.Services
             }
 
             return gameHubConnection.ConnectionId;
-        }
-
-        public IAsyncEnumerable<byte[]> GetBackgroundAudioStream(string gameName, string sceneName, CancellationToken token)
-        {
-            if (audioStreamHubConnection == null)
-            {
-                throw new Exception("Audio hub connection not initialized");
-            }
-
-            return audioStreamHubConnection.StreamAsync<byte[]>("BackgroundAudioStream", gameName, sceneName, token);
         }
 
     }

@@ -159,7 +159,7 @@
                     }
                 }
 
-                markdownValue = character.markdownValue;
+                markdownValue = character.bioMarkdown;
             }
         }
         catch(Exception ex) {
@@ -189,7 +189,7 @@
 
         CharacterModel updatedCharacter = character!;
         updatedCharacter.portraitImageUri = SelectedCharacterPortrait != null ? BlobUtils.MakeFullStorageUri(blobServiceClient, storageGuid.Value, Constants.MediaItemType.Image, SelectedCharacterPortrait.Name) : null;
-        updatedCharacter.markdownValue = markdownValue;
+        updatedCharacter.bioMarkdown = markdownValue;
 
         await dbConnection.UpdateCharacter(gameName, updatedCharacter);
         BackToCharacterList();

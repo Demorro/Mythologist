@@ -57,9 +57,9 @@
                     </MudPaper>
                     </MudItem>
                     <MudItem xs="12">
-                        <MudSelect T="CharacterModel" MultiSelection="true" @bind-SelectedValues="SelectedCharactersInScene" Label="Characters In Scene">
+                        <MudSelect T="string" MultiSelection="true" @bind-SelectedValues="SelectedCharactersIdsInScene" Label="Characters In Scene">
                             @foreach (CharacterModel character in allCharacters) {
-                                <MudSelectItem Value="@character" />
+                                <MudSelectItem Value="@character.id" />
                             }
                         </MudSelect>
                     </MudItem>
@@ -108,7 +108,7 @@
     private List<BlobUtils.MediaMetadata> allAvailableAudioMedia = new List<BlobUtils.MediaMetadata>();
 
     private List<CharacterModel> allCharacters = new List<CharacterModel>();
-    private IEnumerable<CharacterModel> SelectedCharactersInScene { get; set; } = new HashSet<CharacterModel>() {  };
+    private IEnumerable<string> SelectedCharactersIdsInScene { get; set; } = new HashSet<string>() { };
 
     //Weird hack. To get at the audio element (raw html), it needs a property on its root element that changes to force a rebuild
     //This being an int dosen't matter, it just needs to change.
@@ -160,7 +160,7 @@
             {
                 //Just taken from the passed in param. Sets the textedit.
                 renamedScene = sceneName;
-                SelectedCharactersInScene = scene.charactersInScene;
+                SelectedCharactersIdsInScene = scene.charactersIdsInScene;
 
                 if (scene.backgroundImageUri != null)
                 {
@@ -210,7 +210,7 @@
         SceneModel updatedScene = scene!;
         updatedScene.backgroundImageUri = SelectedBackgroundImage != null ? BlobUtils.MakeFullStorageUri(blobServiceClient, storageGuid.Value, Constants.MediaItemType.Image, SelectedBackgroundImage.Name) : null;
         updatedScene.backgroundMusicUri = SelectedBackgroundAudio != null ? BlobUtils.MakeFullStorageUri(blobServiceClient, storageGuid.Value, Constants.MediaItemType.Audio, SelectedBackgroundAudio.Name) : null;
-        updatedScene.charactersInScene = SelectedCharactersInScene.ToList();
+        updatedScene.charactersIdsInScene = SelectedCharactersIdsInScene.ToList();
 
         await dbConnection.UpdateScene(gameName, updatedScene);
         BackToSceneList();

@@ -9,12 +9,13 @@ namespace Mythologist_Client_WASM.Client.Services
         public Task StopAnyConnections();
         public Task InitializeConnectionAndJoinGame(string gameName, string userName, Utils.DiscordUser? discordUserObject, string? GMPassword);
 
-        public delegate void NotifyOfClientsCallback(List<ClientInfo> clients);
-        public void InjectNotifyOfClientsDelegate(NotifyOfClientsCallback callback);
         public Task RequestRefreshGameState(string gameName);
 
         public delegate void NotifyOfGameInfoCallback(GameInfo gameInfo);
         public void InjectNotifyOfGameInfoDelegate(NotifyOfGameInfoCallback callback);
+
+        public delegate void NotifyOfClientsCallback(List<ClientInfo> clients);
+        public void InjectNotifyOfClientsDelegate(NotifyOfClientsCallback callback);
 
         public delegate void NotifyOfGameSettingsInfoCallback(GameSettingsInfo gameSettingsInfo);
         public void InjectNotifyOfGameSettingsInfoDelegate(NotifyOfGameSettingsInfoCallback callback);

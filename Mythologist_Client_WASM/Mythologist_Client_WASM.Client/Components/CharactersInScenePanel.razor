@@ -1,0 +1,44 @@
+﻿@using Mythologist_Client_WASM.Client.Infos
+@using SharedLogic.Model
+
+<style>
+    .shadow-outlined {
+        text-shadow: 0.05em 0 black, 0 0.05em black, -0.05em 0 black, 0 -0.05em black, -0.05em -0.05em black, -0.05em 0.05em black, 0.05em -0.05em black, 0.05em 0.05em black;
+    }
+</style>
+
+<MudPaper Class="pa-2">
+    <MudStack Row="true">
+        @foreach (CharacterModel character in charactersInScene) {
+            @if(character.portraitImageUri != null){
+                <MudImage Src="@character.portraitImageUri.ToString()" Width="65" Height="65" ObjectFit="ObjectFit.Cover"/>
+            }
+        }
+    </MudStack>
+</MudPaper>
+
+@code {
+    [Parameter]
+    public SceneModel? CurrentScene { get; set; }
+
+    [Parameter]
+    public List<CharacterModel>? AllCharacters { get; set; }
+
+    private List<CharacterModel> charactersInScene = new List<CharacterModel>();
+
+    protected override void OnParametersSet() {
+        if (CurrentScene == null || AllCharacters == null) {
+            return;
+        }
+
+        charactersInScene.Clear();
+
+        foreach(string id in CurrentScene.charactersIdsInScene) {
+            CharacterModel? character = AllCharacters.Find(x => x.id == id);
+
+            if (character != null) {
+                charactersInScene.Add(character);
+            }
+        }
+    }
+}

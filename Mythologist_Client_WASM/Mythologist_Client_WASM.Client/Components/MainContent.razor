@@ -54,12 +54,19 @@
         </MudItem>
 
         <!-- Bottom Row -->
-        <MudItem xs="12" Class="d-flex justify-center" Style="align-self:end; margin-bottom:24px;">
-            <MudStack Row="true" Justify="Justify.Center" AlignItems="AlignItems.Center">
+        <MudItem xs="12" Style="align-self:end; margin-bottom:24px;">
+            <MudStack Row="true" Justify="Justify.SpaceAround" AlignItems="AlignItems.Center">
+
+                <CharactersInScenePanel CurrentScene=@CurrentScene AllCharacters="@AllCharacters"></CharactersInScenePanel>
+
+                <!--Needs to be its own component-->
+                <MudStack Row="true">
                 @foreach (ClientInfo client in ClientsInScene(@CurrentScene.id))
                 {
                 <PlayerPlate Client="client"></PlayerPlate>
                 }
+                </MudStack>
+
             </MudStack>
         </MudItem>
     </MudGrid>
@@ -75,6 +82,9 @@
 
     [Parameter]
     public List<ClientInfo>? ConnectedClients { get; set; }
+
+    [Parameter]
+    public List<CharacterModel>? AllCharacters { get; set; }
 
     private List<ClientInfo> ClientsInScene(string sceneId)
     {
