@@ -1,0 +1,149 @@
+﻿@using SharedLogic.Services
+@using SharedLogic.Model
+@using Mythologist_CRUD.Components
+@using Mythologist_CRUD.Components.Dialogs
+@using MudBlazor
+
+@inject ISnackbar snackBar
+@inject IDialogService DialogService
+@inject IDatabaseConnectionService dbConnection;
+@inject NavigationManager NavManager
+
+<MudExtensions.MudLoading Loading="loading">
+    <MudStack>
+        <MudDataGrid T="CharacterModel" Items="allCharacters" Class="styled-table-cell">
+            <Columns>
+                <PropertyColumn Property="x => x.id" Title="Name" />
+                <TemplateColumn CellClass="d-flex justify-end">
+                    <CellTemplate >
+                        <MudButton @onclick="@(() => EditCharacterButtonClicked(context.Item))" Size="@Size.Medium" Variant="@Variant.Filled" Color="@Color.Primary" Style="margin-left:5px; margin-right:5px">Edit</MudButton>
+                        <MudButton @onclick="@(() => DeleteCharacterButtonClicked(context.Item))" Disabled="!RequiredParamsSet()" Size="@Size.Medium" Variant="@Variant.Filled" Color="@Color.Error" Style="margin-left:5px; margin-right:5px">Delete</MudButton>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </MudDataGrid>
+        <MudStack Class="d-flex justify-start flex-grow-1 gap-4" Row="true">
+            <MudButton @onclick="@(() => NewCharacterButtonClicked())" Disabled="!RequiredParamsSet()" Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.Add" Color="Color.Primary">New Character</MudButton>
+        </MudStack>
+    </MudStack>
+</MudExtensions.MudLoading>
+
+@code {
+    [Parameter]
+    public string? GameName { get; set; } = null;
+
+    private List<CharacterModel>? allCharacters = null;
+    private bool loading = true;
+
+    protected override async Task OnParametersSetAsync() {
+        if (GameName != null) {
+            allCharacters = await dbConnection.AllCharacters(GameName);
+            loading = false;
+        }
+    }
+
+    private async Task NewCharacterButtonClicked(){
+        var dialog = await DialogService.ShowAsync<NewSceneDialog>("New Character");
+        var result = await dialog.Result;
+
+        if (GameName == null) {
+            snackBar.Add("Unexpected null GameName");
+            return;
+        }
+        if (allCharacters == null) {
+            snackBar.Add("Unexpected null character list");
+            return;
+        }
+
+        if (!result!.Canceled)
+        {
+            string? newCharacterName = result.Data as string;
+            if (newCharacterName == null)
+            {
+                snackBar.Add($"Failed to add {newCharacterName} to database", Severity.Error);
+            }
+            else if (allCharacters.Exists(x => x.id.ToLower() == newCharacterName.ToLower()))
+            {
+                snackBar.Add($"'{newCharacterName}' already exists", Severity.Error);
+            }
+            else
+            {
+                CharacterModel newCharacterModel = new CharacterModel(newCharacterName);
+                bool? addCharacterSuccess = await AddCharacterToDB(newCharacterModel);
+                if (!addCharacterSuccess.GetValueOrDefault(false))
+                {
+                    snackBar.Add($"Failed to add {newCharacterModel.id} to database", Severity.Error);
+                }
+                else
+                {
+                    snackBar.Add($"{newCharacterModel.id} Added", Severity.Success);
+                    allCharacters = await dbConnection.AllCharacters(GameName);
+                }
+            }
+        }
+    }
+
+    private bool RequiredParamsSet()
+    {
+        return GameName != null;
+    }
+
+    private async Task DeleteCharacterButtonClicked(CharacterModel characterModel)
+    {
+        if (allCharacters == null) {
+            snackBar.Add("Unexpected null characters list");
+            return;
+        }
+
+        if (GameName == null) {
+            snackBar.Add("Unexpected null GameName");
+            return;
+        }
+
+        bool? result = await DialogService.ShowMessageBox(
+            "Are you sure?",
+            $"Once {characterModel.id} is deleted it cannot be restored",
+            yesText: "Delete", cancelText: "Cancel");
+
+        if (result.GetValueOrDefault(false))
+        {
+            bool? deleteSuccess = await DeleteCharacterFromDB(characterModel);
+            if (!deleteSuccess.GetValueOrDefault(false))
+            {
+                snackBar.Add($"Failed to remove {characterModel.id} from database", Severity.Error);
+            }
+            else
+            {
+                snackBar.Add($"{characterModel.id} deleted", Severity.Success);
+                allCharacters = await dbConnection.AllCharacters(GameName);
+            }
+        }
+    }
+
+    private void EditCharacterButtonClicked(CharacterModel characterModel)
+    {
+        NavManager.NavigateTo($"editCharacter/{characterModel.id}");
+    }
+
+    private async Task<bool> AddCharacterToDB(CharacterModel characterModel)
+    {
+        if (!RequiredParamsSet())
+        {
+            return false;
+        }
+
+        await dbConnection.AddCharacter(GameName!, characterModel);
+        return true;
+    }
+
+    private async Task<bool> DeleteCharacterFromDB(CharacterModel characterModel)
+    {
+        if (!RequiredParamsSet())
+        {
+            return false;
+        }
+
+        await dbConnection.RemoveCharacter(GameName!, characterModel);
+        return true;
+    }
+}

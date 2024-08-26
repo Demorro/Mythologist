@@ -1,4 +1,5 @@
 using Blazored.SessionStorage;
+using MudBlazor;
 using MudBlazor.Services;
 using Mythologist_CRUD.Components;
 using SharedLogic.Services;
@@ -9,6 +10,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add MudBlazor services
 builder.Services.AddMudServices();
+builder.Services.AddMudMarkdownServices();
+builder.Services.AddMudBlazorScrollManager();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

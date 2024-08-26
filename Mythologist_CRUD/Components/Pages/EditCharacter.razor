@@ -1,0 +1,213 @@
+﻿@page "/editCharacter/{characterName}"
+@using Azure.Storage.Blobs
+@using Mythologist_CRUD.Utils
+@using SharedLogic.Services
+@using SharedLogic.Model
+@using System.ComponentModel.DataAnnotations
+@using System.Net
+@using System.Globalization
+@using SharedLogic.Utils
+
+@inject IDatabaseConnectionService dbConnection
+@inject NavigationManager NavManager
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject IConfiguration configuration
+@inject ISnackbar snackBar
+
+<MudExtensions.MudLoading Loading="isLoading()">
+    <MudContainer MaxWidth="MaxWidth.Medium">
+        <MudStack>
+            <MudText>Editing Character `@characterName`</MudText>
+            <MudForm @bind-IsValid="@success">
+                <MudGrid Justify="Justify.Center">
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="renamedCharacter" Label="Character Name" Variant="Variant.Filled" Validation="@(new Func<string, string?>(DataValidation.SanitizeStringMudBlazorValidation))"></MudTextField>
+                    </MudItem>
+
+                    <MudItem xs="12">
+                    <MudSelect T="BlobUtils.MediaMetadata" @bind-Value=SelectedCharacterPortrait Label="Portrait" Variant="Variant.Filled" Validation="@(new Func<BlobUtils.MediaMetadata, string?>(ValidateMediaDropdown))">
+                        <MudSelectItem T="BlobUtils.MediaMetadata" Value="@(null)">No Image</MudSelectItem>
+                        @foreach (BlobUtils.MediaMetadata item in allAvailableImageMedia)
+                        {
+                            <MudSelectItem Value="@item" />
+                        }
+                    </MudSelect>
+                    </MudItem>
+                        <MudItem xs="12">
+                    <MudPaper Height="300px" Width="100%" Class="d-flex" Style="max-height:300px; align-items: center; background: rgba(0,0,0,0.25)">
+                        @if (SelectedCharacterPortrait != null)
+                        {
+                            <MudImage Src=@SelectedCharacterPortrait?.FullUrl Fluid="true" ObjectFit="ObjectFit.Contain" Style="max-height:300px; display: block; margin-left: auto; margin-right: auto;"></MudImage>
+                        }
+                    </MudPaper>
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudStack Row="true" StretchItems="StretchItems.Start">
+                            <MudText Typo="Typo.h5">Bio</MudText>
+                            <MudToggleIconButton @bind-Toggled="@EditMarkdown"
+                                                 Icon="@Icons.Material.Filled.Edit" Color="@Color.Primary" 
+                                                 ToggledIcon="@Icons.Material.Filled.Preview" ToggledColor="@Color.Secondary" 
+                                                 Style="display:flex; margin-left:auto; margin-right:0px;"/>
+                        </MudStack>
+                        @if (EditMarkdown) {
+                            <MudTextField @ref="MarkdownTextField" T="string" Label="Markdown" Variant="Variant.Filled" @bind-Text="@markdownValue" Lines="15" Style="overflow-y:scroll"/>
+                        }
+                        else {
+                                <MudMarkdown Value="@markdownValue" />
+                        }
+                    </MudItem>
+                </MudGrid>
+            </MudForm>
+            <MudStack Class="d-flex align-center ">
+                <MudStack Row="true">
+                    <MudButton @onclick="BackToCharacterList" Variant="Variant.Filled" Color="Color.Secondary" Class="ml-auto">Back</MudButton>
+                    <MudButton @onclick="SubmitForm" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!success)" Class="ml-auto">Save</MudButton>
+                </MudStack>
+            </MudStack>
+        </MudStack>
+    </MudContainer>
+</MudExtensions.MudLoading>
+
+
+@code {
+
+    private string? ValidateMediaDropdown(BlobUtils.MediaMetadata value)
+    {
+        // A validator is good if it returns null, otherwise return a string that is the error you want to display on the form
+        // At the moment, all is good, but leaving this setup cause i'll forget
+        return null;
+    }
+
+    private bool isLoading(){
+        return character == null;
+    }
+
+    bool success;
+    [Parameter]
+    public string? characterName { get; set; }
+    private string? renamedCharacter;
+
+    private string? gameName;
+
+    private CharacterModel? character;
+    private Guid? storageGuid;
+
+    private BlobServiceClient? blobServiceClient;
+    private BlobContainerClient? gameContainer;
+
+    public BlobUtils.MediaMetadata? SelectedCharacterPortrait { get; set; }
+    private bool EditMarkdown = false;
+    private string markdownValue = "";
+    private MudTextField<string>? MarkdownTextField;
+
+
+    // The media available to the user, that they've uploaded.
+    private List<BlobUtils.MediaMetadata> allAvailableImageMedia = new List<BlobUtils.MediaMetadata>();
+
+    //Weird hack. To get at the audio element (raw html), it needs a property on its root element that changes to force a rebuild
+    //This being an int dosen't matter, it just needs to change.
+    private int forceAudioUpdate = 0;
+
+    protected async override Task OnInitializedAsync()
+    {
+        try
+        {
+            gameName = await sessionStorage.GetItemAsync<string>("GameName");
+            var GMPassword = await sessionStorage.GetItemAsync<string>("GMPassword");
+
+            if (gameName == null)
+            {
+                snackBar.Add("Couldn't find game, redirecting.");
+                NavManager.NavigateTo("/");
+                return;
+            }
+
+            bool verified = await dbConnection.VerifyLogin(gameName, GMPassword);
+            if (!verified)
+            {
+                snackBar.Add("Not authorized to be here. The authorities have been informed.");
+                NavManager.NavigateTo("/");
+                return;
+            }
+
+            if (characterName == null) {
+                snackBar.Add("Expected characterName to have been set in EditCharacter component.");
+                NavManager.NavigateTo("/");
+                return;
+            }
+
+            character = await dbConnection.Character(gameName, characterName);
+            storageGuid = await dbConnection.StorageGuid(gameName);
+
+            //Grab the metadata for all the media we can set in this panel
+            (blobServiceClient, gameContainer) = await BlobUtils.SetupOrVerifyBlobStorageGumph(storageGuid, configuration.GetConnectionString("blobStorage")!, blobServiceClient, gameContainer);
+            allAvailableImageMedia = await BlobUtils.GetMediaMetaData(storageGuid, SharedLogic.Utils.Constants.MediaItemType.Image, gameContainer, blobServiceClient); 
+
+            //Set the dropdowns to what the database says
+            if (character != null)
+            {
+                //Just taken from the passed in param. Sets the textedit.
+                renamedCharacter = characterName;
+
+                if (character.portraitImageUri != null)
+                {
+                    var fileName = Path.GetFileName(character.portraitImageUri.AbsolutePath);
+                    SelectedCharacterPortrait = allAvailableImageMedia.Find(x => x.Name == fileName);
+                    if (SelectedCharacterPortrait == null)
+                    {
+                        snackBar.Add($"Couldn't find media for character portrait '{fileName}'. Perhaps it has been deleted?");
+                    }
+                }
+
+                markdownValue = character.markdownValue;
+            }
+        }
+        catch(Exception ex) {
+            snackBar.Add($"Unexpected exception : {ex.Message}");
+        }
+    }
+
+
+    public async Task SubmitForm()
+    {
+        if (storageGuid == null) {
+            snackBar.Add("Expected storage guid. Cannot access blob storage", Severity.Error);
+            return;
+        }
+
+        if (gameName == null || character == null || renamedCharacter == null) {
+            snackBar.Add("Unexpected invalid form state", Severity.Error);
+            return;
+        }
+
+        (blobServiceClient, gameContainer) = await BlobUtils.SetupOrVerifyBlobStorageGumph(storageGuid, configuration.GetConnectionString("blobStorage")!, blobServiceClient, gameContainer);
+
+        if (characterName != renamedCharacter)
+        {
+            await dbConnection.RenameCharacter(gameName, character, renamedCharacter);
+        }
+
+        CharacterModel updatedCharacter = character!;
+        updatedCharacter.portraitImageUri = SelectedCharacterPortrait != null ? BlobUtils.MakeFullStorageUri(blobServiceClient, storageGuid.Value, Constants.MediaItemType.Image, SelectedCharacterPortrait.Name) : null;
+        updatedCharacter.markdownValue = markdownValue;
+
+        await dbConnection.UpdateCharacter(gameName, updatedCharacter);
+        BackToCharacterList();
+    }
+
+    Task OnMarkdownValueChanged(string value) {
+        markdownValue = value;
+        return Task.CompletedTask;
+    }
+
+    public void BackToCharacterList()
+    {
+        NavManager.NavigateTo("/characterList");
+    }
+
+    private void ForceAudioRefresh()
+    {
+        forceAudioUpdate++;
+    }
+
+}

@@ -95,18 +95,6 @@ namespace SharedLogic.Services
             }
         }
 
-        public async Task<List<SceneModel>> AllScenes(string gameName) {
-            Microsoft.Azure.Cosmos.Database database = await GetDatabaseLazy();
-            var gameDataContainer = await GetGameDataContainer(database);
-            var model = await GameDataModelFromDB(gameName, new PartitionKey(gameName), gameDataContainer);
-            return model.scenes; 
-        }
-
-        public async Task<SceneModel?> Scene(string gameName, string sceneID) {
-            SceneModel? scene = (await AllScenes(gameName)).Find(x => x.id == sceneID);
-            return scene;
-        }
-
         public async Task CreateNewGame(string gameName, string GMPassword)
         {
             Microsoft.Azure.Cosmos.Database database = await GetDatabaseLazy();
@@ -133,6 +121,7 @@ namespace SharedLogic.Services
             var gameDataContainer = await GetGameDataContainer(database);
             var partitionKey = new Microsoft.Azure.Cosmos.PartitionKey(gameName);
             GameModel? gameData = await GameDataModelFromDB(gameName, partitionKey, gameDataContainer);
+
             return gameData != null;
         }
 
@@ -156,32 +145,60 @@ namespace SharedLogic.Services
             return true;
         }
 
+        class ConnectionObjects {
+            public ConnectionObjects(Microsoft.Azure.Cosmos.Database? database, Microsoft.Azure.Cosmos.Container? gameDataContainer, GameModel? gameDataModel) {
+                if (database == null) {
+                    throw new Exception("Unexpected null database");
+                }
+                if (gameDataContainer == null) {
+                    throw new Exception("Unexpected null game data container");
+                }
+                if (gameDataModel == null) {
+                    throw new Exception("Game does not exist.");
+                }
+
+                this.database = database;
+                this.gameDataContainer = gameDataContainer;
+                this.gameDataModel = gameDataModel;
+            }
+
+            public Microsoft.Azure.Cosmos.Database database {get; private set;}
+            public Microsoft.Azure.Cosmos.Container gameDataContainer {get; private set;}
+            public GameModel gameDataModel {get; private set;}
+        }
+
+        private async Task<ConnectionObjects> GameDBConnection(string gameName) {
+            Microsoft.Azure.Cosmos.Database? database = await GetDatabaseLazy();
+            Microsoft.Azure.Cosmos.Container? gameDataContainer = await GetGameDataContainer(database);
+            GameModel? model = await GameDataModelFromDB(gameName, new PartitionKey(gameName), gameDataContainer);
+
+            return new ConnectionObjects(database, gameDataContainer, model);
+        }
+
+        public async Task<List<SceneModel>> AllScenes(string gameName) {
+            ConnectionObjects connection = await GameDBConnection(gameName);
+            return connection.gameDataModel.scenes; 
+        }
+
+        public async Task<SceneModel?> Scene(string gameName, string sceneID) {
+            SceneModel? scene = (await AllScenes(gameName)).Find(x => x.id == sceneID);
+            return scene;
+        }
+
         public async Task AddScene(string gameName, SceneModel newScene)
         {
-            Microsoft.Azure.Cosmos.Database database = await GetDatabaseLazy();
-            var gameDataContainer = await GetGameDataContainer(database);
-            var model = await GameDataModelFromDB(gameName, new PartitionKey(gameName), gameDataContainer);
-
-            if (model == null)
-            {
-                throw new Exception("Expected existing game model");
-            }
+            ConnectionObjects connection = await GameDBConnection(gameName);
+            var model = connection.gameDataModel;
 
             //Consider partial document update to keep costs down
             model.scenes.Add(newScene);
-            await gameDataContainer.ReplaceItemAsync<GameModel>(model, gameName);
+            await connection.gameDataContainer.ReplaceItemAsync<GameModel>(model, gameName);
         }
 
         public async Task RenameScene(string gameName, SceneModel oldScene, string newSceneName)
         {
-            Microsoft.Azure.Cosmos.Database database = await GetDatabaseLazy();
-            var gameDataContainer = await GetGameDataContainer(database);
-            var model = await GameDataModelFromDB(gameName, new PartitionKey(gameName), gameDataContainer);
-
-            if (model == null)
-            {
-                throw new Exception("Expected existing game model");
-            }
+            ConnectionObjects connection = await GameDBConnection(gameName);
+            var model = connection.gameDataModel;
 
             int index = model.scenes.FindIndex(x => x.id == oldScene.id);
             if (index == -1)
@@ -192,19 +209,13 @@ namespace SharedLogic.Services
             model.scenes[index] = oldScene;
 
             //Consider partial document update to keep costs down
-            await gameDataContainer.ReplaceItemAsync<GameModel>(model, gameName);
+            await connection.gameDataContainer.ReplaceItemAsync<GameModel>(model, gameName);
         }
 
         public async Task UpdateScene(string gameName, SceneModel updatedScene)
         {
-            Microsoft.Azure.Cosmos.Database database = await GetDatabaseLazy();
-            var gameDataContainer = await GetGameDataContainer(database);
-            var model = await GameDataModelFromDB(gameName, new PartitionKey(gameName), gameDataContainer);
-
-            if (model == null)
-            {
-                throw new Exception("Expected existing game model");
-            }
+            ConnectionObjects connection = await GameDBConnection(gameName);
+            var model = connection.gameDataModel;
             
             int index = model.scenes.FindIndex(x => x.id == updatedScene.id);
             if (index == -1)
@@ -214,54 +225,103 @@ namespace SharedLogic.Services
             model.scenes[index] = updatedScene;
 
             //Consider partial document update to keep costs down
-            await gameDataContainer.ReplaceItemAsync<GameModel>(model, gameName);
+            await connection.gameDataContainer.ReplaceItemAsync<GameModel>(model, gameName);
         }
 
         public async Task RemoveScene(string gameName, SceneModel sceneToDelete)
         {
-            Microsoft.Azure.Cosmos.Database database = await GetDatabaseLazy();
-            var gameDataContainer = await GetGameDataContainer(database);
-            var model = await GameDataModelFromDB(gameName, new PartitionKey(gameName), gameDataContainer);
-
-            if (model == null)
-            {
-                throw new Exception("Expected existing game model");
-            }
+            ConnectionObjects connection = await GameDBConnection(gameName);
+            var model = connection.gameDataModel;
 
             //Consider partial document update to keep costs down
             model.scenes.RemoveAll(x => x.id.Equals(sceneToDelete.id));
-            await gameDataContainer.ReplaceItemAsync<GameModel>(model, gameName);
+            await connection.gameDataContainer.ReplaceItemAsync<GameModel>(model, gameName);
+        }
+
+        public async Task<List<CharacterModel>> AllCharacters(string gameName) {
+            ConnectionObjects connection = await GameDBConnection(gameName);
+            return connection.gameDataModel.characters; 
+        }
+
+        public async Task<CharacterModel?> Character(string gameName, string characterID) {
+            CharacterModel? character = (await AllCharacters(gameName)).Find(x => x.id == characterID);
+            return character;
+        }
+
+        public async Task AddCharacter(string gameName, CharacterModel newCharacter)
+        {
+            ConnectionObjects connection = await GameDBConnection(gameName);
+            var model = connection.gameDataModel;
+
+            //Consider partial document update to keep costs down
+            model.characters.Add(newCharacter);
+            await connection.gameDataContainer.ReplaceItemAsync<GameModel>(model, gameName);
+        }
+
+        public async Task RenameCharacter(string gameName, CharacterModel oldCharacter, string newCharacterName)
+        {
+            ConnectionObjects connection = await GameDBConnection(gameName);
+            var model = connection.gameDataModel;
+
+            int index = model.characters.FindIndex(x => x.id == oldCharacter.id);
+            if (index == -1)
+            {
+                throw new Exception($"Could not find character to rename {oldCharacter.id}");
+            }
+            oldCharacter.id = newCharacterName;
+            model.characters[index] = oldCharacter;
+
+            //Consider partial document update to keep costs down
+            await connection.gameDataContainer.ReplaceItemAsync<GameModel>(model, gameName);
+        }
+
+        public async Task UpdateCharacter(string gameName, CharacterModel updatedCharacter)
+        {
+            ConnectionObjects connection = await GameDBConnection(gameName);
+            var model = connection.gameDataModel;
+            
+            int index = model.characters.FindIndex(x => x.id == updatedCharacter.id);
+            if (index == -1)
+            {
+                throw new Exception($"Could not find character to update {updatedCharacter.id}");
+            }
+            model.characters[index] = updatedCharacter;
+
+            //Consider partial document update to keep costs down
+            await connection.gameDataContainer.ReplaceItemAsync<GameModel>(model, gameName);
+        }
+
+        public async Task RemoveCharacter(string gameName, CharacterModel characterToDelete)
+        {
+            ConnectionObjects connection = await GameDBConnection(gameName);
+            var model = connection.gameDataModel;
+
+            //Consider partial document update to keep costs down
+            model.characters.RemoveAll(x => x.id.Equals(characterToDelete.id));
+            await connection.gameDataContainer.ReplaceItemAsync<GameModel>(model, gameName);
         }
 
         public async Task UpdateGameSettings(string gameName, GameSettingsModel settings)
         {
-			Microsoft.Azure.Cosmos.Database database = await GetDatabaseLazy();
-			var gameDataContainer = await GetGameDataContainer(database);
-			var model = await GameDataModelFromDB(gameName, new PartitionKey(gameName), gameDataContainer);
-
-			if (model == null)
-			{
-				throw new Exception("Expected existing game model");
-			}
+			ConnectionObjects connection = await GameDBConnection(gameName);
+            var model = connection.gameDataModel;
 
             //Consider partial document update to keep costs down
             model.gameSettings = settings;
-			await gameDataContainer.ReplaceItemAsync<GameModel>(model, gameName);
+			await connection.gameDataContainer.ReplaceItemAsync<GameModel>(model, gameName);
 		}
 
         public async Task<GameSettingsModel> GameSettings(string gameName)
         {
-			Microsoft.Azure.Cosmos.Database database = await GetDatabaseLazy();
-			var gameDataContainer = await GetGameDataContainer(database);
-			var model = await GameDataModelFromDB(gameName, new PartitionKey(gameName), gameDataContainer);
-			return model?.gameSettings;
+			ConnectionObjects connection = await GameDBConnection(gameName);
+            var model = connection.gameDataModel;
+			return model.gameSettings;
 
 		}
 
         public async Task<Guid> StorageGuid(string gameName) {
-            Microsoft.Azure.Cosmos.Database database = await GetDatabaseLazy();
-			var gameDataContainer = await GetGameDataContainer(database);
-			var model = await GameDataModelFromDB(gameName, new PartitionKey(gameName), gameDataContainer);
+            ConnectionObjects connection = await GameDBConnection(gameName);
+            var model = connection.gameDataModel;
 			return model.storageID;
         }
 	}

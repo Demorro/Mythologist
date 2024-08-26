@@ -48,13 +48,20 @@
                         }
                     </MudSelect>
                     </MudItem>
-                        <MudItem xs="12">
+                     <MudItem xs="12">
                     <MudPaper Height="300px" Width="100%" Class="d-flex" Style="max-height:300px; align-items: center; background: rgba(0,0,0,0.25)">
                         @if (@SelectedBackgroundImage != null)
                         {
                             <MudImage Src=@SelectedBackgroundImage?.FullUrl Fluid="true" ObjectFit="ObjectFit.Contain" Style="max-height:300px; display: block; margin-left: auto; margin-right: auto;"></MudImage>
                         }
                     </MudPaper>
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudSelect T="CharacterModel" MultiSelection="true" @bind-SelectedValues="SelectedCharactersInScene" Label="Characters In Scene">
+                            @foreach (CharacterModel character in allCharacters) {
+                                <MudSelectItem Value="@character" />
+                            }
+                        </MudSelect>
                     </MudItem>
                 </MudGrid>
             </MudForm>
@@ -100,6 +107,9 @@
     private List<BlobUtils.MediaMetadata> allAvailableImageMedia = new List<BlobUtils.MediaMetadata>();
     private List<BlobUtils.MediaMetadata> allAvailableAudioMedia = new List<BlobUtils.MediaMetadata>();
 
+    private List<CharacterModel> allCharacters = new List<CharacterModel>();
+    private IEnumerable<CharacterModel> SelectedCharactersInScene { get; set; } = new HashSet<CharacterModel>() {  };
+
     //Weird hack. To get at the audio element (raw html), it needs a property on its root element that changes to force a rebuild
     //This being an int dosen't matter, it just needs to change.
     private int forceAudioUpdate = 0;
@@ -134,6 +144,7 @@
 
             scene = await dbConnection.Scene(gameName, sceneName);
             storageGuid = await dbConnection.StorageGuid(gameName);
+            allCharacters = await dbConnection.AllCharacters(gameName);
 
             //Grab the metadata for all the media we can set in this panel
             (blobServiceClient, gameContainer) = await BlobUtils.SetupOrVerifyBlobStorageGumph(storageGuid, configuration.GetConnectionString("blobStorage")!, blobServiceClient, gameContainer);
@@ -143,11 +154,13 @@
             allAvailableImageMedia = imagesAndAudio[0];
             allAvailableAudioMedia = imagesAndAudio[1];
 
+
             //Set the dropdowns to what the database says
             if (scene != null)
             {
                 //Just taken from the passed in param. Sets the textedit.
                 renamedScene = sceneName;
+                SelectedCharactersInScene = scene.charactersInScene;
 
                 if (scene.backgroundImageUri != null)
                 {
@@ -175,7 +188,6 @@
         }
     }
 
-
     public async Task SubmitForm()
     {
         if (storageGuid == null) {
@@ -198,6 +210,7 @@
         SceneModel updatedScene = scene!;
         updatedScene.backgroundImageUri = SelectedBackgroundImage != null ? BlobUtils.MakeFullStorageUri(blobServiceClient, storageGuid.Value, Constants.MediaItemType.Image, SelectedBackgroundImage.Name) : null;
         updatedScene.backgroundMusicUri = SelectedBackgroundAudio != null ? BlobUtils.MakeFullStorageUri(blobServiceClient, storageGuid.Value, Constants.MediaItemType.Audio, SelectedBackgroundAudio.Name) : null;
+        updatedScene.charactersInScene = SelectedCharactersInScene.ToList();
 
         await dbConnection.UpdateScene(gameName, updatedScene);
         BackToSceneList();

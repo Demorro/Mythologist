@@ -1,23 +1,23 @@
 ﻿namespace SharedLogic.Model
 {
-    public class SceneModel
+    public class CharacterModel
     {
-        public SceneModel(string id)
+        public CharacterModel(string id)
         {
             this.id = id;
+			markdownValue = "";
         }
 
         public string id { get; set; }
-        public Uri? backgroundImageUri { get; set; }
-        public Uri? backgroundMusicUri { get; set; }
 
-		//The characters that are in this scene
-		public List<CharacterModel> charactersInScene { get; set; }
+		public Uri? portraitImageUri { get; set; }
+
+		public string markdownValue {get; set; }
 
 		// Overrides for Equals, GetHashCode and ToString are important for MudSelect
 		public override bool Equals(object o)
 		{
-			var other = o as SceneModel;
+			var other = o as CharacterModel;
 			return other?.id == id;
 		}
 		public override int GetHashCode() => id?.GetHashCode() ?? 0;

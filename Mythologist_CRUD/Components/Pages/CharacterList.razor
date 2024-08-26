@@ -1,4 +1,4 @@
-﻿@page "/scenelist"
+﻿@page "/characterlist"
 @attribute [StreamRendering(true)]
 @using Mythologist_CRUD.Components.Layout
 @using SharedLogic.Services
@@ -12,12 +12,12 @@
 @inject NavigationManager navManager;
 
 <MudContainer MaxWidth="MaxWidth.Medium">
-	<MudText Typo="Typo.h4" Class="mb-4">Scenes</MudText>
+	<MudText Typo="Typo.h4" Class="mb-4">Characters</MudText>
 	<MudStack Spacing="10">
 		<MudText Typo="Typo.body1" Align="Align.Left">
-			Create and edit the scenes that will appear in your sessions.
+			Create and edit the characters that will appear in your sessions.
 		</MudText>
-		<ScenesDataGrid GameName="@gameName"></ScenesDataGrid>
+		<CharacterDataGrid GameName="@gameName"></CharacterDataGrid>
 
 	</MudStack>
 </MudContainer>
