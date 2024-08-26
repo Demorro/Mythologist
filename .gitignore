@@ -401,5 +401,6 @@ FodyWeavers.xsd
 **/bin/
 **/obj/
 .config/
+Media/
 
 *.csproj.user

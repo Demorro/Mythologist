@@ -1,0 +1,45 @@
+﻿@page "/describe"
+@layout AnonymousLayout
+
+@using MudBlazor
+@using Mythologist_CRUD.Components
+@using Mythologist_CRUD.Components.Dialogs
+@using Mythologist_CRUD.Components.Layout
+@using SharedLogic.Services
+
+@inject ISnackbar snackBar
+@inject IDialogService DialogService
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject NavigationManager NavManager
+@inject IConfiguration configuration
+@inject IDatabaseConnectionService dbConnection 
+
+<div style="display: flex; justify-content: center; align-items: center;">
+    <MudContainer MaxWidth="MaxWidth.Medium">
+        <MudStack Class="d-flex justify-center" Style="align-items:center; " Spacing="4">
+
+            <MudText Typo="Typo.h1" Style="display: flex; justify-content:center; flex-direction:column; text-align:center; margin-top:100px">Mythologist</MudText>
+            <MudText Typo="Typo.subtitle1">Higher production value games, lower stress</MudText>
+            <!--
+            <MudStack Row="true" Spacing="2">
+                <MudFocusTrap DefaultFocus="DefaultFocus.LastChild">
+                    <MudButton Color="Color.Secondary" Style="font-size:1.2rem; min-width:250px" Variant="Variant.Filled" @onclick="NewGameButtonClicked">Create</MudButton>
+                    <MudButton Color="Color.Primary" Style="font-size:1.2rem; min-width:250px" Variant="Variant.Filled" @onclick="LoginButtonClicked">Login</MudButton>
+                </MudFocusTrap>
+            </MudStack>
+            -->
+        </MudStack>
+    </MudContainer>
+</div>
+
+<style>
+    .blur-dialog-background {
+        backdrop-filter: blur(6px);
+    }
+</style>
+
+
+@code {
+
+
+}
