@@ -44,32 +44,28 @@
 
 <div class="mainContentContainer">
     <MudGrid Class="contentGrid" Justify="Justify.Center">
-        <MudItem xs="12" Class="d-flex justify-center" Style="align-self:start; margin-top:20px; padding-top:0px;">
+        <MudItem xs="2" Class="d-flex justify-start" Style="align-self:start;">
+            <CharactersInScenePanel CurrentScene=@CurrentScene AllCharacters="@AllCharacters"></CharactersInScenePanel>
+
+        </MudItem>
+        <MudItem xs="10" Class="d-flex justify-center" Style="align-self:start; margin-top:20px; padding-top:0px;">
             @if (@GameInfo.gameSettings.showSceneTitle)
             {
-
                 <MudText Typo="Typo.h4" Class="shadow-outlined">@CurrentScene.id</MudText>
 
             }
         </MudItem>
 
-        <!-- Bottom Row -->
-        <MudItem xs="12" Style="align-self:end; margin-bottom:24px;">
-            <MudStack Row="true" Justify="Justify.SpaceAround" AlignItems="AlignItems.Center">
 
-                <CharactersInScenePanel CurrentScene=@CurrentScene AllCharacters="@AllCharacters"></CharactersInScenePanel>
-
-                <!--Needs to be its own component-->
-                <MudStack Row="true">
-                @foreach (ClientInfo client in ClientsInScene(@CurrentScene.id))
-                {
-                <PlayerPlate Client="client"></PlayerPlate>
-                }
-                </MudStack>
-
-            </MudStack>
-        </MudItem>
     </MudGrid>
+ 
+    <!--Needs to be its own component-->
+    <MudStack Row="true" Style="position:absolute; margin-left:auto; margin-right:auto; align-self:end; margin-bottom:24px;">
+        @foreach (ClientInfo client in ClientsInScene(@CurrentScene.id)) {
+            <PlayerPlate Client="client"></PlayerPlate>
+        }
+    </MudStack>
+
     <MudImage Class="backgroundImage" Src="@CurrentScene?.backgroundImageUri?.ToString()" ObjectPosition="ObjectPosition.Center" ObjectFit="ObjectFit.ScaleDown"></MudImage>
 </div>
 @code {
