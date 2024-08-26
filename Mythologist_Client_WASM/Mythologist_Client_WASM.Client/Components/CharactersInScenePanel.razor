@@ -7,20 +7,23 @@
     }
 </style>
 
-<MudPaper Class="mt-n4">
-<MudText Typo="Typo.subtitle1" Align="Align.Center">NPC's</MudText>
-<MudPaper Class="pa-2" Style="min-width:64px; max-height:88vh; overflow-y:scroll; background-color:transparent">
-        <MudStack AlignItems="AlignItems.Center">
-            @foreach (CharacterModel character in charactersInScene) {
-                @if(character.portraitImageUri != null){
-                    <MudImage Src="@character.portraitImageUri.ToString()" ObjectFit="ObjectFit.Cover" Fluid="true" Width="160"/>
-                    <MudText Typo="Typo.body2" Align="Align.Center">@character.id</MudText>
-                }
-            }
-        </MudStack>
+@if (charactersInScene.Count > 0)
+{
+    <MudPaper Class="mt-n4">
+        <MudText Typo="Typo.subtitle1" Align="Align.Center">NPC's</MudText>
+        <MudPaper Class="pa-2" Style="min-width:64px; max-height:88vh; overflow-y:scroll; background-color:transparent">
+                <MudStack AlignItems="AlignItems.Center">
+                    @foreach (CharacterModel character in charactersInScene) {
+                        @if(character.portraitImageUri != null){
+                            <MudImage Src="@character.portraitImageUri.ToString()" ObjectFit="ObjectFit.Cover" Fluid="true" Width="160"/>
+                            <MudText Typo="Typo.body2" Align="Align.Center">@character.id</MudText>
+                        }
+                    }
+                </MudStack>
 
-</MudPaper>
-</MudPaper>
+        </MudPaper>
+    </MudPaper>
+}
 @code {
     [Parameter]
     public SceneModel? CurrentScene { get; set; }
