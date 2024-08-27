@@ -177,8 +177,6 @@
     {
         gameInfo = _gameInfo;
         allCharacters = gameInfo.characters;
-        //Populate the live info so it's got slots for all the characters
-        //liveCharacterInfo = CreateLiveCharacterInfoFromModels(gameInfo);
 
         StateHasChanged();
     }
@@ -205,7 +203,7 @@
             return;
         }
 
-        Console.WriteLine("ERROR: Recieved unrecognized event type");
+        Console.WriteLine("ERROR: Received unrecognized event type");
     }
 
     private void NotifyOfServerError(string message)
@@ -228,34 +226,4 @@
             });
         }
     }
-
-    private Dictionary<string, Dictionary<string, CharacterInfo>> CreateLiveCharacterInfoFromModels(GameInfo gameInfo) {
-        Dictionary<string, Dictionary<string, CharacterInfo>> liveInfo = new Dictionary<string, Dictionary<string, CharacterInfo>>();
-
-        List<CharacterModel> allCharacters = gameInfo.characters;
-
-        //Convert the list to a hash for lookup
-        Dictionary<string, CharacterModel> charactersWithNames = new Dictionary<string, CharacterModel>();
-        foreach(CharacterModel model in allCharacters) {
-            charactersWithNames.TryAdd(model.id, model);
-        }
-
-        //Go through all the scenes
-        foreach(SceneModel scene in gameInfo.scenes) {
-            liveInfo.TryAdd(scene.id, new Dictionary<string, CharacterInfo>());
-
-            foreach(string characterID in scene.charactersIdsInScene) {
-                if (!charactersWithNames.ContainsKey(characterID)) {
-                    throw new Exception($"Couldn't find expected character `{characterID}`");
-                }
-
-                //TODO, set hasEnteredScene from somewhere
-                liveInfo[scene.id].TryAdd(characterID, new CharacterInfo { id = charactersWithNames[characterID].id, scene = scene.id, hasEnteredScene = false });
-            }
-        }
-
-        return liveInfo;
-
-    }
-
 }
