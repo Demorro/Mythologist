@@ -32,7 +32,7 @@
             </MudStack>
         </MudPaper>
         @if(currentScene != null){
-        <MainContent GameInfo="@gameInfo" CurrentScene="@currentScene" ConnectedClients="@connectedClients" AllCharacters="@allCharacters" LocalClient="@localClient"></MainContent>
+        <MainContent GameInfo="@gameInfo" CurrentScene="@currentScene" ConnectedClients="@connectedClients" AllCharacters="@allCharacters" LocalClient="@localClient" LiveCharacterInfo="@liveCharacterInfo"></MainContent>
         }
         @if (@connectedClients != null && (@gameInfo != null))
         {
@@ -78,6 +78,15 @@
     private GameInfo? gameInfo = null;
     private SceneModel? currentScene = null;
     private List<CharacterModel>? allCharacters = new List<CharacterModel>();
+
+    /*
+    * The characters that appear in scenes are set via the database, and should appear in the allCharactersArry
+    * This dict also contains all the characters <sceneID, <characterID, CharacterInfo>>, 
+    * the difference being that this is the live session state of those characters. Particularly whether those
+    * characters have entered the scene or not.
+    * This state wont persist once the room has died.
+    */
+    private Dictionary<string, Dictionary<string, CharacterInfo>>? liveCharacterInfo { get; set; } = new Dictionary<string, Dictionary<string, CharacterInfo>>();
 
     private GameSettingsInfo liveGameSettings = new GameSettingsInfo();
 
@@ -145,7 +154,6 @@
             Console.WriteLine("Warning, could not find our connection in client notify");
         }
 
-
         StateHasChanged();
     }
 
@@ -153,6 +161,9 @@
     {
         gameInfo = _gameInfo;
         allCharacters = gameInfo.characters;
+        //Populate the live info so it's got slots for all the characters
+        liveCharacterInfo = CreateLiveCharacterInfoFromModels(gameInfo);
+
         StateHasChanged();
     }
 
@@ -174,8 +185,8 @@
         switch (theEvent.EEventType)
         {
             case EventInfo.EventType.SendText:
-                PopupRecievedChatMessage(theEvent);
-                return;
+            PopupRecievedChatMessage(theEvent);
+            return;
         }
 
         Console.WriteLine("ERROR: Recieved unrecognized event type");
@@ -200,6 +211,35 @@
                 config.IconSize = Size.Large;
             });
         }
+    }
+
+    private Dictionary<string, Dictionary<string, CharacterInfo>> CreateLiveCharacterInfoFromModels(GameInfo gameInfo) {
+        Dictionary<string, Dictionary<string, CharacterInfo>> liveInfo = new Dictionary<string, Dictionary<string, CharacterInfo>>();
+
+        List<CharacterModel> allCharacters = gameInfo.characters;
+
+        //Convert the list to a hash for lookup
+        Dictionary<string, CharacterModel> charactersWithNames = new Dictionary<string, CharacterModel>();
+        foreach(CharacterModel model in allCharacters) {
+            charactersWithNames.TryAdd(model.id, model);
+        }
+
+        //Go through all the scenes
+        foreach(SceneModel scene in gameInfo.scenes) {
+            liveInfo.TryAdd(scene.id, new Dictionary<string, CharacterInfo>());
+
+            foreach(string characterID in scene.charactersIdsInScene) {
+                if (!charactersWithNames.ContainsKey(characterID)) {
+                    throw new Exception($"Couldn't find expected character `{characterID}`");
+                }
+
+                //TODO, set hasEnteredScene from somewhere
+                liveInfo[scene.id].TryAdd(characterID, new CharacterInfo { id = charactersWithNames[characterID].id, scene = scene.id, hasEnteredScene = false });
+            }
+        }
+
+        return liveInfo;
+
     }
 
 }

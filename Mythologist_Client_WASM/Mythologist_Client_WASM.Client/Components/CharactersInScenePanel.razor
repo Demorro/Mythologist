@@ -7,7 +7,7 @@
     }
 </style>
 
-@if ((charactersInScene.Count > 0) && (SessionCharacterInfo != null))
+@if ((charactersInScene.Count > 0) && (LiveCharacterInfo != null))
 {
     <MudPaper Class="mt-n4">
         <MudText Typo="Typo.subtitle1" Align="Align.Center">NPC's</MudText>
@@ -48,7 +48,7 @@
 
     [Parameter]
     //Assumed to contain all characters
-    public Dictionary<string, Dictionary<string, CharacterInfo>>? SessionCharacterInfo { get; set; } = new Dictionary<string, Dictionary<string, CharacterInfo>>();
+    public Dictionary<string, Dictionary<string, CharacterInfo>>? LiveCharacterInfo { get; set; }
 
     [Parameter]
     public ClientInfo? LocalClient { get; set; }
@@ -62,18 +62,12 @@
 
         charactersInScene.Clear();
 
-        //Testing hack
-        SessionCharacterInfo.TryAdd(CurrentScene.id, new Dictionary<string, CharacterInfo>());
-
         foreach(string id in CurrentScene.charactersIdsInScene) {
             CharacterModel? character = AllCharacters.Find(x => x.id == id);
 
             if (character != null) {
                 charactersInScene.Add(character);
 
-
-                //Testing hack
-                SessionCharacterInfo[CurrentScene.id].TryAdd(character.id, new CharacterInfo { id = character.id, scene = CurrentScene.id, hasEnteredScene = false });
             }
         }
     }
@@ -81,35 +75,35 @@
     private void EnterExitSceneToggleChanged(CharacterModel character, bool toggle) {
         string characterID = character.id;
 
-        if ((SessionCharacterInfo == null) || (CurrentScene == null)) {
+        if ((LiveCharacterInfo == null) || (CurrentScene == null)) {
             return;
         }
 
-        if (!SessionCharacterInfo.ContainsKey(CurrentScene.id)) {
+        if (!LiveCharacterInfo.ContainsKey(CurrentScene.id)) {
             throw new Exception("Session Character Info does not contain scene");
         }
 
-        if (!SessionCharacterInfo[CurrentScene.id].ContainsKey(characterID)) {
+        if (!LiveCharacterInfo[CurrentScene.id].ContainsKey(characterID)) {
             throw new Exception($"Session Character Info does not contain character '{characterID}'");
         }
 
-        SessionCharacterInfo[CurrentScene.id][characterID].hasEnteredScene = toggle;
+        LiveCharacterInfo[CurrentScene.id][characterID].hasEnteredScene = toggle;
     }
 
     private bool HasCharacterEnteredScene(string characterID) {
-        if ((SessionCharacterInfo == null) || (CurrentScene == null)){
+        if ((LiveCharacterInfo == null) || (CurrentScene == null)){
             return false;
         }
 
-        if (!SessionCharacterInfo.ContainsKey(CurrentScene.id)) {
+        if (!LiveCharacterInfo.ContainsKey(CurrentScene.id)) {
             throw new Exception("Session Character Info does not contain scene");
         }
 
-        if (!SessionCharacterInfo[CurrentScene.id].ContainsKey(characterID)) {
+        if (!LiveCharacterInfo[CurrentScene.id].ContainsKey(characterID)) {
             throw new Exception($"Session Character Info does not contain character '{characterID}'");
         }
 
-        return SessionCharacterInfo[CurrentScene.id][characterID].hasEnteredScene;
+        return LiveCharacterInfo[CurrentScene.id][characterID].hasEnteredScene;
     }
 
     private string EnterExitSceneTooltip(string characterId) {

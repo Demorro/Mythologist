@@ -1,4 +1,6 @@
-﻿namespace Mythologist_Client_WASM.Client.Infos
+﻿using SharedLogic.Model;
+
+namespace Mythologist_Client_WASM.Client.Infos
 {
     public class CharacterInfo
     {
