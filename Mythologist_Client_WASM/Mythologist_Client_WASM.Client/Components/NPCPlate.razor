@@ -1,0 +1,75 @@
+﻿@using Mythologist_Client_WASM.Client.Infos
+@using SharedLogic.Model
+
+@if (Character != null && LiveCharacterInfo != null && CurrentScene != null && EnterExitSceneToggleChanged != null) {
+
+    @if ((!IsGMView) && (!@HasCharacterEnteredScene(Character.id))) {
+        //Render nothing if we're a player and the character isn't here
+    }
+    else {
+        //We're renderin' somin!
+        @if (Character.portraitImageUri != null)
+        {
+            @if (@HasCharacterEnteredScene(Character.id))
+            {
+                <MudImage Src="@Character.portraitImageUri.ToString()" ObjectFit="ObjectFit.Cover" Fluid="true" Width="160" />
+            }
+            else
+            {
+                <MudImage Src="@Character.portraitImageUri.ToString()" ObjectFit="ObjectFit.Cover" Fluid="true" Width="160" Style="opacity:0.4; filter: grayscale(100%)" />
+            }
+        }
+        else
+        {
+            //Show null portrait
+        }
+
+        <MudStack Row="true" AlignItems="AlignItems.End" Justify="Justify.SpaceEvenly" Style="margin-top:-54px; margin-left:auto; margin-right:2px;" Spacing="0">
+            <MudTooltip Text="Bio">
+                <MudIconButton Class="pa-1 ma-1" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Feed" Color="Color.Primary"></MudIconButton>
+            </MudTooltip>
+            <MudTooltip Text="@EnterExitSceneTooltip(Character.id)">
+                <MudToggleIconButton Class="pa-1 ma-1" Toggled="@HasCharacterEnteredScene(Character.id)" ToggledChanged="toggledBool => EnterExitSceneToggleChanged(Character, toggledBool)" Variant="Variant.Filled" Icon="@Icons.Material.Filled.GroupAdd" ToggledIcon="@Icons.Material.Filled.GroupRemove" Color="Color.Primary"></MudToggleIconButton>
+            </MudTooltip>
+        </MudStack>
+        <MudText Typo="Typo.body2" Align="Align.Center">@Character.id</MudText>
+    }
+}
+@code {
+
+    [Parameter]
+    public CharacterModel? Character { get; set; }
+
+    [Parameter]
+    public Dictionary<string, Dictionary<string, CharacterInfo>>? LiveCharacterInfo { get; set; }
+
+    [Parameter]
+    public SceneModel? CurrentScene { get; set; }
+
+    [Parameter]
+    public Action<CharacterModel, bool>? EnterExitSceneToggleChanged { get; set; }
+
+    [Parameter]
+    public bool IsGMView { get; set; }
+
+    private bool HasCharacterEnteredScene(string characterID) {
+        if ((LiveCharacterInfo == null) || (CurrentScene == null)) {
+            return false;
+        }
+
+        if (!LiveCharacterInfo.ContainsKey(CurrentScene.id)) {
+            return false;
+        }
+
+        if (!LiveCharacterInfo[CurrentScene.id].ContainsKey(characterID)) {
+            throw new Exception($"Session Character Info does not contain character '{characterID}'");
+        }
+
+        return LiveCharacterInfo[CurrentScene.id][characterID].hasEnteredScene;
+    }
+
+    private string EnterExitSceneTooltip(string characterId) {
+        return HasCharacterEnteredScene(characterId) ? "Exit Scene" : "Enter Scene";
+    }
+
+}

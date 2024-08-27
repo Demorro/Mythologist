@@ -9,33 +9,13 @@
     }
 </style>
 
-@if ((charactersInScene.Count > 0) && (LiveCharacterInfo != null))
-{
+@if (@RenderingAnyNPCs()) {
     <MudPaper Class="mt-n4">
         <MudText Typo="Typo.subtitle1" Align="Align.Center">NPC's</MudText>
         <MudPaper Class="pa-2" Style="min-width:64px; max-height:88vh; overflow-y:scroll; background-color:transparent">
                 <MudStack AlignItems="AlignItems.Center">
                     @foreach (CharacterModel character in charactersInScene) {
-                        @if(character.portraitImageUri != null){
-                            @if (@HasCharacterEnteredScene(character.id)){
-                                <MudImage Src="@character.portraitImageUri.ToString()" ObjectFit="ObjectFit.Cover" Fluid="true" Width="160"/>
-                            }
-                            else {
-                                <MudImage Src="@character.portraitImageUri.ToString()" ObjectFit="ObjectFit.Cover" Fluid="true" Width="160" Style="opacity:0.4; filter: grayscale(100%)" />
-                            }
-                        <MudStack Row="true" AlignItems="AlignItems.End" Justify="Justify.SpaceEvenly" Style="margin-top:-54px; margin-left:auto; margin-right:2px;" Spacing="0">
-                                <MudTooltip Text="Bio">
-                                    <MudIconButton Class="pa-1 ma-1" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Feed" Color="Color.Primary"></MudIconButton>
-                                </MudTooltip>
-                                @if (LocalClient != null && LocalClient.isGM)
-                                {
-                                    <MudTooltip Text="@EnterExitSceneTooltip(character.id)">
-                                        <MudToggleIconButton Class="pa-1 ma-1" Toggled="@HasCharacterEnteredScene(character.id)" ToggledChanged="toggledBool => EnterExitSceneToggleChanged(character, toggledBool)" Variant="Variant.Filled" Icon="@Icons.Material.Filled.GroupAdd" ToggledIcon="@Icons.Material.Filled.GroupRemove" Color="Color.Primary"></MudToggleIconButton>
-                                    </MudTooltip>
-                                }
-                            </MudStack>
-                            <MudText Typo="Typo.body2" Align="Align.Center">@character.id</MudText>
-                        }
+                    <NPCPlate IsGMView="@LocalClient.isGM" Character="@character" LiveCharacterInfo="@LiveCharacterInfo" CurrentScene="@CurrentScene" EnterExitSceneToggleChanged="@EnterExitSceneToggleChanged"></NPCPlate>
                     }
                 </MudStack>
         </MudPaper>
@@ -102,8 +82,8 @@
         signalRHub.UpdateCharacterState(GameName, LiveCharacterInfo[CurrentScene.id][characterID]);
     }
 
-    private bool HasCharacterEnteredScene(string characterID) {
-        if ((LiveCharacterInfo == null) || (CurrentScene == null)){
+    private bool RenderingAnyNPCs() {
+        if (LiveCharacterInfo == null || LocalClient == null || CurrentScene == null) {
             return false;
         }
 
@@ -111,14 +91,17 @@
             return false;
         }
 
-        if (!LiveCharacterInfo[CurrentScene.id].ContainsKey(characterID)) {
-            throw new Exception($"Session Character Info does not contain character '{characterID}'");
+        if (LocalClient.isGM && LiveCharacterInfo[CurrentScene.id].Count > 0) {
+            return true;
         }
 
-        return LiveCharacterInfo[CurrentScene.id][characterID].hasEnteredScene;
-    }
+        var allInfos = LiveCharacterInfo[CurrentScene.id].Values;
+        foreach(CharacterInfo info in allInfos) {
+            if (info.hasEnteredScene){
+                return true;
+            }
+        }
 
-    private string EnterExitSceneTooltip(string characterId) {
-        return HasCharacterEnteredScene(characterId) ? "Exit Scene" : "Enter Scene";
+        return false;
     }
 }
