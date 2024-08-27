@@ -74,7 +74,7 @@ namespace SharedLogic.Styling
                 PrimaryContrastText = Ivory,
                 SecondaryContrastText = Ivory,
                 TertiaryContrastText = Ivory,
-                Surface = "rgba(16,20,22,0.9)",
+                Surface = "rgba(16,20,22,1.0)",
                 Background = "#0f1417",
                 BackgroundGray = "#171c1f",
                 AppbarText = "#f8fbfe",

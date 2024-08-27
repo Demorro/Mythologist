@@ -45,7 +45,7 @@
 <div class="mainContentContainer">
     <MudGrid Class="contentGrid" Justify="Justify.Center">
         <MudItem xs="2" Class="d-flex justify-start" Style="align-self:start;">
-            <CharactersInScenePanel CurrentScene=@CurrentScene AllCharacters="@AllCharacters"></CharactersInScenePanel>
+            <CharactersInScenePanel CurrentScene=@CurrentScene AllCharacters="@AllCharacters" LocalClient="@LocalClient"></CharactersInScenePanel>
 
         </MudItem>
         <MudItem xs="10" Class="d-flex justify-center" Style="align-self:start; margin-top:20px; padding-top:0px;">
@@ -78,6 +78,9 @@
 
     [Parameter]
     public List<ClientInfo>? ConnectedClients { get; set; }
+
+    [Parameter]
+    public ClientInfo? LocalClient { get; set; }
 
     [Parameter]
     public List<CharacterModel>? AllCharacters { get; set; }

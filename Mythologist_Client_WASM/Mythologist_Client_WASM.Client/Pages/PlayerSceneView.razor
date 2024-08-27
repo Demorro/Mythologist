@@ -32,7 +32,7 @@
             </MudStack>
         </MudPaper>
         @if(currentScene != null){
-        <MainContent GameInfo="@gameInfo" CurrentScene="@currentScene" ConnectedClients="@connectedClients" AllCharacters="@allCharacters"></MainContent>
+        <MainContent GameInfo="@gameInfo" CurrentScene="@currentScene" ConnectedClients="@connectedClients" AllCharacters="@allCharacters" LocalClient="@localClient"></MainContent>
         }
         @if (@connectedClients != null && (@gameInfo != null))
         {
