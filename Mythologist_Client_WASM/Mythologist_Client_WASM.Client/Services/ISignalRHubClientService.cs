@@ -17,6 +17,10 @@ namespace Mythologist_Client_WASM.Client.Services
         public delegate void NotifyOfClientsCallback(List<ClientInfo> clients);
         public void InjectNotifyOfClientsDelegate(NotifyOfClientsCallback callback);
 
+         //(sceneId, <characterID, Character>)
+        public delegate void NotifyOfCharactersInSceneCallback((string, Dictionary<string, CharacterInfo>) charactersInScene);
+        public void InjectNotifyOfCharactersInSceneDelegate(NotifyOfCharactersInSceneCallback callback);
+
         public delegate void NotifyOfGameSettingsInfoCallback(GameSettingsInfo gameSettingsInfo);
         public void InjectNotifyOfGameSettingsInfoDelegate(NotifyOfGameSettingsInfoCallback callback);
 

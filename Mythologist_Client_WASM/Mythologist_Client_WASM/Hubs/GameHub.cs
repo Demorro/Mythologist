@@ -69,7 +69,7 @@ namespace Mythologist_Client_WASM.Hubs
 				//Register the new client
 				var groupName = gameName;
 				await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
-				rooms.NewClientConnection(groupName, Context.ConnectionId, username, discordClientID, avatarUrl, isGM);
+				await rooms.NewClientConnection(groupName, Context.ConnectionId, username, discordClientID, avatarUrl, isGM, database);
                 var allScenes = await database.AllScenes(gameName);
 
                 try
@@ -138,6 +138,7 @@ namespace Mythologist_Client_WASM.Hubs
 
 			FullGameStateInfo fullState  = new FullGameStateInfo(){
 				allClients = rooms.GetRoom(gameName).GetClientsInGameAsList(),
+				liveCharactersInScenesState = rooms.GetRoom(gameName).GetCharacters().GetAllCharactersAsDict(),
 				gameInfo = gameInfo,
 				liveGameSettings = rooms.GetRoom(gameName).liveGameSettings
 			};

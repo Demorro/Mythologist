@@ -81,7 +81,7 @@
         }
 
         if (!LiveCharacterInfo.ContainsKey(CurrentScene.id)) {
-            throw new Exception("Session Character Info does not contain scene");
+            return;
         }
 
         if (!LiveCharacterInfo[CurrentScene.id].ContainsKey(characterID)) {
@@ -97,7 +97,7 @@
         }
 
         if (!LiveCharacterInfo.ContainsKey(CurrentScene.id)) {
-            throw new Exception("Session Character Info does not contain scene");
+            return false;
         }
 
         if (!LiveCharacterInfo[CurrentScene.id].ContainsKey(characterID)) {

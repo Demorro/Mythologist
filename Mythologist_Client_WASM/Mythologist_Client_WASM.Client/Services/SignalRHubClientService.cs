@@ -35,6 +35,7 @@ namespace Mythologist_Client_WASM.Client.Services
             InjectNotifyEventInfoDelegate(null);
             InjectNotifyOfGameInfoDelegate(null);
             InjectNotifyOfClientsDelegate(null);
+            InjectNotifyOfCharactersInSceneDelegate(null);
             InjectNotifyOfGameSettingsInfoDelegate(null);
             InjectNotifyEventInfoDelegate(null);
             InjectNotifyOfServerErrorDelegate(null);
@@ -54,6 +55,7 @@ namespace Mythologist_Client_WASM.Client.Services
             gameHubConnection.On<FullGameStateInfo>("NotifyOfFullGameState", NotifyOfFullGameState);
             gameHubConnection.On<GameInfo>("NotifyOfGameInfo", NotifyOfGameInfo);
             gameHubConnection.On<List<ClientInfo>>("NotifyOfClients", NotifyOfClients);
+            gameHubConnection.On<(string, Dictionary<string, CharacterInfo>)>("NotifyOfCharactersInScene", NotifyOfCharactersInScene); //(sceneId, <characterID, Character>)
             gameHubConnection.On<GameSettingsInfo>("NotifyOfGameSettingsInfo", NotifyOfGameSettingsInfo);
             gameHubConnection.On<EventInfo>("NotifyOfEventInfo", NotifyOfEventInfo);
             gameHubConnection.On<string>("NotifyOfServerError", NotifyOfServerError);
@@ -77,6 +79,10 @@ namespace Mythologist_Client_WASM.Client.Services
             NotifyOfGameInfo(fullState.gameInfo);
             NotifyOfClients(fullState.allClients);
             NotifyOfGameSettingsInfo(fullState.liveGameSettings);
+
+            foreach(var charactersInScene in fullState.liveCharactersInScenesState) {
+                NotifyOfCharactersInScene((charactersInScene.Key, charactersInScene.Value));
+            }
         }
         
         public async Task RequestRefreshGameState(string gameName)
@@ -126,6 +132,23 @@ namespace Mythologist_Client_WASM.Client.Services
             }
 
             notifyOfClientsCallback(clients);
+        }
+
+        public ISignalRHubClientService.NotifyOfCharactersInSceneCallback notifyOfCharactersInSceneCallback = null;
+
+        public void InjectNotifyOfCharactersInSceneDelegate(ISignalRHubClientService.NotifyOfCharactersInSceneCallback callback)
+        {
+            notifyOfCharactersInSceneCallback = callback;
+        }
+
+        private void NotifyOfCharactersInScene((string, Dictionary<string, CharacterInfo>) charactersInScene) {
+            if (notifyOfCharactersInSceneCallback is null)
+            {
+                Console.WriteLine("Warning! No characters in scene notify callback! Call InjectNotifyOfCharactersInSceneDelegate");
+                return;
+            }
+
+            notifyOfCharactersInSceneCallback(charactersInScene);
         }
 
         public ISignalRHubClientService.NotifyOfGameSettingsInfoCallback notifyOfGameSettingsInfoCallback = null;

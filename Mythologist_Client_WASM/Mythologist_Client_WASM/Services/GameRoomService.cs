@@ -1,5 +1,6 @@
 ﻿using Mythologist_Client_WASM.Client.Infos;
 using Mythologist_Client_WASM.Game;
+using SharedLogic.Services;
 
 namespace Mythologist_Client_WASM.Services
 {
@@ -8,7 +9,7 @@ namespace Mythologist_Client_WASM.Services
         //<gameName, GameRoom>
         private Dictionary<string, GameRoom> rooms = new Dictionary<string, GameRoom>();
 
-        public void NewClientConnection(string gameName, string signalRConnectionID, string username, string? discordClientID, Uri? avatarUrl, bool isGM)
+        public async Task NewClientConnection(string gameName, string signalRConnectionID, string username, string? discordClientID, Uri? avatarUrl, bool isGM, IDatabaseConnectionService database)
         {
             ClientInfo clientInfo = new ClientInfo
             {
@@ -20,14 +21,20 @@ namespace Mythologist_Client_WASM.Services
                 currentSceneID = null
             };
 
-            lock (rooms)
-            {
-                if (!rooms.ContainsKey(gameName))
-                {
-                    rooms[gameName] = new GameRoom(gameName);
-                }
 
-                rooms[gameName].AddClient(clientInfo);
+            //Check early in a non locked context to avoid redundant making the room.
+            //(remember, cant do await inside a lock.
+            if (!rooms.ContainsKey(gameName)) {
+                var newRoom = await GameRoom.CreateGameRoom(gameName, database);
+                lock (rooms)
+                {
+                    if (!rooms.ContainsKey(gameName))
+                    {
+                        rooms[gameName] = newRoom;
+                    }
+
+                    rooms[gameName].AddClient(clientInfo);
+                }
             }
         }
 

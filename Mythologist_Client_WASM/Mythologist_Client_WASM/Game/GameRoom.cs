@@ -1,11 +1,18 @@
 ﻿using Mythologist_Client_WASM.Client.Infos;
+using SharedLogic.Services;
 
 namespace Mythologist_Client_WASM.Game
 {
     public class GameRoom
     {
-        public GameRoom(string id) {
-            gameID = id;
+        public static async Task<GameRoom> CreateGameRoom(string gameId, IDatabaseConnectionService database) {
+            var characters = await CharacterSceneState.CreateCharacterSceneState(gameId, database);
+            return new GameRoom(gameId, characters);
+        }
+
+        private GameRoom(string _gameId, CharacterSceneState _characterSceneState) {
+            gameID = _gameId;
+            characterSceneState = _characterSceneState;
         }
 
         public string gameID {get; private set; }
@@ -13,8 +20,7 @@ namespace Mythologist_Client_WASM.Game
 
         // <signalRConnectionID, ClientState>
         private Dictionary<string, ClientInfo> connectedClients = new Dictionary<string, ClientInfo>();
-        // <characterID, CharacterState>
-        private Dictionary<string, CharacterInfo> charactersInScene = new Dictionary<string, CharacterInfo>();
+        private CharacterSceneState characterSceneState;
 
         public void AddClient(ClientInfo client) {
             connectedClients.TryAdd(client.signalRConnectionID, client);
@@ -49,6 +55,10 @@ namespace Mythologist_Client_WASM.Game
                 throw new Exception($"Could not find client with connectionID '{signalRConnectionID}' in game '{gameID}'");
             }
             return connectedClients[signalRConnectionID];
+        }
+
+        public CharacterSceneState GetCharacters() {
+            return characterSceneState;
         }
     }
 }

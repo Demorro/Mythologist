@@ -115,6 +115,7 @@
         {
             signalRHub.InjectNotifyOfGameInfoDelegate(NotifyOfGameInfo);
             signalRHub.InjectNotifyOfClientsDelegate(NotifyOfClientsUpdate);
+            signalRHub.InjectNotifyOfCharactersInSceneDelegate(NotifyOfCharactersInSceneUpdate);
             signalRHub.InjectNotifyOfGameSettingsInfoDelegate(NotifyOfGameSettingsInfo);
             signalRHub.InjectNotifyEventInfoDelegate(NotifyOfEventInfo);
             signalRHub.InjectNotifyOfServerErrorDelegate(NotifyOfServerError);
@@ -157,12 +158,27 @@
         StateHasChanged();
     }
 
+    //(sceneId, <characterID, Character>)
+    private void NotifyOfCharactersInSceneUpdate((string, Dictionary<string, CharacterInfo>) charactersInScene) {
+        if (liveCharacterInfo == null) {
+            throw new Exception("Attempting to update character info with unexpectedly null character info list");
+        }
+
+        string sceneId = charactersInScene.Item1;
+        Dictionary<string, CharacterInfo> updatedCharacterState = charactersInScene.Item2;
+
+        bool newlyAdded = liveCharacterInfo.TryAdd(sceneId, updatedCharacterState);
+        if (!newlyAdded) {
+            liveCharacterInfo[sceneId] = updatedCharacterState;
+        }
+    }
+
     private void NotifyOfGameInfo(GameInfo _gameInfo)
     {
         gameInfo = _gameInfo;
         allCharacters = gameInfo.characters;
         //Populate the live info so it's got slots for all the characters
-        liveCharacterInfo = CreateLiveCharacterInfoFromModels(gameInfo);
+        //liveCharacterInfo = CreateLiveCharacterInfoFromModels(gameInfo);
 
         StateHasChanged();
     }
