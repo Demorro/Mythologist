@@ -45,7 +45,7 @@
 <div class="mainContentContainer">
     <MudGrid Class="contentGrid" Justify="Justify.Center">
         <MudItem xs="2" Class="d-flex justify-start" Style="align-self:start;">
-            <CharactersInScenePanel CurrentScene=@CurrentScene AllCharacters="@AllCharacters" LocalClient="@LocalClient" LiveCharacterInfo="@LiveCharacterInfo"></CharactersInScenePanel>
+            <CharactersInScenePanel GameName="@GameName" CurrentScene=@CurrentScene AllCharacters="@AllCharacters" LocalClient="@LocalClient" LiveCharacterInfo="@LiveCharacterInfo"></CharactersInScenePanel>
 
         </MudItem>
         <MudItem xs="10" Class="d-flex justify-center" Style="align-self:start; margin-top:20px; padding-top:0px;">
@@ -69,6 +69,9 @@
     <MudImage Class="backgroundImage" Src="@CurrentScene?.backgroundImageUri?.ToString()" ObjectPosition="ObjectPosition.Center" ObjectFit="ObjectFit.ScaleDown"></MudImage>
 </div>
 @code {
+
+    [Parameter]
+    public string? GameName { get; set; }
 
     [Parameter]
     public GameInfo? GameInfo { get; set; }

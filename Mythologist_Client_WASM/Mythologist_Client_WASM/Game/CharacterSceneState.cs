@@ -1,4 +1,5 @@
 ﻿using Mythologist_Client_WASM.Client.Infos;
+using Mythologist_Client_WASM.Client.Services;
 using SharedLogic.Model;
 using SharedLogic.Services;
 

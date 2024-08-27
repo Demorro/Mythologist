@@ -32,7 +32,7 @@
             </MudStack>
         </MudPaper>
         @if(currentScene != null){
-        <MainContent GameInfo="@gameInfo" CurrentScene="@currentScene" ConnectedClients="@connectedClients" AllCharacters="@allCharacters" LocalClient="@localClient" LiveCharacterInfo="@liveCharacterInfo"></MainContent>
+        <MainContent GameName="@gameName" GameInfo="@gameInfo" CurrentScene="@currentScene" ConnectedClients="@connectedClients" AllCharacters="@allCharacters" LocalClient="@localClient" LiveCharacterInfo="@liveCharacterInfo"></MainContent>
         }
         @if (@connectedClients != null && (@gameInfo != null))
         {
@@ -171,6 +171,8 @@
         if (!newlyAdded) {
             liveCharacterInfo[sceneId] = updatedCharacterState;
         }
+
+        StateHasChanged();
     }
 
     private void NotifyOfGameInfo(GameInfo _gameInfo)

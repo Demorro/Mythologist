@@ -163,6 +163,13 @@ namespace Mythologist_Client_WASM.Hubs
             rooms.GetRoom(gameName).GetClient(clientToChangeSignalRConnectionID).currentSceneID = newScene;
             await Clients.Group(gameName).SendAsync("NotifyOfClients", rooms.GetRoom(gameName).GetClientsInGameAsList());
 		}
+
+		public async Task UpdateCharacterState(string gameName, CharacterInfo characterUpdate) {
+			var characters = rooms.GetRoom(gameName).GetCharacters();
+			characters.UpdateCharacter(characterUpdate.scene, characterUpdate);
+
+			await Clients.Group(gameName).SendAsync("NotifyOfCharactersInScene",  characterUpdate.scene, characters.GetCharacterInfosInSceneAsDict(characterUpdate.scene));
+		}
 		
 		public async Task SendEvent(string gameName, EventInfo theEvent)
 		{

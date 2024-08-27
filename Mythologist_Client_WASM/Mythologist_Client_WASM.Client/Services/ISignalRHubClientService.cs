@@ -34,11 +34,14 @@ namespace Mythologist_Client_WASM.Client.Services
 
         public Task SendEvent(string gameName, EventInfo theEvent);
 
-        //Request the server update the game settings
+        //Notify the server to update the game settings
         public Task UpdateGameSettings(string gameName, GameSettingsInfo newGameSettingsInfo);
 
-        //Request the server change a specific client scene.
+        //Notify the server to change a specific client scene.
         public Task ChangeClientScene(string gameName, string clientToChangeSignalRConnectionID, string newScene);
+
+        //Notify the server to change the character state of a scene
+        public Task UpdateCharacterState(string gameName, CharacterInfo characterUpdate);
 
         public string GetConnectionID();
 

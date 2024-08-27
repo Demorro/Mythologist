@@ -1,6 +1,8 @@
 ﻿@using Mythologist_Client_WASM.Client.Infos
 @using SharedLogic.Model
 
+@inject ISignalRHubClientService signalRHub;
+
 <style>
     .shadow-outlined {
         text-shadow: 0.05em 0 black, 0 0.05em black, -0.05em 0 black, 0 -0.05em black, -0.05em -0.05em black, -0.05em 0.05em black, 0.05em -0.05em black, 0.05em 0.05em black;
@@ -15,12 +17,12 @@
                 <MudStack AlignItems="AlignItems.Center">
                     @foreach (CharacterModel character in charactersInScene) {
                         @if(character.portraitImageUri != null){
-                        @if (@HasCharacterEnteredScene(character.id)){
-                            <MudImage Src="@character.portraitImageUri.ToString()" ObjectFit="ObjectFit.Cover" Fluid="true" Width="160"/>
-                        }
-                        else {
-                            <MudImage Src="@character.portraitImageUri.ToString()" ObjectFit="ObjectFit.Cover" Fluid="true" Width="160" Style="opacity:0.4; filter: grayscale(100%)" />
-                        }
+                            @if (@HasCharacterEnteredScene(character.id)){
+                                <MudImage Src="@character.portraitImageUri.ToString()" ObjectFit="ObjectFit.Cover" Fluid="true" Width="160"/>
+                            }
+                            else {
+                                <MudImage Src="@character.portraitImageUri.ToString()" ObjectFit="ObjectFit.Cover" Fluid="true" Width="160" Style="opacity:0.4; filter: grayscale(100%)" />
+                            }
                         <MudStack Row="true" AlignItems="AlignItems.End" Justify="Justify.SpaceEvenly" Style="margin-top:-54px; margin-left:auto; margin-right:2px;" Spacing="0">
                                 <MudTooltip Text="Bio">
                                     <MudIconButton Class="pa-1 ma-1" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Feed" Color="Color.Primary"></MudIconButton>
@@ -40,6 +42,10 @@
     </MudPaper>
 }
 @code {
+
+    [Parameter]
+    public string? GameName { get; set; }
+
     [Parameter]
     public SceneModel? CurrentScene { get; set; }
 
@@ -76,6 +82,10 @@
     private void EnterExitSceneToggleChanged(CharacterModel character, bool toggle) {
         string characterID = character.id;
 
+        if (GameName == null) {
+            return;
+        }
+
         if ((LiveCharacterInfo == null) || (CurrentScene == null)) {
             return;
         }
@@ -89,6 +99,7 @@
         }
 
         LiveCharacterInfo[CurrentScene.id][characterID].hasEnteredScene = toggle;
+        signalRHub.UpdateCharacterState(GameName, LiveCharacterInfo[CurrentScene.id][characterID]);
     }
 
     private bool HasCharacterEnteredScene(string characterID) {

@@ -55,7 +55,7 @@ namespace Mythologist_Client_WASM.Client.Services
             gameHubConnection.On<FullGameStateInfo>("NotifyOfFullGameState", NotifyOfFullGameState);
             gameHubConnection.On<GameInfo>("NotifyOfGameInfo", NotifyOfGameInfo);
             gameHubConnection.On<List<ClientInfo>>("NotifyOfClients", NotifyOfClients);
-            gameHubConnection.On<(string, Dictionary<string, CharacterInfo>)>("NotifyOfCharactersInScene", NotifyOfCharactersInScene); //(sceneId, <characterID, Character>)
+            gameHubConnection.On<string, Dictionary<string, CharacterInfo>>("NotifyOfCharactersInScene", NotifyOfCharactersInScene); //(sceneId, <characterID, Character>)
             gameHubConnection.On<GameSettingsInfo>("NotifyOfGameSettingsInfo", NotifyOfGameSettingsInfo);
             gameHubConnection.On<EventInfo>("NotifyOfEventInfo", NotifyOfEventInfo);
             gameHubConnection.On<string>("NotifyOfServerError", NotifyOfServerError);
@@ -81,7 +81,7 @@ namespace Mythologist_Client_WASM.Client.Services
             NotifyOfGameSettingsInfo(fullState.liveGameSettings);
 
             foreach(var charactersInScene in fullState.liveCharactersInScenesState) {
-                NotifyOfCharactersInScene((charactersInScene.Key, charactersInScene.Value));
+                NotifyOfCharactersInScene(charactersInScene.Key, charactersInScene.Value);
             }
         }
         
@@ -141,14 +141,14 @@ namespace Mythologist_Client_WASM.Client.Services
             notifyOfCharactersInSceneCallback = callback;
         }
 
-        private void NotifyOfCharactersInScene((string, Dictionary<string, CharacterInfo>) charactersInScene) {
+        private void NotifyOfCharactersInScene(string sceneId, Dictionary<string, CharacterInfo> charactersInScene) {
             if (notifyOfCharactersInSceneCallback is null)
             {
                 Console.WriteLine("Warning! No characters in scene notify callback! Call InjectNotifyOfCharactersInSceneDelegate");
                 return;
             }
 
-            notifyOfCharactersInSceneCallback(charactersInScene);
+            notifyOfCharactersInSceneCallback((sceneId, charactersInScene));
         }
 
         public ISignalRHubClientService.NotifyOfGameSettingsInfoCallback notifyOfGameSettingsInfoCallback = null;
@@ -224,7 +224,7 @@ namespace Mythologist_Client_WASM.Client.Services
             await gameHubConnection.InvokeAsync("ChangeGameSettings", gameName, newGameSettingsInfo);
         }
 
-        //Request the server change a client to a different scene
+
         public async Task ChangeClientScene(string gameName, string clientToChangeSignalRConnectionID, string newScene)
         {
             if (gameHubConnection == null)
@@ -233,6 +233,15 @@ namespace Mythologist_Client_WASM.Client.Services
             }
 
             await gameHubConnection.InvokeAsync("ChangeClientScene", gameName, clientToChangeSignalRConnectionID, newScene);
+        }
+
+        public async Task UpdateCharacterState(string gameName, CharacterInfo characterUpdate) {
+             if (gameHubConnection == null)
+            {
+                throw new Exception("Game hub connection not initialized");
+            }
+
+            await gameHubConnection.InvokeAsync("UpdateCharacterState", gameName, characterUpdate);
         }
 
         public string GetConnectionID()

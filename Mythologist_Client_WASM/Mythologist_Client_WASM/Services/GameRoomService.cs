@@ -22,19 +22,17 @@ namespace Mythologist_Client_WASM.Services
             };
 
 
-            //Check early in a non locked context to avoid redundant making the room.
-            //(remember, cant do await inside a lock.
-            if (!rooms.ContainsKey(gameName)) {
-                var newRoom = await GameRoom.CreateGameRoom(gameName, database);
-                lock (rooms)
+            //We always make a new room, but it dosen't get added unless there isn't already one.
+            //(We cant await inside a lock, so we take a redundant hit to the DB here a lot of the time ... maybe a better way of doing this)
+            GameRoom? newRoom =  await GameRoom.CreateGameRoom(gameName, database);
+            lock (rooms)
+            {
+                if (!rooms.ContainsKey(gameName))
                 {
-                    if (!rooms.ContainsKey(gameName))
-                    {
-                        rooms[gameName] = newRoom;
-                    }
-
-                    rooms[gameName].AddClient(clientInfo);
+                    rooms[gameName] = newRoom;
                 }
+
+                rooms[gameName].AddClient(clientInfo);
             }
         }
 
