@@ -76,6 +76,7 @@ namespace Mythologist_Client_WASM.Client.Services
             //Gameinfo needs to be first as client reaction depends on it
             NotifyOfGameInfo(fullState.gameInfo);
             NotifyOfClients(fullState.allClients);
+            NotifyOfGameSettingsInfo(fullState.liveGameSettings);
         }
         
         public async Task RequestRefreshGameState(string gameName)

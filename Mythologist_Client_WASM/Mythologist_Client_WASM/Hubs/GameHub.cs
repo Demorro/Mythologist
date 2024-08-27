@@ -8,17 +8,15 @@ namespace Mythologist_Client_WASM.Hubs
 {
 	public class GameHub : Hub
 	{
-		IClientsService clients;
+		IGameRoomService rooms;
 		IDatabaseConnectionService database;
 		HttpClient httpClient;
-		ILastKnownStateService lastKnownStates;
 
-        public GameHub(IClientsService _clients, IDatabaseConnectionService _database, HttpClient _httpClient, ILastKnownStateService _lastKnownStates)
+        public GameHub(IGameRoomService _rooms, IDatabaseConnectionService _database, HttpClient _httpClient)
 		{
-			clients = _clients;
+			rooms = _rooms;
 			database = _database;
 			httpClient = _httpClient;
-			lastKnownStates = _lastKnownStates;
         }
 
 		public override async Task OnConnectedAsync()
@@ -33,10 +31,10 @@ namespace Mythologist_Client_WASM.Hubs
             Console.WriteLine($"Player with ID `{Context.ConnectionId}` disconnected");
 
 			//This group may be null if the game ended up being deleted, or the client wasn't in any games
-			string? groupToNotify = clients.Remove(Context.ConnectionId);
+			string? groupToNotify = rooms.ClientDisconnection(Context.ConnectionId);
 			if (groupToNotify is not null)
 			{
-                Clients.Group(groupToNotify).SendAsync("NotifyOfClients", clients.GetClientsInGameAsList(groupToNotify));
+                Clients.Group(groupToNotify).SendAsync("NotifyOfClients", rooms.GetRoom(groupToNotify).GetClientsInGameAsList());
             }
 
             return base.OnDisconnectedAsync(exception);
@@ -71,13 +69,13 @@ namespace Mythologist_Client_WASM.Hubs
 				//Register the new client
 				var groupName = gameName;
 				await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
-				clients.Add(groupName, Context.ConnectionId, username, discordClientID, avatarUrl, isGM);
+				rooms.NewClientConnection(groupName, Context.ConnectionId, username, discordClientID, avatarUrl, isGM);
                 var allScenes = await database.AllScenes(gameName);
 
                 try
                 {
                     //Seriously if the client isn't in a scene it wont display in the frontend .
-                    EnsureClientIsInScene(allScenes, clients.GetClient(gameName, Context.ConnectionId), await database.GameSettings(gameName));
+                    EnsureClientIsInScene(allScenes, rooms.GetRoom(gameName).GetClient(Context.ConnectionId), await database.GameSettings(gameName));
                 }
                 catch (Exception ex)
                 {
@@ -88,7 +86,7 @@ namespace Mythologist_Client_WASM.Hubs
                 }
 
                 Console.WriteLine($"Player with ID `{Context.ConnectionId}` Joined Game '{groupName}'");
-                await Clients.Group(gameName).SendAsync("NotifyOfClients", clients.GetClientsInGameAsList(groupName));
+                await Clients.Group(gameName).SendAsync("NotifyOfClients", rooms.GetRoom(groupName).GetClientsInGameAsList());
 			}
 
 			SuccessOrFailInfo successOrFail = new SuccessOrFailInfo();
@@ -120,7 +118,7 @@ namespace Mythologist_Client_WASM.Hubs
 		//Called initially, and whenever a client feels like it needs to get all the messages to setup its own state again
 		public async Task RefreshGameState(string gameName)
 		{
-			ClientInfo thisClient = clients.GetClient(gameName, Context.ConnectionId);
+			ClientInfo thisClient = rooms.GetRoom(gameName).GetClient(Context.ConnectionId);
 
 			// Tempted to parralelize this but fuck knows how the caching would work if this is the first entry.
             var allScenes = await database.AllScenes(gameName);
@@ -139,8 +137,9 @@ namespace Mythologist_Client_WASM.Hubs
             GameInfo gameInfo = new GameInfo { scenes = allScenes, gameSettings = gameSettings, characters = allCharacters };
 
 			FullGameStateInfo fullState  = new FullGameStateInfo(){
-				allClients = clients.GetClientsInGameAsList(gameName),
-				gameInfo = gameInfo
+				allClients = rooms.GetRoom(gameName).GetClientsInGameAsList(),
+				gameInfo = gameInfo,
+				liveGameSettings = rooms.GetRoom(gameName).liveGameSettings
 			};
 
 			await Clients.Client(Context.ConnectionId).SendAsync("NotifyOfFullGameState", fullState);
@@ -148,7 +147,7 @@ namespace Mythologist_Client_WASM.Hubs
 
 		public async Task ChangeGameSettings(string gameName, GameSettingsInfo settingsInfo)
 		{
-			lastKnownStates.SetLastKnownSettings(settingsInfo);
+			rooms.UpdateSettings(gameName, settingsInfo);
             await Clients.Group(gameName).SendAsync("NotifyOfGameSettingsInfo", settingsInfo);
 
         }
@@ -160,13 +159,13 @@ namespace Mythologist_Client_WASM.Hubs
 
 		public async Task ChangeClientScene(string gameName, string clientToChangeSignalRConnectionID, string newScene)
 		{
-            clients.GetClient(gameName, clientToChangeSignalRConnectionID).currentSceneID = newScene;
-            await Clients.Group(gameName).SendAsync("NotifyOfClients", clients.GetClientsInGameAsList(gameName));
+            rooms.GetRoom(gameName).GetClient(clientToChangeSignalRConnectionID).currentSceneID = newScene;
+            await Clients.Group(gameName).SendAsync("NotifyOfClients", rooms.GetRoom(gameName).GetClientsInGameAsList());
 		}
 		
 		public async Task SendEvent(string gameName, EventInfo theEvent)
 		{
-			var clientsInGame = clients.GetClientsInGame(gameName);
+			var clientsInGame = rooms.GetRoom(gameName).GetClientsInGameAsDict();
 
 			if (theEvent.TargetConnectionIds == null)
 			{

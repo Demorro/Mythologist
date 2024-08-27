@@ -5,5 +5,7 @@
         public GameInfo gameInfo {get; set; }
 
         public List<ClientInfo> allClients {get; set; }
+
+        public GameSettingsInfo liveGameSettings {get; set;}
     }
 }

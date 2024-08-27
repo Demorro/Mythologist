@@ -56,7 +56,8 @@
     private List<CharacterModel> charactersInScene = new List<CharacterModel>();
 
     protected override void OnParametersSet() {
-        if (CurrentScene == null || AllCharacters == null) {
+        //charactersIdsInScene shouldn't really be null, but CRUD stays under development so this is nice for upgrading
+        if (CurrentScene == null || AllCharacters == null || CurrentScene.charactersIdsInScene == null) {
             return;
         }
 

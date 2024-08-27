@@ -30,7 +30,7 @@ builder.Services.AddAntiforgery(o => o.SuppressXFrameOptionsHeader = true);
 builder.Services.AddSingleton(sp => new HttpClient());
 builder.Services.AddSingleton<IDatabaseConnectionService, DatabaseConnectionService>(provider => new DatabaseConnectionService(builder.Configuration));
 builder.Services.AddSingleton<IClientsService, ClientsService>();
-builder.Services.AddSingleton<ILastKnownStateService, LastKnownStateService>();
+builder.Services.AddSingleton<IGameRoomService, GameRoomService>();
 
 builder.Services.AddAzureClients(clientBuilder =>
 {
