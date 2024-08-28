@@ -42,23 +42,11 @@
                     </MudPaper>
                     </MudItem>
                     <MudItem xs="12">
-                        <MudStack Row="true" StretchItems="StretchItems.Start">
-                            <MudText Typo="Typo.h5">Bio</MudText>
-                            <MudToggleIconButton @bind-Toggled="@EditMarkdown"
-                                                 Icon="@Icons.Material.Filled.Edit" Color="@Color.Primary" 
-                                                 ToggledIcon="@Icons.Material.Filled.Preview" ToggledColor="@Color.Secondary" 
-                                                 Style="display:flex; margin-left:auto; margin-right:0px;"/>
-                        </MudStack>
-                        @if (EditMarkdown) {
-                            <MudTextField @ref="MarkdownTextField" T="string" Label="Markdown" Variant="Variant.Filled" @bind-Text="@markdownValue" Lines="15" Style="overflow-y:scroll"/>
-                        }
-                        else {
-                                <MudMarkdown Value="@markdownValue" />
-                        }
+                        <MudTextField T="string" Label="Description. Shown when hovering over character portrait." Variant="Variant.Filled" @bind-Text="@descriptionValue" AutoGrow/>
                     </MudItem>
                 </MudGrid>
             </MudForm>
-            <MudStack Class="d-flex align-center ">
+            <MudStack Class="d-flex align-center mt-4">
                 <MudStack Row="true">
                     <MudButton @onclick="BackToCharacterList" Variant="Variant.Filled" Color="Color.Secondary" Class="ml-auto">Back</MudButton>
                     <MudButton @onclick="SubmitForm" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!success)" Class="ml-auto">Save</MudButton>
@@ -96,9 +84,7 @@
     private BlobContainerClient? gameContainer;
 
     public BlobUtils.MediaMetadata? SelectedCharacterPortrait { get; set; }
-    private bool EditMarkdown = false;
-    private string markdownValue = "";
-    private MudTextField<string>? MarkdownTextField;
+    private string descriptionValue = "";
 
 
     // The media available to the user, that they've uploaded.
@@ -159,7 +145,7 @@
                     }
                 }
 
-                markdownValue = character.bioMarkdown;
+                descriptionValue = character.bioText;
             }
         }
         catch(Exception ex) {
@@ -189,14 +175,14 @@
 
         CharacterModel updatedCharacter = character!;
         updatedCharacter.portraitImageUri = SelectedCharacterPortrait != null ? BlobUtils.MakeFullStorageUri(blobServiceClient, storageGuid.Value, Constants.MediaItemType.Image, SelectedCharacterPortrait.Name) : null;
-        updatedCharacter.bioMarkdown = markdownValue;
+        updatedCharacter.bioText = descriptionValue;
 
         await dbConnection.UpdateCharacter(gameName, updatedCharacter);
         BackToCharacterList();
     }
 
     Task OnMarkdownValueChanged(string value) {
-        markdownValue = value;
+        descriptionValue = value;
         return Task.CompletedTask;
     }
 

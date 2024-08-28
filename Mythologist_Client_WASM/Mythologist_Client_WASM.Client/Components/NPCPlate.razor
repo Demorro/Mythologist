@@ -1,13 +1,25 @@
 ﻿@using Mythologist_Client_WASM.Client.Infos
 @using SharedLogic.Model
 
+@inject IConfiguration configuration
+
 <style>
     .shadow-outlined {
         text-shadow: 0.05em 0 black, 0 0.05em black, -0.05em 0 black, 0 -0.05em black, -0.05em -0.05em black, -0.05em 0.05em black, 0.05em -0.05em black, 0.05em 0.05em black;
     }
+
+    .npcImage{
+        filter: grayscale(100%);
+        opacity: 0.4;
+    }
+
+    .npcImage:hover {
+        opacity: 1.0;
+        filter: grayscale(0%);
+    }
 </style>
 
-@if (Character != null && LiveCharacterInfo != null && CurrentScene != null && EnterExitSceneToggleChanged != null) {
+@if (Character != null && LiveCharacterInfo != null && CurrentScene != null && EnterExitSceneToggleChanged != null && MouseOverCharacter != null && MouseOutCharacter != null) {
 
     @if ((!IsGMView) && (!@HasCharacterEnteredScene(Character.id))) {
         //Render nothing if we're a player and the character isn't here
@@ -15,25 +27,26 @@
     else {
         //We're renderin' somin!
 
-        <div style="width:128px; height:128px; padding-top:15px; padding-bottom:15px; margin-top:1px; margin-bottom:1px;">
+        <div @onmouseenter="mouseArgs => MouseOverCharacter(Character.id, mouseArgs)" @onmouseleave="mouseArgs => MouseOutCharacter(Character.id, mouseArgs)" style="width:128px; height:auto; padding-top:5px; padding-bottom:5px; margin-top:1px; margin-bottom:1px;">
 
-        @if (Character.portraitImageUri != null)
-        {
             @if (@HasCharacterEnteredScene(Character.id))
             {
-                <MudImage Class="rounded-lg" Src="@Character.portraitImageUri.ToString()" ObjectFit="ObjectFit.Cover" Fluid="false" Width="128" Height="128" Elevation="25" Style="z-index: 1;" />
+                <MudTooltip Text="@TooltipText(Character)" Placement="Placement.Right" Delay="350" Style="white-space: pre-line; max-width:350px;">
+                    <MudButton OnClick="() => EnterExitSceneToggleChanged(Character)" Style="padding: 0; border: none; z-index: 2;">
+                        <MudImage Class="rounded-lg" Src="@CharacterPortraitUrl(Character)" ObjectFit="ObjectFit.Cover" Fluid="false" Width="128" Height="128" Elevation="25" Style="z-index: 2;" />
+                    </MudButton>
+                </MudTooltip>
             }
             else
             {
-                <MudImage Class="rounded-lg" Src="@Character.portraitImageUri.ToString()" ObjectFit="ObjectFit.Cover" Fluid="false" Width="128" Height="128" Elevation="25" Style="opacity:0.4; filter: grayscale(100%); z-index: 1;" />
+                <MudTooltip Text="@TooltipText(Character)" Placement="Placement.Right" Delay="350">
+                    <MudButton OnClick="() => EnterExitSceneToggleChanged(Character)" Style="padding: 0; border: none; z-index: 2;">
+                        <MudImage Class="rounded-lg npcImage" Src="@CharacterPortraitUrl(Character)" ObjectFit="ObjectFit.Cover" Fluid="false" Width="128" Height="64" Elevation="25" Style="z-index: 2;" />
+                    </MudButton>
+                </MudTooltip>
             }
-        }
-        else
-        {
-            //Show null portrait
-        }
 
-        <MudText Class="mt-n7 shadow-outlined" Typo="Typo.body2" Align="Align.Center" Style="max-width: 128px; overflow:clip; white-space: nowrap; z-index: 2;">@Character.id</MudText>
+            <MudText Class="mt-n6 shadow-outlined pointer-events-none" Typo="Typo.body2" Align="Align.Center" Style="position:relative; max-width: 128px; overflow:clip; white-space: nowrap; z-index: 5;">@Character.id</MudText>
         </div>
     }
 }
@@ -49,10 +62,26 @@
     public SceneModel? CurrentScene { get; set; }
 
     [Parameter]
-    public Action<CharacterModel, bool>? EnterExitSceneToggleChanged { get; set; }
+    public Action<CharacterModel>? EnterExitSceneToggleChanged { get; set; }
 
     [Parameter]
     public bool IsGMView { get; set; }
+
+    private string? blankCharacterUrl;
+
+    protected override void OnInitialized() {
+        blankCharacterUrl = configuration["BlankCharacterPortraitUrl"];
+    }
+
+    private bool isMouseOver = false;
+
+    void MouseOverCharacter(string characterId, MouseEventArgs args) {
+        isMouseOver = true;
+    }
+
+    void MouseOutCharacter(string characterId, MouseEventArgs args) {
+        isMouseOver = false;
+    }
 
     private bool HasCharacterEnteredScene(string characterID) {
         if ((LiveCharacterInfo == null) || (CurrentScene == null)) {
@@ -70,8 +99,29 @@
         return LiveCharacterInfo[CurrentScene.id][characterID].hasEnteredScene;
     }
 
-    private string EnterExitSceneTooltip(string characterId) {
-        return HasCharacterEnteredScene(characterId) ? "Exit Scene" : "Enter Scene";
+    private string TooltipText(CharacterModel character) {
+
+        if (CurrentScene == null) { return ""; }
+
+        if (!HasCharacterEnteredScene(character.id)) {
+            if (IsGMView) {
+                return $"Add {character.id} to {CurrentScene.id}";
+            }
+            return "";
+        }
+        else {
+            return character.bioText;
+        }
+    }
+    private string CharacterPortraitUrl(CharacterModel character) {
+        if (character.portraitImageUri != null) {
+            return character.portraitImageUri.ToString();
+        }
+        if (blankCharacterUrl != null){
+            return blankCharacterUrl;
+        }
+
+        throw new Exception($"Unexpected null Portrait Uri for character {character.id}");
     }
 
 }

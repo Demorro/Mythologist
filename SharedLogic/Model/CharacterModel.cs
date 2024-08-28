@@ -5,14 +5,14 @@
         public CharacterModel(string id)
         {
             this.id = id;
-			bioMarkdown = "";
+			bioText = "";
         }
 
         public string id { get; set; }
 
 		public Uri? portraitImageUri { get; set; }
 
-		public string bioMarkdown {get; set; }
+		public string bioText {get; set; }
 
 		// Overrides for Equals, GetHashCode and ToString are important for MudSelect
 		public override bool Equals(object o)

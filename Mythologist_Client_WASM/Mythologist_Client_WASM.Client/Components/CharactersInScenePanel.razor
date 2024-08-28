@@ -5,8 +5,8 @@
 
 @if (@RenderingAnyNPCs()) {
     <MudPaper Class="ma-0">
-        <MudText Class="mb-n2" Typo="Typo.subtitle1" Align="Align.Center">Characters</MudText>
-        <MudPaper Class="ma-0 pr-1 pl-1" Style="background-color:transparent; max-height: calc(100vh - 80px); min-width:64px; overflow-y:scroll;">
+        <MudText Typo="Typo.subtitle1" Align="Align.Center">Characters</MudText>
+        <MudPaper Class="ma-0 pr-0 pl-1" Style="background-color:transparent; max-height: calc(100vh - 80px); min-width:64px; overflow-y:scroll;">
                 <MudStack AlignItems="AlignItems.Center" Spacing="0">
                     @foreach (CharacterModel character in charactersInScene) {
                     <NPCPlate IsGMView="@LocalClient.isGM" Character="@character" LiveCharacterInfo="@LiveCharacterInfo" CurrentScene="@CurrentScene" EnterExitSceneToggleChanged="@EnterExitSceneToggleChanged"></NPCPlate>
@@ -53,7 +53,9 @@
         }
     }
 
-    private void EnterExitSceneToggleChanged(CharacterModel character, bool toggle) {
+    private void EnterExitSceneToggleChanged(CharacterModel character) {
+        if (LocalClient== null || !LocalClient.isGM) { return; }
+
         string characterID = character.id;
 
         if (GameName == null) {
@@ -72,7 +74,7 @@
             throw new Exception($"Session Character Info does not contain character '{characterID}'");
         }
 
-        LiveCharacterInfo[CurrentScene.id][characterID].hasEnteredScene = toggle;
+        LiveCharacterInfo[CurrentScene.id][characterID].hasEnteredScene = !LiveCharacterInfo[CurrentScene.id][characterID].hasEnteredScene;
         signalRHub.UpdateCharacterState(GameName, LiveCharacterInfo[CurrentScene.id][characterID]);
     }
 
