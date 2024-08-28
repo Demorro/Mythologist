@@ -18,10 +18,12 @@
     }
 
     .backgroundImage {
-        max-width: 100%;
-        max-height: calc(100vh - 50px);
-        width: auto;
-        overflow: hidden;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform-origin:center;
+        transform: translate(-50%, -50%) scale(0.9);
+        z-index: -1;
     }
 
     .contentGrid {
@@ -39,35 +41,50 @@
         text-shadow: 0.05em 0 black, 0 0.05em black, -0.05em 0 black, 0 -0.05em black, -0.05em -0.05em black, -0.05em 0.05em black, 0.05em -0.05em black, 0.05em 0.05em black;
     }
 
+    .background-image-div{
+        background-image: url(@CurrentScene?.backgroundImageUri?.ToString()); /* The image used */
+        background-color: transparent; /* Used if the image is unavailable */
+        background-position: center; /* Center the image */
+        background-repeat: no-repeat; /* Do not repeat the image */
+        background-size: contain; /* Resize the background image to cover the entire container */
+        width: 100%;
+        height: 100%;
+        transform-origin: center;
+        transform: scale(1.2);
+        margin-top: 2vh;
+        z-index: -1;
+    }
+
 </style>
 
 
-<div class="mainContentContainer">
-    <MudGrid Class="contentGrid" Justify="Justify.Center">
-        <MudItem xs="2" Class="d-flex justify-start" Style="align-self:start;">
-            <CharactersInScenePanel GameName="@GameName" CurrentScene=@CurrentScene AllCharacters="@AllCharacters" LocalClient="@LocalClient" LiveCharacterInfo="@LiveCharacterInfo"></CharactersInScenePanel>
+<!--<div class="mainContentContainer">-->
+<!--<MudImage Class="backgroundImage" Src="@CurrentScene?.backgroundImageUri?.ToString()" ObjectPosition="ObjectPosition.Center" ObjectFit="ObjectFit.ScaleDown"></MudImage>-->
+<MudStack Row="true" Class="pa-0 ma-0" Justify="Justify.SpaceBetween" StretchItems="StretchItems.End" Style="outline: 1px solid red; min-height: calc(100vh - 80px);" Spacing="0">
+    <CharactersInScenePanel GameName="@GameName" CurrentScene=@CurrentScene AllCharacters="@AllCharacters" LocalClient="@LocalClient" LiveCharacterInfo="@LiveCharacterInfo"></CharactersInScenePanel>
+    <MudStack Class="d-flex pa-0 ma-0" AlignItems="AlignItems.Center" StretchItems="StretchItems.Middle" Style="outline: 1px solid blue;" Spacing="0">
+        @if (@GameInfo.gameSettings.showSceneTitle) {
+            <MudText Typo="Typo.h4" Class="d-flex shadow-outlined">@CurrentScene.id</MudText>
 
-        </MudItem>
-        <MudItem xs="10" Class="d-flex justify-center" Style="align-self:start; margin-top:20px; padding-top:0px;">
-            @if (@GameInfo.gameSettings.showSceneTitle)
-            {
-                <MudText Typo="Typo.h4" Class="shadow-outlined">@CurrentScene.id</MudText>
-
-            }
-        </MudItem>
-
-
-    </MudGrid>
- 
-    <!--Needs to be its own component-->
-    <MudStack Row="true" Style="position:absolute; margin-left:auto; margin-right:auto; align-self:end; margin-bottom:24px;">
-        @foreach (ClientInfo client in ClientsInScene(@CurrentScene.id)) {
-            <PlayerPlate Client="client"></PlayerPlate>
         }
-    </MudStack>
+        <div style="display:flex; flex-grow: 1; outline: 1px solid green; margin-left:0; margin-right:0; width:100%; height:100%;">
+            <div class="background-image-div">
 
-    <MudImage Class="backgroundImage" Src="@CurrentScene?.backgroundImageUri?.ToString()" ObjectPosition="ObjectPosition.Center" ObjectFit="ObjectFit.ScaleDown"></MudImage>
-</div>
+            </div>
+        </div>
+
+        <MudStack Class="d-flex" Row="true" Style="outline: 1px solid yellow;">
+            <!-- bottom row. For the popups -->
+            @foreach (ClientInfo client in ClientsInScene(@CurrentScene.id)) {
+                <PlayerPlate Client="client"></PlayerPlate>
+            }
+        </MudStack>
+
+    </MudStack>
+</MudStack>
+
+   
+<!--</div>-->
 @code {
 
     [Parameter]

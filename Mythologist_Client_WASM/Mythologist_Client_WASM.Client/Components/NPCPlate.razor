@@ -1,6 +1,12 @@
 ﻿@using Mythologist_Client_WASM.Client.Infos
 @using SharedLogic.Model
 
+<style>
+    .shadow-outlined {
+        text-shadow: 0.05em 0 black, 0 0.05em black, -0.05em 0 black, 0 -0.05em black, -0.05em -0.05em black, -0.05em 0.05em black, 0.05em -0.05em black, 0.05em 0.05em black;
+    }
+</style>
+
 @if (Character != null && LiveCharacterInfo != null && CurrentScene != null && EnterExitSceneToggleChanged != null) {
 
     @if ((!IsGMView) && (!@HasCharacterEnteredScene(Character.id))) {
@@ -8,15 +14,18 @@
     }
     else {
         //We're renderin' somin!
+
+        <div style="width:128px; height:128px; padding-top:15px; padding-bottom:15px; margin-top:1px; margin-bottom:1px;">
+
         @if (Character.portraitImageUri != null)
         {
             @if (@HasCharacterEnteredScene(Character.id))
             {
-                <MudImage Src="@Character.portraitImageUri.ToString()" ObjectFit="ObjectFit.Cover" Fluid="true" Width="160" />
+                <MudImage Class="rounded-lg" Src="@Character.portraitImageUri.ToString()" ObjectFit="ObjectFit.Cover" Fluid="false" Width="128" Height="128" Elevation="25" Style="z-index: 1;" />
             }
             else
             {
-                <MudImage Src="@Character.portraitImageUri.ToString()" ObjectFit="ObjectFit.Cover" Fluid="true" Width="160" Style="opacity:0.4; filter: grayscale(100%)" />
+                <MudImage Class="rounded-lg" Src="@Character.portraitImageUri.ToString()" ObjectFit="ObjectFit.Cover" Fluid="false" Width="128" Height="128" Elevation="25" Style="opacity:0.4; filter: grayscale(100%); z-index: 1;" />
             }
         }
         else
@@ -24,15 +33,8 @@
             //Show null portrait
         }
 
-        <MudStack Row="true" AlignItems="AlignItems.End" Justify="Justify.SpaceEvenly" Style="margin-top:-54px; margin-left:auto; margin-right:2px;" Spacing="0">
-            <MudTooltip Text="Bio">
-                <MudIconButton Class="pa-1 ma-1" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Feed" Color="Color.Primary"></MudIconButton>
-            </MudTooltip>
-            <MudTooltip Text="@EnterExitSceneTooltip(Character.id)">
-                <MudToggleIconButton Class="pa-1 ma-1" Toggled="@HasCharacterEnteredScene(Character.id)" ToggledChanged="toggledBool => EnterExitSceneToggleChanged(Character, toggledBool)" Variant="Variant.Filled" Icon="@Icons.Material.Filled.GroupAdd" ToggledIcon="@Icons.Material.Filled.GroupRemove" Color="Color.Primary"></MudToggleIconButton>
-            </MudTooltip>
-        </MudStack>
-        <MudText Typo="Typo.body2" Align="Align.Center">@Character.id</MudText>
+        <MudText Class="mt-n7 shadow-outlined" Typo="Typo.body2" Align="Align.Center" Style="max-width: 128px; overflow:clip; white-space: nowrap; z-index: 2;">@Character.id</MudText>
+        </div>
     }
 }
 @code {

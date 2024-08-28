@@ -1,5 +1,6 @@
 using Blazored.SessionStorage;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using MudBlazor;
 using MudBlazor.Services;
 using Mythologist_Client_WASM.Client.Services;
 using System.Text.Json;
@@ -24,5 +25,6 @@ builder.Services.AddScoped<ISignalRHubClientService, SignalRHubClientService>();
 builder.Services.AddScoped<IDiscordApiService, DiscordApiService>();
 
 builder.Services.AddMudServices();
+builder.Services.AddMudMarkdownServices();
 await builder.Build().RunAsync();
 

@@ -17,7 +17,7 @@
 @inject IJSRuntime JSRuntime;
 
 
-    <MudStack Spacing="0">
+    <MudStack Spacing="0" Class="pa-0 ma-0">
         <MudPaper id="TopToolbar" Style="position: absolute left:0px top:0px; margin-bottom:0px;">
             <MudStack Row="true" Justify="Justify.SpaceBetween">
                 @if ((@currentScene != null) && (liveGameSettings.MusicEnabled))
@@ -59,7 +59,7 @@
     {
         @if ((@localClient.isGM) || (@gameInfo.gameSettings.playersCanMoveThemselvesBetweenScenes))
         {
-            <MudIconButton OnClick="@OpenDrawer" Color="Color.Primary" Size=Size.Large Icon="@Icons.Material.Outlined.ViewColumn" Style="float:right; margin-top:-57px; padding:0px"></MudIconButton>
+            <MudIconButton OnClick="@OpenDrawer" Color="Color.Primary" Size=Size.Large Icon="@Icons.Material.Outlined.ViewColumn" Style="float:right; margin-top:-50px; padding:4px"></MudIconButton>
         }
     }
 
