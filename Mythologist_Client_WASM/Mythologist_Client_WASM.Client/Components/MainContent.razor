@@ -1,6 +1,8 @@
 ﻿@using Mythologist_Client_WASM.Client.Infos
 @using SharedLogic.Model
 
+@inject ISnackbar snackBar;
+
 <!-- Now we're not doing stupid shit with the scene select, this can probably be much simpler-->
 <style>
     .mainContentContainer {
@@ -42,7 +44,7 @@
     }
 
     .background-image-div{
-        background-image: url(@CurrentScene?.backgroundImageUri?.ToString()); /* The image used */
+        background-image: url("@BackgroundImageUrl()"); /* The image used */
         background-color: transparent; /* Used if the image is unavailable */
         background-position: center; /* Center the image */
         background-repeat: no-repeat; /* Do not repeat the image */
@@ -118,4 +120,16 @@
         return ConnectedClients.Where(x => x.currentSceneID == sceneId).ToList();
     }
 
+    private string BackgroundImageUrl() {
+        if (CurrentScene == null) {
+            return "";
+        }
+
+        if (CurrentScene.backgroundImageUri == null) {
+            return "";
+        }
+
+        //Thought about escaping percent encoding here, but it dosent seem neccesary.
+        return CurrentScene.backgroundImageUri.ToString();
+    }
 }
