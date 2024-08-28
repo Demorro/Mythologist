@@ -165,7 +165,7 @@
                 if (scene.backgroundImageUri != null)
                 {
                     var fileName = Path.GetFileName(scene.backgroundImageUri.AbsolutePath);
-                    SelectedBackgroundImage = allAvailableImageMedia.Find(x => x.Name == fileName);
+                    SelectedBackgroundImage = allAvailableImageMedia.Find(x => x.Name == Uri.UnescapeDataString(fileName));
                     if (SelectedBackgroundImage == null)
                     {
                         Snackbar.Add($"Couldn't find media for background image '{fileName}'. Perhaps it has been deleted?");
