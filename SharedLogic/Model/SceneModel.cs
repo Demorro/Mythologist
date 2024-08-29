@@ -14,6 +14,8 @@
 		//The characters that are in this scene
 		public List<string> charactersIdsInScene { get; set; }
 
+		public string sceneNotes {get; set; } = "";
+
 		// Overrides for Equals, GetHashCode and ToString are important for MudSelect
 		public override bool Equals(object o)
 		{

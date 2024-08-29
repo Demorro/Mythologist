@@ -3,10 +3,29 @@
 
 @inject ISignalRHubClientService signalRHub;
 
+<style>
+    .debug-div-1 {
+        border: 1px solid red;
+    }
+
+    .debug-div-2 {
+        border: 1px solid blue;
+    }
+
+    .debug-div-3 {
+        border: 1px solid green;
+    }
+
+    .debug-div-4 {
+        border: 1px solid yellow;
+    }
+
+</style>
+
 @if (@RenderingAnyNPCs()) {
-    <MudPaper Class="ma-0">
+    <MudPaper Class="ma-0 debug-div-4">
         <MudText Typo="Typo.subtitle1" Align="Align.Center">Characters</MudText>
-        <MudPaper Class="ma-0 pr-0 pl-1" Style="background-color:transparent; max-height: calc(100vh - 80px); min-width:64px; overflow-y:scroll;">
+        <MudPaper Class="ma-0 pr-0 pl-1 debug-div-3" Style="background-color:transparent; max-height: calc(100vh - 80px); min-width:64px; overflow-y:scroll;">
                 <MudStack AlignItems="AlignItems.Center" Spacing="0">
                     @foreach (CharacterModel character in charactersInScene) {
                     <NPCPlate IsGMView="@LocalClient.isGM" Character="@character" LiveCharacterInfo="@LiveCharacterInfo" CurrentScene="@CurrentScene" EnterExitSceneToggleChanged="@EnterExitSceneToggleChanged"></NPCPlate>

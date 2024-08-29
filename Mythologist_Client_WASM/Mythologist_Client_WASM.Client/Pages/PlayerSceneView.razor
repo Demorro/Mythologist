@@ -16,52 +16,70 @@
 @inject NavigationManager NavManager
 @inject IJSRuntime JSRuntime;
 
-
-    <MudStack Spacing="0" Class="pa-0 ma-0">
-        <MudPaper id="TopToolbar" Style="position: absolute left:0px top:0px; margin-bottom:0px;">
-            <MudStack Row="true" Justify="Justify.SpaceBetween">
-                @if ((@currentScene != null) && (liveGameSettings.MusicEnabled))
-                {
-                    <audio @key="@ForceAudioUpdate" id="audio-player" autoplay="@gameInfo.gameSettings.autoplayAudio" controls loop="@gameInfo.gameSettings.loopAudio" style="padding:5px">
-                        <source src="@currentScene.backgroundMusicUri">
-                        Your browser does not support the audio element.
-                    </audio>
-                }
-                <SendTextMessagePane Clients="@connectedClients" LocalClient="@localClient" GameName="@gameName"></SendTextMessagePane>
-                <SettingsTogglerPane GameName="@gameName" LocalClient="@localClient" @bind-GameSettings="@liveGameSettings"></SettingsTogglerPane>
-            </MudStack>
-        </MudPaper>
-        @if(currentScene != null){
-        <MainContent GameName="@gameName" GameInfo="@gameInfo" CurrentScene="@currentScene" ConnectedClients="@connectedClients" AllCharacters="@allCharacters" LocalClient="@localClient" LiveCharacterInfo="@liveCharacterInfo"></MainContent>
-        }
-        @if (@connectedClients != null && (@gameInfo != null))
-        {
-            <MudDrawer @bind-Open=@SceneDragOpen Variant="@DrawerVariant.Temporary" Anchor="Anchor.Bottom" Overlay="true">
-                <MudGrid>
-                    <MudItem xs="5" Class="d-flex mb-n7 ml-6 align-center justify-start">
-                    </MudItem>
-                    <MudItem xs="2" Class="d-flex mb-n7 align-center justify-center">
-                        <MudSpacer />
-                        <MudIconButton  OnClick="@CloseDrawer" Size=Size.Small Icon="@Icons.Material.Filled.ArrowDropDown"></MudIconButton>
-                        <MudSpacer />
-                    </MudItem>
-                    <MudItem xs="5" Class="d-flex mb-n7 align-center justify-end">
-                       
-                    </MudItem>
-                    <MudItem xs="12">
-                        <SceneDragAndDrop ConnectedClients=@connectedClients LocalClient="@localClient" SceneNames="@gameInfo.SceneNames()"></SceneDragAndDrop>
-                    </MudItem>
-                </MudGrid>
-            </MudDrawer>
-        }
-    </MudStack>
-    @if (@localClient != null && @gameInfo != null)
-    {
-        @if ((@localClient.isGM) || (@gameInfo.gameSettings.playersCanMoveThemselvesBetweenScenes))
-        {
-            <MudIconButton OnClick="@OpenDrawer" Color="Color.Primary" Size=Size.Large Icon="@Icons.Material.Outlined.ViewColumn" Style="float:right; margin-top: -20px; padding:4px"></MudIconButton>
-        }
+<style>
+    .debug-div-1 {
+        border: 1px solid red;
     }
+
+    .debug-div-2 {
+        border: 1px solid blue;
+    }
+
+    .debug-div-3 {
+        border: 1px solid green;
+    }
+
+    .debug-div-4 {
+        border: 1px solid yellow;
+    }
+
+</style>
+
+<MudStack Spacing="0" Class="pa-0 ma-0 debug-div-1">
+    <MudPaper id="TopToolbar" Class="debug-div-2" Style="position: absolute left:0px top:0px; margin-bottom:0px;">
+        <MudStack Class ="debug-div-3" Row="true" Justify="Justify.SpaceBetween">
+            @if ((@currentScene != null) && (liveGameSettings.MusicEnabled))
+            {
+                <audio @key="@ForceAudioUpdate" id="audio-player" autoplay="@gameInfo.gameSettings.autoplayAudio" controls loop="@gameInfo.gameSettings.loopAudio" style="padding:5px">
+                    <source src="@currentScene.backgroundMusicUri">
+                    Your browser does not support the audio element.
+                </audio>
+            }
+            <SendTextMessagePane Clients="@connectedClients" LocalClient="@localClient" GameName="@gameName"></SendTextMessagePane>
+            <SettingsTogglerPane GameName="@gameName" LocalClient="@localClient" @bind-GameSettings="@liveGameSettings"></SettingsTogglerPane>
+        </MudStack>
+    </MudPaper>
+    @if(currentScene != null){
+    <MainContent GameName="@gameName" GameInfo="@gameInfo" CurrentScene="@currentScene" ConnectedClients="@connectedClients" AllCharacters="@allCharacters" LocalClient="@localClient" LiveCharacterInfo="@liveCharacterInfo"></MainContent>
+    }
+    @if (@connectedClients != null && (@gameInfo != null))
+    {
+        <MudDrawer @bind-Open=@SceneDragOpen Variant="@DrawerVariant.Temporary" Anchor="Anchor.Bottom" Overlay="true">
+            <MudGrid>
+                <MudItem xs="5" Class="d-flex mb-n7 ml-6 align-center justify-start">
+                </MudItem>
+                <MudItem xs="2" Class="d-flex mb-n7 align-center justify-center">
+                    <MudSpacer />
+                    <MudIconButton  OnClick="@CloseDrawer" Size=Size.Small Icon="@Icons.Material.Filled.ArrowDropDown"></MudIconButton>
+                    <MudSpacer />
+                </MudItem>
+                <MudItem xs="5" Class="d-flex mb-n7 align-center justify-end">
+                       
+                </MudItem>
+                <MudItem xs="12">
+                    <SceneDragAndDrop ConnectedClients=@connectedClients LocalClient="@localClient" SceneNames="@gameInfo.SceneNames()"></SceneDragAndDrop>
+                </MudItem>
+            </MudGrid>
+        </MudDrawer>
+    }
+</MudStack>
+@if (@localClient != null && @gameInfo != null)
+{
+    @if ((@localClient.isGM) || (@gameInfo.gameSettings.playersCanMoveThemselvesBetweenScenes))
+    {
+        <MudIconButton OnClick="@OpenDrawer" Color="Color.Primary" Size=Size.Large Icon="@Icons.Material.Outlined.ViewColumn" Style="float:right; margin-top: -60px; padding: 8px"></MudIconButton>
+    }
+}
 
 @code {
 

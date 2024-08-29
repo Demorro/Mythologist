@@ -63,9 +63,12 @@
                             }
                         </MudSelect>
                     </MudItem>
+                    <MudItem xs="12">
+                        <MudTextField T="string" Label="Scene Notes. Visible only to the GM" Variant="Variant.Filled" @bind-Text="@sceneNotesValue" AutoGrow />
+                    </MudItem>
                 </MudGrid>
             </MudForm>
-            <MudStack Class="d-flex align-center ">
+            <MudStack Class="d-flex align-center mt-2">
                 <MudStack Row="true">
                     <MudButton @onclick="BackToSceneList" Variant="Variant.Filled" Color="Color.Secondary" Class="ml-auto">Back</MudButton>
                     <MudButton @onclick="SubmitForm" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!success)" Class="ml-auto">Save</MudButton>
@@ -109,6 +112,8 @@
 
     private List<CharacterModel> allCharacters = new List<CharacterModel>();
     private IEnumerable<string> SelectedCharactersIdsInScene { get; set; } = new HashSet<string>() { };
+
+    private string sceneNotesValue = "";
 
     //Weird hack. To get at the audio element (raw html), it needs a property on its root element that changes to force a rebuild
     //This being an int dosen't matter, it just needs to change.
@@ -181,6 +186,8 @@
                         Snackbar.Add($"Couldn't find media for background audio '{fileName}'. Perhaps it has been deleted?");
                     }
                 }
+
+                sceneNotesValue = scene.sceneNotes;
             }
         }
         catch(Exception ex) {
@@ -211,6 +218,7 @@
         updatedScene.backgroundImageUri = SelectedBackgroundImage != null ? BlobUtils.MakeFullStorageUri(blobServiceClient, storageGuid.Value, Constants.MediaItemType.Image, SelectedBackgroundImage.Name) : null;
         updatedScene.backgroundMusicUri = SelectedBackgroundAudio != null ? BlobUtils.MakeFullStorageUri(blobServiceClient, storageGuid.Value, Constants.MediaItemType.Audio, SelectedBackgroundAudio.Name) : null;
         updatedScene.charactersIdsInScene = SelectedCharactersIdsInScene == null ? new List<string>() : SelectedCharactersIdsInScene.ToList();
+        updatedScene.sceneNotes = sceneNotesValue;
 
         await dbConnection.UpdateScene(gameName, updatedScene);
         BackToSceneList();

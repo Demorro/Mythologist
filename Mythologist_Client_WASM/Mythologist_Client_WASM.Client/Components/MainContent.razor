@@ -59,23 +59,58 @@
 
 </style>
 
+<style>
+    .debug-div-1 {
+        border: 1px solid red;
+    }
+
+    .debug-div-2 {
+        border: 1px solid blue;
+    }
+
+    .debug-div-3 {
+        border: 1px solid green;
+    }
+
+    .debug-div-4 {
+        border: 1px solid yellow;
+    }
+
+</style>
 
 <!--<div class="mainContentContainer">-->
 <!--<MudImage Class="backgroundImage" Src="@CurrentScene?.backgroundImageUri?.ToString()" ObjectPosition="ObjectPosition.Center" ObjectFit="ObjectFit.ScaleDown"></MudImage>-->
-<MudStack Row="true" Class="pa-0 ma-0" Justify="Justify.SpaceBetween" StretchItems="StretchItems.End" Style="min-height: calc(100vh - 80px); max-height: calc(100vh - 80px);" Spacing="0">
+<MudStack Row="true" Class="pa-0 ma-0 debug-div-1" Justify="Justify.SpaceBetween" StretchItems="StretchItems.End" Style="min-height: calc(100vh - 50px); max-height: calc(100vh - 50px);" Spacing="0">
     <CharactersInScenePanel GameName="@GameName" CurrentScene=@CurrentScene AllCharacters="@AllCharacters" LocalClient="@LocalClient" LiveCharacterInfo="@LiveCharacterInfo"></CharactersInScenePanel>
-    <MudStack Class="d-flex pa-0 ma-0" AlignItems="AlignItems.Center" StretchItems="StretchItems.Middle" Style="" Spacing="0">
+    <MudStack Class="d-flex pa-0 ma-0 debug-div-2" AlignItems="AlignItems.Center" StretchItems="StretchItems.Middle" Style="" Spacing="0">
+        
+        
+        <MudStack Row="true" Justify="Justify.SpaceBetween">
+
         @if (@GameInfo.gameSettings.showSceneTitle) {
             <MudText Typo="Typo.h4" Class="d-flex shadow-outlined">@CurrentScene.id</MudText>
 
         }
-        <div style="display:flex; flex-grow: 1; margin-left:0; margin-right:0; width:100%; height:100%;">
-            <div class="background-image-div">
+
+        @if (CurrentScene != null && CurrentScene.sceneNotes != null && CurrentScene.sceneNotes.Length > 0 && LocalClient != null && LocalClient.isGM) {
+                <MudExpansionPanel Style="position:absolute; max-width:30vw; right:10px">
+                <TitleContent>
+                    <MudText Typo="Typo.subtitle1" >Scene Notes</MudText>
+                </TitleContent>
+                <ChildContent>
+                        <MudText Typo="Typo.body1" Class="flex-grow-1" Style="white-space: pre-line;">@SceneNotesText()</MudText>
+                </ChildContent>
+            </MudExpansionPanel>
+        }
+
+        </MudStack>
+        <div class="debug-div-4" style="display:flex; flex-grow: 1; margin-left:0; margin-right:0; width:100%; height:100%;">
+            <div class="background-image-div debug-div-2">
 
             </div>
         </div>
 
-        <MudStack Class="d-flex" Row="true">
+        <MudStack Class="debug-div-3;" Row="true" Style="position:relative; top:-18px;">
             <!-- bottom row. For the popups -->
             @foreach (ClientInfo client in ClientsInScene(@CurrentScene.id)) {
                 <PlayerPlate Client="client"></PlayerPlate>
@@ -110,6 +145,7 @@
     [Parameter]
     public Dictionary<string, Dictionary<string, CharacterInfo>>? LiveCharacterInfo { get; set; }
 
+
     private List<ClientInfo> ClientsInScene(string sceneId)
     {
         if (ConnectedClients == null)
@@ -131,5 +167,12 @@
 
         //Thought about escaping percent encoding here, but it dosent seem neccesary.
         return CurrentScene.backgroundImageUri.ToString();
+    }
+
+    private string SceneNotesText() {
+        if ((CurrentScene == null) || (CurrentScene.sceneNotes == null)) {
+            return "";
+        }
+        return CurrentScene.sceneNotes;
     }
 }

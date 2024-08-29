@@ -20,7 +20,6 @@
     src: url(/font/dinofans-font/Dinofans-DYaR0.otf);
 }
 
-
 .mud-input {
     font-family: 'Vegur', sans-serif;
     font-weight: bold;
@@ -39,7 +38,6 @@
     font-weight: bold;
     font-size: 16px;
 }
-
 
 html, body {
     overflow: hidden; /* Prevents both horizontal and vertical scrolling */
