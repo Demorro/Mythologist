@@ -125,7 +125,7 @@
 
         foreach (var client in ConnectedClients)
         {
-            moveClientsToGMScene.Add(signalRHub.ChangeClientScene(gameName, client.signalRConnectionID, sceneName));
+            moveClientsToGMScene.Add(signalRHub.SendChangeClientScene(gameName, client.signalRConnectionID, sceneName));
         }
 
         await Task.WhenAll(moveClientsToGMScene);
@@ -138,7 +138,7 @@
         if(gameName is null){ return; }
 
         dropItem.Item.currentSceneID = dropItem.DropzoneIdentifier;
-        await signalRHub.ChangeClientScene(gameName, dropItem.Item.signalRConnectionID, dropItem.Item.currentSceneID);
+        await signalRHub.SendChangeClientScene(gameName, dropItem.Item.signalRConnectionID, dropItem.Item.currentSceneID);
     }
 
     private int EstimatedTextWidth(string name)

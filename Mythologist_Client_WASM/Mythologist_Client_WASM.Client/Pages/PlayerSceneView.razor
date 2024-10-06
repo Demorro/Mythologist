@@ -6,6 +6,7 @@
 @using MudBlazor
 @using Mythologist_Client_WASM.Client.Components
 @using Mythologist_Client_WASM.Client.Infos
+@using Mythologist_Client_WASM.Client.Utils
 @using SharedLogic.Model
 @using System.Media
 
@@ -50,7 +51,7 @@
         </MudStack>
     </MudPaper>
     @if(currentScene != null){
-    <MainContent GameName="@gameName" GameInfo="@gameInfo" CurrentScene="@currentScene" ConnectedClients="@connectedClients" AllCharacters="@allCharacters" LocalClient="@localClient" LiveCharacterInfo="@liveCharacterInfo"></MainContent>
+        <MainContent GameName="@gameName" GameInfo="@gameInfo" EventReactor="@eventReactor" CurrentScene="@currentScene" ConnectedClients="@connectedClients" AllCharacters="@allCharacters" LocalClient="@localClient" LiveCharacterInfo="@liveCharacterInfo"></MainContent>
     }
     @if (@connectedClients != null && (@gameInfo != null))
     {
@@ -97,6 +98,8 @@
     private SceneModel? currentScene = null;
     private List<CharacterModel>? allCharacters = new List<CharacterModel>();
 
+    private EventReactor? eventReactor;
+
     /*
     * The characters that appear in scenes are set via the database, and should appear in the allCharactersArry
     * This dict also contains all the characters <sceneID, <characterID, CharacterInfo>>, 
@@ -129,13 +132,15 @@
         discordClientID = await sessionStorage.GetItemAsync<string>("DiscordClientID");
         GMPassword = await sessionStorage.GetItemAsync<string>("GMPassword");
 
+        eventReactor = new EventReactor(snackBar, StateHasChanged);
+
         try
         {
             signalRHub.InjectNotifyOfGameInfoDelegate(NotifyOfGameInfo);
             signalRHub.InjectNotifyOfClientsDelegate(NotifyOfClientsUpdate);
             signalRHub.InjectNotifyOfCharactersInSceneDelegate(NotifyOfCharactersInSceneUpdate);
             signalRHub.InjectNotifyOfGameSettingsInfoDelegate(NotifyOfGameSettingsInfo);
-            signalRHub.InjectNotifyEventInfoDelegate(NotifyOfEventInfo);
+            signalRHub.InjectNotifyEventInfoDelegate(eventReactor.NotifyOfEventInfo);
             signalRHub.InjectNotifyOfServerErrorDelegate(NotifyOfServerError);
             await signalRHub.RequestRefreshGameState(gameName);
 
@@ -214,36 +219,9 @@
         StateHasChanged();
     }
 
-    private void NotifyOfEventInfo(EventInfo theEvent)
-    {
-        switch (theEvent.EEventType)
-        {
-            case EventInfo.EventType.SendText:
-            PopupRecievedChatMessage(theEvent);
-            return;
-        }
 
-        Console.WriteLine("ERROR: Received unrecognized event type");
-    }
-
-    private void NotifyOfServerError(string message)
-    {
+    private void NotifyOfServerError(string message) {
         snackBar.Add($"Server error : {message}", Severity.Error);
         NavManager.NavigateTo("/");
-    }
-
-    private void PopupRecievedChatMessage(EventInfo theEvent)
-    {
-        ClientInfo? sender = theEvent.Sender;
-        if(sender != null)
-        {
-            snackBar.Configuration.PositionClass = Defaults.Classes.Position.BottomCenter;
-            snackBar.Add($"{sender.userName}: {theEvent.Text}", Severity.Normal, config =>
-            {
-                config.Icon = Icons.Material.Filled.Message;
-                config.IconColor = Color.Info;
-                config.IconSize = Size.Large;
-            });
-        }
     }
 }

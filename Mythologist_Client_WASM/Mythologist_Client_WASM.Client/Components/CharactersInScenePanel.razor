@@ -94,7 +94,7 @@
         }
 
         LiveCharacterInfo[CurrentScene.id][characterID].hasEnteredScene = !LiveCharacterInfo[CurrentScene.id][characterID].hasEnteredScene;
-        signalRHub.UpdateCharacterState(GameName, LiveCharacterInfo[CurrentScene.id][characterID]);
+        signalRHub.SendUpdateCharacterState(GameName, LiveCharacterInfo[CurrentScene.id][characterID]);
     }
 
     private bool RenderingAnyNPCs() {

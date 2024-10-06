@@ -53,7 +53,7 @@
             throw new Exception("Settings Toggler needs GameName set as parameter");
         }
 
-        await signalRHub.UpdateGameSettings(GameName, GameSettings);
+        await signalRHub.SendUpdateGameSettings(GameName, GameSettings);
     }
 
 }

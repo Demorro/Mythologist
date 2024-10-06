@@ -30,18 +30,22 @@ namespace Mythologist_Client_WASM.Client.Services
         public delegate void NotifyOfServerErrorCallback(string message);
         public void InjectNotifyOfServerErrorDelegate(NotifyOfServerErrorCallback callback);
 
-        //Actual real logic
 
+        //Actual real logic
         public Task SendEvent(string gameName, EventInfo theEvent);
 
         //Notify the server to update the game settings
-        public Task UpdateGameSettings(string gameName, GameSettingsInfo newGameSettingsInfo);
+        public Task SendUpdateGameSettings(string gameName, GameSettingsInfo newGameSettingsInfo);
 
         //Notify the server to change a specific client scene.
-        public Task ChangeClientScene(string gameName, string clientToChangeSignalRConnectionID, string newScene);
+        public Task SendChangeClientScene(string gameName, string clientToChangeSignalRConnectionID, string newScene);
 
         //Notify the server to change the character state of a scene
-        public Task UpdateCharacterState(string gameName, CharacterInfo characterUpdate);
+        public Task SendUpdateCharacterState(string gameName, CharacterInfo characterUpdate);
+
+
+
+
 
         public string GetConnectionID();
 

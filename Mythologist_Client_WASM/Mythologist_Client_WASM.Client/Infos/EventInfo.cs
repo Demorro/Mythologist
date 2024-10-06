@@ -7,7 +7,8 @@
     {
         public enum EventType
         {
-            SendText, //Uses 'Text'
+            SendText, // Uses 'Text'
+            Announcement, // Uses `Text`
         };
 
         public EventType EEventType { get; set; }

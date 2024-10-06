@@ -1,4 +1,5 @@
 ﻿@using Mythologist_Client_WASM.Client.Infos
+@using Mythologist_Client_WASM.Client.Utils
 @using SharedLogic.Model
 
 @inject ISnackbar snackBar;
@@ -107,9 +108,10 @@
 
         <div class="debug-div-4" style="display:flex; flex-grow: 1; justify-content:center; margin-left:0; margin-right:0; width:100%; height:100%;">
             <div class="debug-div-2" style="position:absolute; padding-left:5vw; padding-right:5vw; margins:0; top:100px; bottom: 65%; align-content:center; width:auto; z-index:5;">
-                <!-- Announcement Div 
-                <MudText Class="shadow-outlined" Typo="Typo.h4">@AnnouncementText</MudText>
-                -->
+                <!-- Announcement Div -->
+                @if (EventReactor != null){
+                    <MudText Class="shadow-outlined" Typo="Typo.h3">@EventReactor.AnnouncementString</MudText>
+                }
             </div>
             <MudGrid Justify="Justify.Center" Class="debug-div-1 ma-0 pa-0" Style="position:absolute; top:35%; bottom: 85px; width:auto; z-index:5;">
                 <!-- MAIN CONTENT ELEMENT DISPLAY
@@ -141,6 +143,9 @@
 
     [Parameter]
     public GameInfo? GameInfo { get; set; }
+
+    [Parameter]
+    public EventReactor? EventReactor { get; set; }
 
     [Parameter]
     public SceneModel? CurrentScene { get; set; }

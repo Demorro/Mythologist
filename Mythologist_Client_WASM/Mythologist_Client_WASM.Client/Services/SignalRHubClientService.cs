@@ -214,7 +214,7 @@ namespace Mythologist_Client_WASM.Client.Services
             await gameHubConnection.InvokeAsync("SendEvent", gameName, theEvent);
         }
 
-        public async Task UpdateGameSettings(string gameName, GameSettingsInfo newGameSettingsInfo)
+        public async Task SendUpdateGameSettings(string gameName, GameSettingsInfo newGameSettingsInfo)
         {
             if (gameHubConnection == null)
             {
@@ -225,7 +225,7 @@ namespace Mythologist_Client_WASM.Client.Services
         }
 
 
-        public async Task ChangeClientScene(string gameName, string clientToChangeSignalRConnectionID, string newScene)
+        public async Task SendChangeClientScene(string gameName, string clientToChangeSignalRConnectionID, string newScene)
         {
             if (gameHubConnection == null)
             {
@@ -235,7 +235,7 @@ namespace Mythologist_Client_WASM.Client.Services
             await gameHubConnection.InvokeAsync("ChangeClientScene", gameName, clientToChangeSignalRConnectionID, newScene);
         }
 
-        public async Task UpdateCharacterState(string gameName, CharacterInfo characterUpdate) {
+        public async Task SendUpdateCharacterState(string gameName, CharacterInfo characterUpdate) {
              if (gameHubConnection == null)
             {
                 throw new Exception("Game hub connection not initialized");
