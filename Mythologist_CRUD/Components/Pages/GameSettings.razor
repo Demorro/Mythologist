@@ -42,14 +42,20 @@
 			</MudTooltip>
 			</MudItem>
 			<MudItem xs="12">
-						<MudTooltip Delay="700" Text=" The scene players will be placed into upon initially joining." RootClass="d-inline">
-				<MudSelect T="SceneModel" @bind-Value=gameSettings.defaultScene Label="Default Scene" Variant="Variant.Filled">
-					@foreach (SceneModel scene in allScenes)
-					{
-						<MudSelectItem Value="@scene" />
-					}
-				</MudSelect>
-			</MudTooltip>
+				<MudTooltip Delay="700" Text="The scene players will be placed into upon initially joining." RootClass="d-inline">
+					<MudSelect T="SceneModel" @bind-Value=gameSettings.defaultScene Label="Default Scene" Variant="Variant.Filled">
+						@foreach (SceneModel scene in allScenes)
+						{
+							<MudSelectItem Value="@scene" />
+						}
+					</MudSelect>
+				</MudTooltip>
+			</MudItem>
+			<MudItem xs="12">
+				<MudTooltip Delay="700" Text="If names are set on the whitelist, only players of those names will be allowed to join." RootClass="d-inline">
+					<MudText Typo="Typo.h5" Class="mb-4">Whitelist</MudText>
+					<WhitelistNamesDataGrid GameSettings="@gameSettings"></WhitelistNamesDataGrid>
+				</MudTooltip>
 			</MudItem>
 			</MudGrid>
 			</MudForm>

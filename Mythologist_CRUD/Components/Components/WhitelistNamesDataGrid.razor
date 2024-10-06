@@ -1,0 +1,73 @@
+﻿@using SharedLogic.Services
+@using SharedLogic.Model
+@using Mythologist_CRUD.Components
+@using Mythologist_CRUD.Components.Dialogs
+@using MudBlazor
+
+@inject ISnackbar snackBar
+@inject IDialogService DialogService
+@inject IDatabaseConnectionService dbConnection;
+@inject NavigationManager NavManager
+
+@if (GameSettings != null){
+    <MudDataGrid T="GameSettingsModel.WhitelistName" Bordered="false" Dense="true" Items="@GameSettings.whitelistNames" Class="styled-table-cell" ReadOnly="false" EditMode="DataGridEditMode.Cell" EditTrigger="DataGridEditTrigger.OnRowClick">
+        <Columns>
+            <PropertyColumn Property="x => x.name" Title="Name">
+                <EditTemplate>
+                    <MudTextField @bind-Value="context.Item.name"></MudTextField>
+                </EditTemplate>
+            </PropertyColumn>
+            <TemplateColumn CellClass="d-flex justify-end" Editable="false">
+                <CellTemplate>
+                    <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Outlined.Close" OnClick="@(() => DeleteNameButtonClicked(context.Item))"/>
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+    </MudDataGrid>
+    <MudStack Class="d-flex justify-start flex-grow-1 gap-4" Row="true">
+        <MudButton @onclick="@(() => NewNameButtonClicked())" Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.Add" Color="Color.Primary">Add</MudButton>
+    </MudStack>
+}
+
+@code {
+    [Parameter]
+    public GameSettingsModel? GameSettings { get; set; } = null;
+
+    private GameSettingsModel.WhitelistName GetUniqueName(GameSettingsModel.WhitelistName originalName) {
+
+        if (GameSettings == null) {
+            throw new Exception("Unexpected null game settings");
+        }
+
+        int counter = 1;
+        GameSettingsModel.WhitelistName newName = new GameSettingsModel.WhitelistName(originalName.name);
+        while (GameSettings.whitelistNames.Contains(newName)) {
+            newName.name = originalName.name + counter.ToString();
+            counter++;
+        }
+
+        return newName;
+    }
+
+    private void NewNameButtonClicked(){
+        if (GameSettings == null) {
+            snackBar.Add("Unexpected null game setttings");
+            return;
+        }
+
+        GameSettingsModel.WhitelistName newName = new GameSettingsModel.WhitelistName("New Name");
+        GameSettings.whitelistNames.Add(GetUniqueName(newName));
+    }
+
+
+    private void DeleteNameButtonClicked(GameSettingsModel.WhitelistName name) {
+        if (GameSettings == null) {
+            snackBar.Add("Unexpected null game setttings");
+            return;
+        }
+
+        GameSettings.whitelistNames.Remove(name);
+    }
+
+
+}
