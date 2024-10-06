@@ -56,15 +56,8 @@
                     TargetConnectionIds = GetTargetConnectionIds()
                 };
 
-            EventInfo announcementEvent = new EventInfo {
-                    EEventType = EventInfo.EventType.Announcement,
-                    Text = SendValue,
-                    Sender = LocalClient,
-                    TargetConnectionIds = GetTargetConnectionIds()
-                };
 
-            //signalRHub.SendEvent(GameName, sendEvent);
-            signalRHub.SendEvent(GameName, announcementEvent);
+            signalRHub.SendEvent(GameName, sendEvent);
             SendValue = "";
         }
     }
