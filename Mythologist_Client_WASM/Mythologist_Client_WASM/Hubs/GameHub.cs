@@ -197,7 +197,7 @@ namespace Mythologist_Client_WASM.Hubs
 			await Clients.Group(gameName).SendAsync("NotifyOfCharactersInScene",  characterUpdate.scene, characters.GetCharacterInfosInSceneAsDict(characterUpdate.scene));
 		}
 		
-		public async Task SendEvent(string gameName, EventInfo theEvent)
+		public async Task SendEvent(string gameName, Event theEvent)
 		{
 			var clientsInGame = rooms.GetRoom(gameName).GetClientsInGameAsDict();
 
@@ -207,17 +207,17 @@ namespace Mythologist_Client_WASM.Hubs
 				return;
 			}
 
-            List<Task> sendEventInfoMessages = new List<Task>();
+            List<Task> sendEventMessages = new List<Task>();
             foreach (var connectionID in theEvent.TargetConnectionIds)
 			{
 				ClientInfo? target;
 				if (clientsInGame.TryGetValue(connectionID, out target))
 				{
-                    sendEventInfoMessages.Add(Clients.Client(connectionID).SendAsync("NotifyOfEventInfo", theEvent));
+                    sendEventMessages.Add(Clients.Client(connectionID).SendAsync("NotifyOfEvent", theEvent));
 				}
 			}
 
-			await Task.WhenAll(sendEventInfoMessages);
+			await Task.WhenAll(sendEventMessages);
 		}
 
     }

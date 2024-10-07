@@ -22,14 +22,14 @@ namespace Mythologist_Client_WASM.Client.Utils
         }
 
         
-        public void NotifyOfEventInfo(EventInfo theEvent)
+        public void NotifyOfEvent(Event theEvent)
         {
             switch (theEvent.EEventType)
             {
-                case EventInfo.EventType.SendText:
+                case Event.EventType.SendText:
                 PopupRecievedChatMessage(theEvent);
                 return;
-                case EventInfo.EventType.Announcement:
+                case Event.EventType.Announcement:
                 DisplayAnnouncement(theEvent.Text);
                 return;
 
@@ -37,13 +37,13 @@ namespace Mythologist_Client_WASM.Client.Utils
             Console.WriteLine("ERROR: Received unrecognized event type");
         }
 
-        private void PopupRecievedChatMessage(EventInfo theEvent)
+        private void PopupRecievedChatMessage(Event theEvent)
         {
-            ClientInfo? sender = theEvent.Sender;
-            if(sender != null)
+            string? senderUserName = theEvent.SenderUserName;
+            if(senderUserName != null)
             {
                 snackBar.Configuration.PositionClass = Defaults.Classes.Position.BottomCenter;
-                snackBar.Add($"{sender.userName}: {theEvent.Text}", Severity.Normal, config =>
+                snackBar.Add($"{senderUserName}: {theEvent.Text}", Severity.Normal, config =>
                 {
                     config.Icon = Icons.Material.Filled.Message;
                     config.IconColor = Color.Info;

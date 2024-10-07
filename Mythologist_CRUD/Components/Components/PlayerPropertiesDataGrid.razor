@@ -18,17 +18,17 @@
                     <MudTextField @bind-Value="context.Item.name"></MudTextField>
                 </EditTemplate>
             </PropertyColumn>
-            <PropertyColumn Property="x => x.propertyName" Title="Property Name" Groupable="false">
+                <PropertyColumn Property="x => x.propertyName" Title="Property Name" Groupable="false" Sortable="false">
                 <EditTemplate>
                     <MudTextField @bind-Value="context.Item.propertyName"></MudTextField>
                 </EditTemplate>
             </PropertyColumn>
-            <PropertyColumn Property="x => x.propertyValue" Title="Property Value" Groupable="false">
+                <PropertyColumn Property="x => x.propertyValue" Title="Property Value" Groupable="false" Sortable="false">
                 <EditTemplate>
                     <MudTextField @bind-Value="context.Item.propertyValue"></MudTextField>
                 </EditTemplate>
             </PropertyColumn>
-            <TemplateColumn CellClass="d-flex justify-end" Editable="false" Groupable="false">
+                <TemplateColumn CellClass="d-flex justify-end" Editable="false" Groupable="false" Sortable="false">
                 <CellTemplate>
                     <MudTooltip Delay="700" Text="Duplicate Property." RootClass="d-inline">
                         <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Outlined.CopyAll" OnClick="@(() => DuplicatePropertyButtonClicked(context.Item))" />

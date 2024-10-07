@@ -32,12 +32,12 @@ namespace Mythologist_Client_WASM.Client.Services
                 gameHubConnection = null;
             }
 
-            InjectNotifyEventInfoDelegate(null);
+            InjectNotifyEventDelegate(null);
             InjectNotifyOfGameInfoDelegate(null);
             InjectNotifyOfClientsDelegate(null);
             InjectNotifyOfCharactersInSceneDelegate(null);
             InjectNotifyOfGameSettingsInfoDelegate(null);
-            InjectNotifyEventInfoDelegate(null);
+            InjectNotifyEventDelegate(null);
             InjectNotifyOfServerErrorDelegate(null);
         }
 
@@ -57,7 +57,7 @@ namespace Mythologist_Client_WASM.Client.Services
             gameHubConnection.On<List<ClientInfo>>("NotifyOfClients", NotifyOfClients);
             gameHubConnection.On<string, Dictionary<string, CharacterInfo>>("NotifyOfCharactersInScene", NotifyOfCharactersInScene); //(sceneId, <characterID, Character>)
             gameHubConnection.On<GameSettingsInfo>("NotifyOfGameSettingsInfo", NotifyOfGameSettingsInfo);
-            gameHubConnection.On<EventInfo>("NotifyOfEventInfo", NotifyOfEventInfo);
+            gameHubConnection.On<Event>("NotifyOfEvent", NotifyOfEvent);
             gameHubConnection.On<string>("NotifyOfServerError", NotifyOfServerError);
 
             await gameHubConnection.StartAsync();
@@ -169,22 +169,22 @@ namespace Mythologist_Client_WASM.Client.Services
             notifyOfGameSettingsInfoCallback(gameSettingsInfo);
         }
 
-        public ISignalRHubClientService.NotifyEventInfoCallback notifyOfEventInfoCallback = null;
+        public ISignalRHubClientService.NotifyEventCallback notifyOfEventCallback = null;
 
-        public void InjectNotifyEventInfoDelegate(ISignalRHubClientService.NotifyEventInfoCallback callback)
+        public void InjectNotifyEventDelegate(ISignalRHubClientService.NotifyEventCallback callback)
         {
-            notifyOfEventInfoCallback = callback;
+            notifyOfEventCallback = callback;
         }
 
-        private void NotifyOfEventInfo(EventInfo eventInfo)
+        private void NotifyOfEvent(Event Event)
         {
-            if (notifyOfEventInfoCallback is null)
+            if (notifyOfEventCallback is null)
             {
-                Console.WriteLine("Warning! No event info notify callback! Call InjectNotfyEventInfoDelegate");
+                Console.WriteLine("Warning! No event info notify callback! Call InjectNotfyEventDelegate");
                 return;
             }
 
-            notifyOfEventInfoCallback(eventInfo);
+            notifyOfEventCallback(Event);
         }
 
         public ISignalRHubClientService.NotifyOfServerErrorCallback notifyOfServerErrorCallback = null;
@@ -204,7 +204,7 @@ namespace Mythologist_Client_WASM.Client.Services
             notifyOfServerErrorCallback(message);
         }
 
-        public async Task SendEvent(string gameName, EventInfo theEvent)
+        public async Task SendEvent(string gameName, Event theEvent)
         {
             if (gameHubConnection == null)
             {

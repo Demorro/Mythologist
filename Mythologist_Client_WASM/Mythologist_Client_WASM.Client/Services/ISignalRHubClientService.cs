@@ -24,15 +24,15 @@ namespace Mythologist_Client_WASM.Client.Services
         public delegate void NotifyOfGameSettingsInfoCallback(GameSettingsInfo gameSettingsInfo);
         public void InjectNotifyOfGameSettingsInfoDelegate(NotifyOfGameSettingsInfoCallback callback);
 
-        public delegate void NotifyEventInfoCallback(EventInfo eventInfo);
-        public void InjectNotifyEventInfoDelegate(NotifyEventInfoCallback callback);
+        public delegate void NotifyEventCallback(Event Event);
+        public void InjectNotifyEventDelegate(NotifyEventCallback callback);
 
         public delegate void NotifyOfServerErrorCallback(string message);
         public void InjectNotifyOfServerErrorDelegate(NotifyOfServerErrorCallback callback);
 
 
         //Actual real logic
-        public Task SendEvent(string gameName, EventInfo theEvent);
+        public Task SendEvent(string gameName, Event theEvent);
 
         //Notify the server to update the game settings
         public Task SendUpdateGameSettings(string gameName, GameSettingsInfo newGameSettingsInfo);

@@ -48,11 +48,11 @@
                 return;
             }
 
-            EventInfo sendEvent = new EventInfo
+            Event sendEvent = new Event
                 {
-                    EEventType = EventInfo.EventType.SendText,
+                    EEventType = Event.EventType.SendText,
                     Text = SendValue,
-                    Sender = LocalClient,
+                    SenderUserName = LocalClient.userName,
                     TargetConnectionIds = GetTargetConnectionIds()
                 };
 

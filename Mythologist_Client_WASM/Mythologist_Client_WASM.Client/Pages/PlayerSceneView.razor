@@ -140,7 +140,7 @@
             signalRHub.InjectNotifyOfClientsDelegate(NotifyOfClientsUpdate);
             signalRHub.InjectNotifyOfCharactersInSceneDelegate(NotifyOfCharactersInSceneUpdate);
             signalRHub.InjectNotifyOfGameSettingsInfoDelegate(NotifyOfGameSettingsInfo);
-            signalRHub.InjectNotifyEventInfoDelegate(eventReactor.NotifyOfEventInfo);
+            signalRHub.InjectNotifyEventDelegate(eventReactor.NotifyOfEvent);
             signalRHub.InjectNotifyOfServerErrorDelegate(NotifyOfServerError);
             await signalRHub.RequestRefreshGameState(gameName);
 
