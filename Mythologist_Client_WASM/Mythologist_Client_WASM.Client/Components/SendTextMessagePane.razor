@@ -1,6 +1,7 @@
 ﻿@using Mythologist_Client_WASM.Client.Infos
 @using SharedLogic.Model
 @using SharedLogic.Utils
+@using SharedLogic.Events
 
 @inject ISignalRHubClientService signalRHub;
 @inject ISnackbar snackBar
@@ -49,7 +50,7 @@
 
         base.OnParametersSet();
     }
-
+    
     [Parameter]
     public List<CharacterModel> CharactersInScene { get; set; }
 

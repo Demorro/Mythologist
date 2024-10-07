@@ -1,5 +1,6 @@
 ﻿using MudBlazor;
 using Mythologist_Client_WASM.Client.Infos;
+using SharedLogic.Events;
 using System.Timers;
 
 namespace Mythologist_Client_WASM.Client.Utils

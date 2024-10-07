@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Mythologist_Client_WASM.Client.Infos;
 using Mythologist_Client_WASM.Services;
+using SharedLogic.Events;
 using SharedLogic.Model;
 using SharedLogic.Services;
 

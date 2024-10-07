@@ -1,4 +1,5 @@
 ﻿using Mythologist_Client_WASM.Client.Infos;
+using SharedLogic.Events;
 using SharedLogic.Model;
 using System.Threading.Tasks;
 

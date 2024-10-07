@@ -3,6 +3,7 @@ using DotNetTools.SharpGrabber;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using Mythologist_Client_WASM.Client.Infos;
+using SharedLogic.Events;
 using SharedLogic.Model;
 using SharedLogic.Services;
 using System.Runtime.CompilerServices;

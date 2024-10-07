@@ -1,4 +1,6 @@
-﻿namespace SharedLogic.Model
+﻿using SharedLogic.Events;
+
+namespace SharedLogic.Model
 {
     public class SceneModel
     {
@@ -15,6 +17,9 @@
 		public List<string> charactersIdsInScene { get; set; }
 
 		public string sceneNotes {get; set; } = "";
+
+		public List<Event> onCharacterJoinSceneEvents {get; set; } = new List<Event>();
+		public List<Event> invokableEvents {get; set; } = new List<Event>();
 
 		// Overrides for Equals, GetHashCode and ToString are important for MudSelect
 		public override bool Equals(object o)

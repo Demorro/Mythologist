@@ -1,9 +1,9 @@
-﻿namespace Mythologist_Client_WASM.Client.Infos
+﻿namespace SharedLogic.Events
 {
     //Big megatype for any sort of generic event that happens during gameplay
     //If you're not in the game when one of these fires, you dont get the message
     //So DONT rely on this for state syncronisation you fucking muppet.
-    public class Event
+    public class Event : ICloneable
     {
         public enum EventType
         {
@@ -18,5 +18,9 @@
         public List<string>? TargetConnectionIds { get; set; } //null means everyone
 
         public string? Text { get; set; }
+
+        public object Clone() {
+			return this.MemberwiseClone();
+        }
     }
 }
