@@ -1,0 +1,85 @@
+﻿@using SharedLogic.Services
+@using SharedLogic.Model
+@using Mythologist_CRUD.Components
+@using Mythologist_CRUD.Components.Dialogs
+@using MudBlazor
+
+@inject ISnackbar snackBar
+@inject IDialogService DialogService
+@inject IDatabaseConnectionService dbConnection;
+@inject NavigationManager NavManager
+
+@if (PlayerProperties != null) {
+    <MudStack>
+    <MudDataGrid T="PlayerPropertiesModel.PlayerProperty" Items="@PlayerProperties.playerProperties" Groupable="true" GroupExpanded="true" Bordered="false" Dense="true" Class="styled-table-cell" ReadOnly="false" EditMode="DataGridEditMode.Cell" EditTrigger="DataGridEditTrigger.Manual" Style="min-width: 100%; display: flex">
+        <Columns>
+            <PropertyColumn Property="x => x.name" Title="Player Name" Grouping="true">
+                <EditTemplate>
+                    <MudTextField @bind-Value="context.Item.name"></MudTextField>
+                </EditTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.propertyName" Title="Property Name" Groupable="false">
+                <EditTemplate>
+                    <MudTextField @bind-Value="context.Item.propertyName"></MudTextField>
+                </EditTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.propertyValue" Title="Property Value" Groupable="false">
+                <EditTemplate>
+                    <MudTextField @bind-Value="context.Item.propertyValue"></MudTextField>
+                </EditTemplate>
+            </PropertyColumn>
+            <TemplateColumn CellClass="d-flex justify-end" Editable="false" Groupable="false">
+                <CellTemplate>
+                    <MudTooltip Delay="700" Text="Duplicate Property." RootClass="d-inline">
+                        <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Outlined.CopyAll" OnClick="@(() => DuplicatePropertyButtonClicked(context.Item))" />
+                    </MudTooltip>
+                    <MudTooltip Delay="700" Text="Delete Property." RootClass="d-inline">
+                        <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Outlined.Close" OnClick="@(() => DeletePropertyButtonClicked(context.Item))"/>
+                    </MudTooltip>
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+    </MudDataGrid>
+    <MudStack Class="d-flex justify-start flex-grow-1 gap-4" Row="true">
+        <MudButton @onclick="@(() => NewPropertyButtonClicked())" Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.Add" Color="Color.Primary">Add Property</MudButton>
+        <MudTooltip Delay="700" Text="If set, reject any game join attempt from players with names that do not appear in the properties list." RootClass="d-inline">
+            <MudCheckBox @bind-Value="PlayerProperties.treatAsWhitelist">Treat as Whitelist</MudCheckBox>
+        </MudTooltip>
+    </MudStack>
+    </MudStack>
+}
+
+@code {
+    [Parameter]
+    public PlayerPropertiesModel? PlayerProperties { get; set; } = null;
+
+    private void NewPropertyButtonClicked(){
+        if (PlayerProperties == null) {
+            snackBar.Add("Unexpected null player properties");
+            return;
+        }
+
+        PlayerPropertiesModel.PlayerProperty newProperty = new PlayerPropertiesModel.PlayerProperty();
+        PlayerProperties.playerProperties.Add(newProperty);
+    }
+
+
+    private void DeletePropertyButtonClicked(PlayerPropertiesModel.PlayerProperty property) {
+        if (PlayerProperties == null) {
+            snackBar.Add("Unexpected null player properties");
+            return;
+        }
+
+        PlayerProperties.playerProperties.Remove(property);
+    }
+
+    private void DuplicatePropertyButtonClicked(PlayerPropertiesModel.PlayerProperty property) {
+        if (PlayerProperties == null) {
+            snackBar.Add("Unexpected null player properties");
+            return;
+        }
+
+        PlayerProperties.playerProperties.Add((PlayerPropertiesModel.PlayerProperty)property.Clone());
+    }
+
+}

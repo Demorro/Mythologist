@@ -14,8 +14,6 @@ namespace SharedLogic.Model
 		public bool playersCanMoveThemselvesBetweenScenes { get; set; } = false;
 		public SceneModel? defaultScene { get; set; }
 
-		public bool whitelistEnabled {get; set; } = false;
-
 
 		//So we can have reference mutability, for use with mudblazor datagrid
 		public class WhitelistName {

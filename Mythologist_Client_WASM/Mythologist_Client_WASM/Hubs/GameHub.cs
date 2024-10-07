@@ -64,6 +64,18 @@ namespace Mythologist_Client_WASM.Hubs
 				failureMessage = $"Game '{gameName}' does not exist";
 			}
 
+			//Check that the player name is valid
+			try {
+				var room = rooms.GetRoom(gameName);
+				if (room.GetClientsInGameAsList().Any(x => x.userName.Equals(username, StringComparison.OrdinalIgnoreCase))) {
+					allowedToJoin = false;
+					failureMessage = $"Game '{gameName}' already has a player named '{username}'.";
+				}
+			}
+			catch(Exception ex) {
+				//Fine, just throw from getRoom as it's possible it dosen't exist yet if this is the first join.
+			}
+
 			if (allowedToJoin)
 			{
 				//Register the new client
@@ -72,6 +84,20 @@ namespace Mythologist_Client_WASM.Hubs
 				await rooms.NewClientConnection(groupName, Context.ConnectionId, username, discordClientID, avatarUrl, isGM, database);
                 var allScenes = await database.AllScenes(gameName);
 
+
+				// Check whitelist compatibility
+				var playerProperties = await database.PlayerProperties(gameName);
+				if (playerProperties.treatAsWhitelist) {
+                    if (!playerProperties.playerProperties.Any(x => x.name != null ? x.name.Equals(username, StringComparison.OrdinalIgnoreCase) : false))
+					{
+						SuccessOrFailInfo whitelistRejectedFail = new SuccessOrFailInfo();
+						whitelistRejectedFail.successful = false;
+						whitelistRejectedFail.message = $"'{username}' is not on the whitelist for game '{gameName}'.";
+						return whitelistRejectedFail;
+					} 
+				}
+
+				//If something's gone wrong, like there are no scenes, or the default scene is invalid, this will stop clients entering.
                 try
                 {
                     //Seriously if the client isn't in a scene it wont display in the frontend .
@@ -82,7 +108,7 @@ namespace Mythologist_Client_WASM.Hubs
                     SuccessOrFailInfo couldntFindSceneFail = new SuccessOrFailInfo();
                     couldntFindSceneFail.successful = false;
 					couldntFindSceneFail.message = ex.Message;
-					return couldntFindSceneFail; ;
+					return couldntFindSceneFail;
                 }
 
                 Console.WriteLine($"Player with ID `{Context.ConnectionId}` Joined Game '{groupName}'");

@@ -27,6 +27,8 @@ namespace SharedLogic.Services
 
         Task UpdateGameSettings(string gameName, GameSettingsModel settings);
         Task<GameSettingsModel> GameSettings(string gameName);
+        Task UpdatePlayerProperties(string gameName, PlayerPropertiesModel playerProperties);
+        Task<PlayerPropertiesModel> PlayerProperties(string gameName);
         Task<Guid> StorageGuid(string gameName);
 
 	}

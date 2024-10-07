@@ -316,9 +316,22 @@ namespace SharedLogic.Services
 			ConnectionObjects connection = await GameDBConnection(gameName);
             var model = connection.gameDataModel;
 			return model.gameSettings;
-
 		}
 
+        public async Task UpdatePlayerProperties(string gameName, PlayerPropertiesModel playerProperties) {
+            ConnectionObjects connection = await GameDBConnection(gameName);
+            var model = connection.gameDataModel;
+
+            //Consider partial document update to keep costs down
+            model.playerProperties = playerProperties;
+			await connection.gameDataContainer.ReplaceItemAsync<GameModel>(model, gameName);
+        }
+
+        public async Task<PlayerPropertiesModel> PlayerProperties(string gameName) {
+            ConnectionObjects connection = await GameDBConnection(gameName);
+            var model = connection.gameDataModel;
+			return model.playerProperties;
+        }
         public async Task<Guid> StorageGuid(string gameName) {
             ConnectionObjects connection = await GameDBConnection(gameName);
             var model = connection.gameDataModel;

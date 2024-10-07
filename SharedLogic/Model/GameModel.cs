@@ -14,6 +14,8 @@
 		public List<SceneModel> scenes { get; set; } = new List<SceneModel>();
 		public List<CharacterModel> characters {get; set;} = new List<CharacterModel>();
 		public GameSettingsModel gameSettings { get; set; } = new GameSettingsModel();
+
+		public PlayerPropertiesModel playerProperties { get; set; } = new PlayerPropertiesModel();
 		public Guid storageID {get; set; } = Guid.NewGuid();
 	}
 }
