@@ -1,4 +1,5 @@
 ﻿@using Mythologist_Client_WASM.Client.Infos
+@using SharedLogic.Model
 @using SharedLogic.Utils
 
 @inject ISignalRHubClientService signalRHub;
@@ -18,6 +19,18 @@
             }
         }
     </MudSelect>
+    @if ((Clients != null) && (LocalClient != null) && (CharactersInScene != null)) {
+        @if (LocalClient.isGM) {
+            <MudSelect T="string" @bind-Value="sendAsName" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Send as" MultiSelection="false" AnchorOrigin="Origin.BottomCenter" Style="width:10%">
+                    @foreach (var player in Clients) {
+                    <MudSelectItem T="string" Value="@player.userName">@player.userName</MudSelectItem>
+                    }
+                    @foreach (var character in CharactersInScene) {
+                    <MudSelectItem T="string" Value="@character.id">@character.id</MudSelectItem>
+                    }
+            </MudSelect>
+        }
+    }
 </MudStack>
 
 @code {
@@ -27,7 +40,22 @@
     [Parameter]
     public ClientInfo LocalClient { get; set; }
 
+    protected override void OnParametersSet() {
+        // React to the parameter being set
+        if (LocalClient != null) {
+            sendAsName = LocalClient.userName;
+            StateHasChanged();
+        }
+
+        base.OnParametersSet();
+    }
+
+    [Parameter]
+    public List<CharacterModel> CharactersInScene { get; set; }
+
     Func<ClientInfo, string> converter = p => p?.userName;
+
+    private string sendAsName = "";
 
     [Parameter]
     public string GameName { get; set; }
@@ -52,7 +80,7 @@
                 {
                     EEventType = Event.EventType.SendText,
                     Text = SendValue,
-                    SenderUserName = LocalClient.userName,
+                    SenderUserName = sendAsName,
                     TargetConnectionIds = GetTargetConnectionIds()
                 };
 
