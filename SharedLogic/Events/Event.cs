@@ -15,7 +15,7 @@
 
         public string? SenderUserName { get; set; } //Should always be set
 
-        public List<string>? TargetConnectionIds { get; set; } //null means everyone
+        public List<string>? TargetUsernames { get; set; } //null means everyone
 
         public string? Text { get; set; }
 

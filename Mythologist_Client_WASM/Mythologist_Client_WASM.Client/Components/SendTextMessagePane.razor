@@ -82,7 +82,7 @@
                     EEventType = Event.EventType.SendText,
                     Text = SendValue,
                     SenderUserName = sendAsName,
-                    TargetConnectionIds = GetTargetConnectionIds()
+                    TargetUsernames = GetTargetUsernames()
                 };
 
 
@@ -91,8 +91,8 @@
         }
     }
 
-    private List<string>? GetTargetConnectionIds()
+    private List<string>? GetTargetUsernames()
     {
-        return SelectedClients.Select(x => x.signalRConnectionID).ToList();
+        return SelectedClients.Select(x => x.userName).ToList();
     }
 }

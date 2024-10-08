@@ -202,14 +202,16 @@ namespace Mythologist_Client_WASM.Hubs
 		{
 			var clientsInGame = rooms.GetRoom(gameName).GetClientsInGameAsDict();
 
-			if (theEvent.TargetConnectionIds == null)
+			if (theEvent.TargetUsernames == null)
 			{
 				Console.WriteLine("ERROR. No Targets in Event");
 				return;
 			}
 
+			
+
             List<Task> sendEventMessages = new List<Task>();
-            foreach (var connectionID in theEvent.TargetConnectionIds)
+            foreach (var connectionID in GetConnectionIdsFromUsernames(theEvent.TargetUsernames, clientsInGame))
 			{
 				ClientInfo? target;
 				if (clientsInGame.TryGetValue(connectionID, out target))
@@ -221,5 +223,8 @@ namespace Mythologist_Client_WASM.Hubs
 			await Task.WhenAll(sendEventMessages);
 		}
 
+		private IEnumerable<string> GetConnectionIdsFromUsernames(List<string> usernames, Dictionary<string, ClientInfo> clientsInGame) {
+			return clientsInGame.Values.Where(x => usernames.Contains(x.userName)).Select(x => x.signalRConnectionID);
+		}
     }
 }
