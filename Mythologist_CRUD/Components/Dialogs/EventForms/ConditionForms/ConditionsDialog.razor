@@ -1,0 +1,87 @@
+﻿@using MudBlazor
+@using Mythologist_CRUD.Components.Dialogs.EventForms
+@using SharedLogic.Events
+@using SharedLogic.Model
+@using SharedLogic.Services
+
+@inject IDatabaseConnectionService dbConnection
+
+<MudDialog DefaultFocus="DefaultFocus.FirstChild" @onkeyup="KeyboardEventHandler" Style="width:25%; min-width:300px;">
+    <DialogContent>
+        <MudStack>
+            <MudTextField @bind-Value="@condition.ConditionName" Margin="Margin.Dense" Label="Condition Name" Variant="Variant.Outlined"></MudTextField>
+
+            <MudSelect T="EventCondition.ConditionType" @bind-Value="condition.EConditionType" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Condition Type">
+                @foreach (var value in Enum.GetValues(typeof(EventCondition.ConditionType)).Cast<EventCondition.ConditionType>()) {
+                    <MudSelectItem Value="value">@EventCondition.ConditionTypeString(value)</MudSelectItem>
+                }
+            </MudSelect>
+
+
+            @if (condition.EConditionType == EventCondition.ConditionType.EqualToProperty ||
+            condition.EConditionType == EventCondition.ConditionType.LessThanProperty ||
+            condition.EConditionType == EventCondition.ConditionType.LessThanOrEqualToProperty ||
+            condition.EConditionType == EventCondition.ConditionType.GreaterThanProperty ||
+            condition.EConditionType == EventCondition.ConditionType.GreaterThanOrEqualToProperty) {
+                <PropertyCompareConditionFragment PlayerProperties="@playerProperties" @bind-ComparerProperty="@condition.PlayerProperty" @bind-ComparerValue="@condition.CompareValue"></PropertyCompareConditionFragment>
+            }
+            @if (condition.EConditionType == EventCondition.ConditionType.ActorInScene) {
+                <ActorInSceneConditionFragment AllActors="@allActors" @bind-ActorInScene="@condition.CompareValue"></ActorInSceneConditionFragment>
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Success" OnClick="Submit">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private MudDialogInstance? MudDialog { get; set; }
+
+    [Parameter]
+    public string? GameName { get; set; }
+
+    [Parameter]
+    public EventCondition? InitialCondition { get; set; }
+
+    //Output variables
+    private EventCondition condition = new EventCondition();
+
+    //Options
+    private List<string?> allActors = new List<string?>(); //All the players that have properties
+
+    private PlayerPropertiesModel? playerProperties;
+
+    protected override async Task OnParametersSetAsync() {
+        if ((GameName != null) && (playerProperties == null)) {
+            playerProperties = await dbConnection.PlayerProperties(GameName);
+        }
+
+        if ((GameName != null) && (allActors.Count == 0)) {
+            allActors = (await dbConnection.AllKnownActorsInGame(GameName)).ToList();
+        }
+
+        if (InitialCondition != null) {
+            condition = (EventCondition)InitialCondition.Clone();
+        }
+        else {
+            condition.ConditionName = "New Condition";
+        }
+    }
+ 
+    private void Submit() {
+        MudDialog?.Close<EventCondition?>(condition);
+    }
+
+    private void Cancel() => MudDialog?.Cancel();
+
+    private void KeyboardEventHandler(KeyboardEventArgs args) {
+        if (args.Key == "Enter") {
+            Submit();
+        }
+    }
+
+}
+

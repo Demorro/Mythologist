@@ -1,0 +1,82 @@
+﻿@using MudBlazor
+@using Mythologist_CRUD.Components.Dialogs.EventForms
+@using SharedLogic.Events
+@using SharedLogic.Services
+
+@inject IDatabaseConnectionService dbConnection
+
+<MudDialog DefaultFocus="DefaultFocus.FirstChild" @onkeyup="KeyboardEventHandler" Style="width:25%; min-width:300px;">
+    <DialogContent>
+        <MudStack>
+            <MudTextField @bind-Value="outputEvent.EventName" Margin="Margin.Dense" Label="Event Name" Variant="Variant.Outlined" AutoGrow></MudTextField>
+            <MudSelect T="Event.EventType" @bind-Value="outputEvent.EEventType" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Event Type">
+                @foreach (var value in Enum.GetValues(typeof(Event.EventType)).Cast<Event.EventType>()) {
+                    <MudSelectItem Value="value">@value</MudSelectItem>
+                }
+            </MudSelect>
+            <MudSelect T="string" @bind-SelectedValues="outputEvent.TargetUsernames" Variant="Variant.Outlined" Margin="Margin.Dense" MultiSelection="true" Label="Targets">
+                @foreach (var targetUsername in targetUsernames) {
+                    <MudSelectItem Value="targetUsername">@targetUsername</MudSelectItem>
+                }
+            </MudSelect>
+
+            @if (outputEvent.EEventType == Event.EventType.Announcement || outputEvent.EEventType == Event.EventType.SendText)
+            {
+                <TargetedTextEventFormFragment PotentialSenders="@potentialSenders" @bind-SenderUsername="@outputEvent.SenderUserName" @bind-MessageText="@outputEvent.Text"></TargetedTextEventFormFragment>
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Success" OnClick="Submit">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private MudDialogInstance? MudDialog { get; set; }
+
+    [Parameter]
+    public string? GameName { get; set; }
+
+    [Parameter]
+    public Event? InitialEvent { get; set; }
+
+    //Output variables
+    private Event outputEvent = new Event();
+
+    //Options
+    private List<string?> targetUsernames = new List<string?>(); //All the players that have properties
+    private List<string?> potentialSenders = new List<string?>(); //All the players that have properties, plus all the characters
+
+    protected override async Task OnParametersSetAsync() {
+        if ((GameName != null) && (targetUsernames.Count == 0)) {
+            targetUsernames = (await dbConnection.KnownPlayerUsernames(GameName)).ToList();
+        }
+
+        if ((GameName != null) && (potentialSenders.Count == 0)) {
+            potentialSenders = (await dbConnection.AllKnownActorsInGame(GameName)).ToList();
+        }
+
+        if (InitialEvent != null) {
+            outputEvent = (Event)InitialEvent.Clone();
+        }
+        else {
+            
+        }
+    }
+
+    private void Submit() {
+        MudDialog?.Close<Event?>(outputEvent);
+    }
+
+    private void Cancel() => MudDialog?.Cancel();
+
+    private void KeyboardEventHandler(KeyboardEventArgs args) {
+        if (args.Key == "Enter") {
+            Submit();
+        }
+    }
+
+}
+

@@ -3,6 +3,7 @@
 @using Mythologist_CRUD.Components
 @using Mythologist_CRUD.Components.Dialogs
 @using MudBlazor
+@using SharedLogic.Utils
 
 @inject ISnackbar snackBar
 @inject IDialogService DialogService
@@ -16,8 +17,15 @@
                 <PropertyColumn Property="x => x.id" Title="Name" />
                 <TemplateColumn CellClass="d-flex justify-end">
                     <CellTemplate >
-                        <MudButton @onclick="@(() => EditSceneButtonClicked(context.Item))" Size="@Size.Medium" Variant="@Variant.Filled" Color="@Color.Primary" Style="margin-left:5px; margin-right:5px">Edit</MudButton>
-                        <MudButton @onclick="@(() => DeleteSceneButtonClicked(context.Item))" Disabled="!RequiredParamsSet()" Size="@Size.Medium" Variant="@Variant.Filled" Color="@Color.Error" Style="margin-left:5px; margin-right:5px">Delete</MudButton>
+                        <MudTooltip Delay="700" Text="Edit Scene." RootClass="d-inline">
+                            <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Outlined.Edit" OnClick="@(() => EditSceneButtonClicked(context.Item))" />
+                        </MudTooltip>
+                        <MudTooltip Delay="700" Text="Duplicate Scene." RootClass="d-inline">
+                            <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Outlined.CopyAll" OnClick="@(() => DuplicateSceneButtonClicked(context.Item))" />
+                        </MudTooltip>
+                        <MudTooltip Delay="700" Text="Delete Scene." RootClass="d-inline">
+                            <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Outlined.Close" OnClick="@(() => DeleteSceneButtonClicked(context.Item))" />
+                        </MudTooltip>
                     </CellTemplate>
                 </TemplateColumn>
             </Columns>
@@ -81,7 +89,32 @@
                 }
             }
         }
+    }
 
+    private async Task DuplicateSceneButtonClicked(SceneModel sceneModel) {
+        if (allScenes == null) {
+            snackBar.Add("Unexpected null scenes list");
+            return;
+        }
+
+        if (GameName == null) {
+            snackBar.Add("Unexpected null GameName");
+            return;
+        }
+
+
+        SceneModel newSceneModel = (SceneModel)sceneModel.Clone();
+
+
+        newSceneModel.id = DataValidation.CreateUniqueString(newSceneModel.id, allScenes.Select(x => x.id));
+        bool? addSceneSuccess = await AddSceneToDB(newSceneModel);
+        if (!addSceneSuccess.GetValueOrDefault(false)) {
+            snackBar.Add($"Failed to add {newSceneModel.id} to database", Severity.Error);
+        }
+        else {
+            snackBar.Add($"{newSceneModel.id} Added", Severity.Success);
+            allScenes = await dbConnection.AllScenes(GameName);
+        }
 
     }
 
@@ -138,9 +171,14 @@
         {
             return false;
         }
-
-        await dbConnection.AddScene(GameName!, sceneModel);
-        return true;
+        try {
+            await dbConnection.AddScene(GameName!, sceneModel);
+            return true;
+        }
+        catch (Exception ex) {
+            snackBar.Add(ex.Message, Severity.Error);
+            return false;
+        }
     }
 
     private async Task<bool> DeleteSceneFromDB(SceneModel sceneModel)

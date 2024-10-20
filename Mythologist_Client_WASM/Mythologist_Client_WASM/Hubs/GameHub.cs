@@ -89,7 +89,7 @@ namespace Mythologist_Client_WASM.Hubs
 				// Check whitelist compatibility
 				var playerProperties = await database.PlayerProperties(gameName);
 				if (playerProperties.treatAsWhitelist) {
-                    if (!playerProperties.playerProperties.Any(x => x.name != null ? x.name.Equals(username, StringComparison.OrdinalIgnoreCase) : false))
+                    if (!playerProperties.playerProperties.Any(x => x.playerName != null ? x.playerName.Equals(username, StringComparison.OrdinalIgnoreCase) : false))
 					{
 						SuccessOrFailInfo whitelistRejectedFail = new SuccessOrFailInfo();
 						whitelistRejectedFail.successful = false;

@@ -191,6 +191,10 @@ namespace SharedLogic.Services
             var model = connection.gameDataModel;
 
             //Consider partial document update to keep costs down
+            if (model.scenes.Any(x => x.id == newScene.id)) { 
+                throw new Exception($"Cannot add duplicate scene of id {newScene.id}");
+            }
+
             model.scenes.Add(newScene);
             await connection.gameDataContainer.ReplaceItemAsync<GameModel>(model, gameName);
         }
@@ -332,6 +336,25 @@ namespace SharedLogic.Services
             var model = connection.gameDataModel;
 			return model.playerProperties;
         }
+
+        public async Task<IEnumerable<string?>> KnownPlayerUsernames(string gameName) {
+            var properties = await PlayerProperties(gameName);
+            return properties.PlayerProperties().Select(x => x.playerName).Distinct();
+        }
+
+        public async Task<IEnumerable<string?>> AllKnownActorsInGame(string gameName) {
+            var playerPropertiesTask = PlayerProperties(gameName);
+            var charactersTask = AllCharacters(gameName);
+            await Task.WhenAll(playerPropertiesTask, charactersTask);
+
+            var properties = await playerPropertiesTask;
+            var playerNames = properties.PlayerProperties().Select(x => x.playerName).Distinct();
+            var characters = await charactersTask;
+            var characterNames = characters.Select(x => x.id).Distinct();
+
+            return playerNames.Concat(characterNames);
+        }
+
         public async Task<Guid> StorageGuid(string gameName) {
             ConnectionObjects connection = await GameDBConnection(gameName);
             var model = connection.gameDataModel;

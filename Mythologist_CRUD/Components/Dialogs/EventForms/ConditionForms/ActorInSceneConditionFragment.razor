@@ -1,0 +1,27 @@
+﻿<MudSelect T="string" @bind-Value="ActorInScene" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Actor">
+    @foreach (var sender in AllActors) {
+        <MudSelectItem Value="sender">@sender</MudSelectItem>
+    }
+</MudSelect>
+
+@code {
+
+    [Parameter]
+    public List<string> AllActors { get; set; } = new List<string>();
+
+    private string? _actorInScene;
+    #pragma warning disable BL0007
+    [Parameter]
+    public string? ActorInScene
+    {
+        get => _actorInScene;
+        set
+        {
+            if (_actorInScene == value) return;
+            _actorInScene = value;
+            ActorInSceneChanged.InvokeAsync(value);
+        }
+    } 
+    [Parameter]
+    public EventCallback<string?> ActorInSceneChanged { get; set; }
+}

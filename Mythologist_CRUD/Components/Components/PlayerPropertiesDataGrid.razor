@@ -4,34 +4,26 @@
 @using Mythologist_CRUD.Components.Dialogs
 @using MudBlazor
 
-@inject ISnackbar snackBar
+@inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @inject IDatabaseConnectionService dbConnection;
 @inject NavigationManager NavManager
 
 @if (PlayerProperties != null) {
     <MudStack>
-    <MudDataGrid T="PlayerPropertiesModel.PlayerProperty" Items="@PlayerProperties.playerProperties" Groupable="true" GroupExpanded="true" Bordered="false" Dense="true" Class="styled-table-cell" ReadOnly="false" EditMode="DataGridEditMode.Cell" EditTrigger="DataGridEditTrigger.Manual" Style="min-width: 100%; display: flex">
+        <MudDataGrid T="PlayerPropertiesModel.PlayerProperty" Items="@PlayerPropertiesToDisplay()" Groupable="true" GroupExpanded="true" Bordered="false" Dense="true" Class="styled-table-cell" ReadOnly="false" Style="min-width: 100%; display: flex">
         <Columns>
-            <PropertyColumn Property="x => x.name" Title="Player Name" Grouping="true">
-                <EditTemplate>
-                    <MudTextField @bind-Value="context.Item.name"></MudTextField>
-                </EditTemplate>
+            <PropertyColumn Property="x => x.playerName" Title="Player Name" Grouping="true">
+                <GroupTemplate>
+                        @context.Grouping.Key
+                </GroupTemplate>
             </PropertyColumn>
-                <PropertyColumn Property="x => x.propertyName" Title="Property Name" Groupable="false" Sortable="false">
-                <EditTemplate>
-                    <MudTextField @bind-Value="context.Item.propertyName"></MudTextField>
-                </EditTemplate>
-            </PropertyColumn>
-                <PropertyColumn Property="x => x.propertyValue" Title="Property Value" Groupable="false" Sortable="false">
-                <EditTemplate>
-                    <MudTextField @bind-Value="context.Item.propertyValue"></MudTextField>
-                </EditTemplate>
-            </PropertyColumn>
+            <PropertyColumn Property="x => x.propertyName" Title="Property Name" Groupable="false" Sortable="false"> </PropertyColumn>
+            <PropertyColumn Property="x => x.propertyValue" Title="Property Value" Groupable="false" Sortable="false"></PropertyColumn>
                 <TemplateColumn CellClass="d-flex justify-end" Editable="false" Groupable="false" Sortable="false">
                 <CellTemplate>
-                    <MudTooltip Delay="700" Text="Duplicate Property." RootClass="d-inline">
-                        <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Outlined.CopyAll" OnClick="@(() => DuplicatePropertyButtonClicked(context.Item))" />
+                    <MudTooltip Delay="700" Text="Edit Property." RootClass="d-inline">
+                        <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Outlined.Edit" OnClick="@(() => EditPropertyButtonClicked(context.Item))" />
                     </MudTooltip>
                     <MudTooltip Delay="700" Text="Delete Property." RootClass="d-inline">
                         <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Outlined.Close" OnClick="@(() => DeletePropertyButtonClicked(context.Item))"/>
@@ -41,11 +33,15 @@
         </Columns>
     </MudDataGrid>
     <MudStack Class="d-flex justify-start flex-grow-1 gap-4" Row="true">
-        <MudButton @onclick="@(() => NewPropertyButtonClicked())" Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.Add" Color="Color.Primary">Add Property</MudButton>
+            <MudButton @onclick="@(() => EditPropertyButtonClicked(null))" Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.Add" Color="Color.Primary">Add Property</MudButton>
         <MudTooltip Delay="700" Text="If set, reject any game join attempt from players with names that do not appear in the properties list." RootClass="d-inline">
             <MudCheckBox @bind-Value="PlayerProperties.treatAsWhitelist">Treat as Whitelist</MudCheckBox>
         </MudTooltip>
+        <MudTooltip Delay="700" Text="Show properties automatically created for the purposes of eventing. Probably best to leave this turned off. " RootClass="d-inline">
+            <MudCheckBox @bind-Value="showImplicitProperties">Show Implicit Properties</MudCheckBox>
+        </MudTooltip>
     </MudStack>
+
     </MudStack>
 }
 
@@ -53,33 +49,57 @@
     [Parameter]
     public PlayerPropertiesModel? PlayerProperties { get; set; } = null;
 
-    private void NewPropertyButtonClicked(){
+    //Implicit properties are the ones for "All Players", "Player Just Joined Scene", etc. For use in eventing
+    private bool showImplicitProperties = false;
+
+    private async Task EditPropertyButtonClicked(PlayerPropertiesModel.PlayerProperty? property) {
         if (PlayerProperties == null) {
-            snackBar.Add("Unexpected null player properties");
+            Snackbar.Add("Unexpected null player properties");
             return;
         }
 
-        PlayerPropertiesModel.PlayerProperty newProperty = new PlayerPropertiesModel.PlayerProperty();
-        PlayerProperties.playerProperties.Add(newProperty);
-    }
 
+        var options = new DialogOptions { BackgroundClass = "blur-dialog-background", BackdropClick = false };
+        var parameters = new DialogParameters<EditPlayerPropertyDialog> { { x => x.InitialProperty, property } };
+        var dialog = await DialogService.ShowAsync<EditPlayerPropertyDialog>(null, parameters, options);
+        DialogResult? playerPropertyResult = null;
+        try {
+            playerPropertyResult = await dialog.Result;
+        }
+        catch (Exception ex) {
+            Snackbar.Add(ex.Message, Severity.Error);
+            return;
+        }
+
+        if ((playerPropertyResult != null) && (playerPropertyResult.Data != null)){
+            PlayerPropertiesModel.PlayerProperty newProperty = (PlayerPropertiesModel.PlayerProperty)playerPropertyResult.Data;
+            if (property != null){
+                PlayerProperties.RemovePlayerProperty(property);
+            }
+            PlayerProperties.AddPlayerProperty(newProperty);
+        }
+    }
 
     private void DeletePropertyButtonClicked(PlayerPropertiesModel.PlayerProperty property) {
         if (PlayerProperties == null) {
-            snackBar.Add("Unexpected null player properties");
+            Snackbar.Add("Unexpected null player properties");
             return;
         }
 
-        PlayerProperties.playerProperties.Remove(property);
+        PlayerProperties.RemovePlayerProperty(property);
     }
 
-    private void DuplicatePropertyButtonClicked(PlayerPropertiesModel.PlayerProperty property) {
-        if (PlayerProperties == null) {
-            snackBar.Add("Unexpected null player properties");
-            return;
+    public HashSet<PlayerPropertiesModel.PlayerProperty> PlayerPropertiesToDisplay() {
+
+        if (PlayerProperties == null){
+            return new HashSet<PlayerPropertiesModel.PlayerProperty>();
         }
 
-        PlayerProperties.playerProperties.Add((PlayerPropertiesModel.PlayerProperty)property.Clone());
+        if (showImplicitProperties) {
+            return PlayerProperties.PlayerProperties();
+        }
+        else {
+            return PlayerProperties.PlayerPropertiesWithoutImplicitPropeties();
+        }
     }
-
 }

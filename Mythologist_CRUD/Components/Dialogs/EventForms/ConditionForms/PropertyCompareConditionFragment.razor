@@ -1,0 +1,79 @@
+﻿@using SharedLogic.Events
+@using SharedLogic.Model
+
+@if (PlayerProperties != null) {
+    <MudSelect T="string" @bind-Value="selectedPlayer" @bind-Value:after="onSelectedPlayerSet" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Player">
+        @foreach (var playerWithProp in playerSelectList) {
+            @if (playerWithProp != SharedLogic.Utils.Constants.ALL_PLAYERS_ID &&
+                 playerWithProp != SharedLogic.Utils.Constants.ALL_PLAYERS_IN_SCENE_ID) {
+                    <MudSelectItem Value="playerWithProp">@playerWithProp</MudSelectItem>
+                }
+            }
+    </MudSelect>
+
+    <MudSelect T="PlayerPropertiesModel.PlayerProperty" @bind-Value="ComparerProperty" Variant="Variant.Outlined" Margin="Margin.Dense" Label="Property">
+        @foreach (var property in PlayerProperties.PlayerProperties().Where(x => x.playerName == selectedPlayer)) {
+            <MudSelectItem Value="property">@property</MudSelectItem>
+        }
+    </MudSelect>
+}
+
+<MudTextField @bind-Value="ComparerValue" Margin="Margin.Dense" Label="Value" Variant="Variant.Outlined" AutoGrow></MudTextField>
+
+@code {
+
+    private string? selectedPlayer = null;
+    private List<string?> playerSelectList = new List<string?>();
+
+    [Parameter]
+    public PlayerPropertiesModel? PlayerProperties { get; set; }
+
+    protected override void OnParametersSet() {
+        if (playerSelectList.Count <= 0 && PlayerProperties != null) {
+            playerSelectList = PlayerProperties.PlayerProperties().DistinctBy(x => x.playerName).Select(x => x.playerName).ToList();
+        }
+
+        if (selectedPlayer == null && ComparerProperty != null) {
+            selectedPlayer = ComparerProperty.playerName;
+        }
+    }
+
+    private void onSelectedPlayerSet() {
+        if (ComparerProperty != null) {
+            ComparerProperty.playerName = selectedPlayer;
+        }
+    }
+
+    private PlayerPropertiesModel.PlayerProperty? _comparerProperty;
+    #pragma warning disable BL0007
+    [Parameter]
+    public PlayerPropertiesModel.PlayerProperty? ComparerProperty
+    {
+        get => _comparerProperty;
+        set
+        {
+            if (_comparerProperty == value) return;
+            _comparerProperty = value;
+            ComparerPropertyChanged.InvokeAsync(value);
+        }
+    } 
+    [Parameter]
+    public EventCallback<PlayerPropertiesModel.PlayerProperty?> ComparerPropertyChanged { get; set; }
+
+    private string? _comparerValue;
+    #pragma warning disable BL0007
+    [Parameter]
+    public string? ComparerValue
+    {
+        get => _comparerValue;
+        set
+        {
+            if (_comparerValue == value) return;
+            _comparerValue = value;
+            ComparerValueChanged.InvokeAsync(value);
+        }
+    }
+    [Parameter]
+    public EventCallback<string?> ComparerValueChanged { get; set; }
+
+}

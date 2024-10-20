@@ -43,11 +43,6 @@
 
 
   <ItemGroup>
-    <Folder Include="Components\Dialogs\" />
-  </ItemGroup>
-
-
-  <ItemGroup>
     <ProjectReference Include="..\SharedLogic\SharedLogic.csproj" />
   </ItemGroup>
 

@@ -1,5 +1,6 @@
 ﻿@page "/editscene/{sceneName}"
 @using Azure.Storage.Blobs
+@using Mythologist_CRUD.Components.Components
 @using Mythologist_CRUD.Utils
 @using SharedLogic.Services
 @using SharedLogic.Model
@@ -67,13 +68,16 @@
                         <MudTextField T="string" Label="Scene Notes. Visible only to the GM" Variant="Variant.Filled" @bind-Text="@sceneNotesValue" AutoGrow />
                     </MudItem>
                     <MudItem xs="12">
-                        <MudText Typo="Typo.h5" Class="mb-4">Scene Join Events</MudText>
+                        <MudTooltip Delay="700" Text="Events triggered when any Actor (player or NPC) enters the scene." RootClass="d-inline">
+                            <MudText Typo="Typo.h5" Class="mb-4">Actor Join Events</MudText>
+                            <SceneEventDataGrid Events="@scene?.onActorJoinEvents" GameName="@gameName"></SceneEventDataGrid>
+                        </MudTooltip>
                     </MudItem>
                     <MudItem xs="12">
-                        <MudText Typo="Typo.h5" Class="mb-4">Scene Leave Events</MudText>
-                    </MudItem>
-                    <MudItem xs="12">
-                        <MudText Typo="Typo.h5" Class="mb-4">Triggerable Events</MudText>
+                        <MudTooltip Delay="700" Text="Events that can be triggered manually via buttons displayed to players in this scene." RootClass="d-inline">
+                            <MudText Typo="Typo.h5" Class="mb-4">Triggerable Events</MudText>
+                            <SceneEventDataGrid Events="@scene?.triggerableEvents" GameName="@gameName"></SceneEventDataGrid>
+                        </MudTooltip>
                     </MudItem>
                 </MudGrid>
             </MudForm>
@@ -202,6 +206,8 @@
         catch(Exception ex) {
             Snackbar.Add($"Unexpected exception : {ex.Message}");
         }
+
+        StateHasChanged();
     }
 
     public async Task SubmitForm()

@@ -1,8 +1,9 @@
-﻿using SharedLogic.Events;
+﻿using MudBlazor.ThemeManager.Extensions;
+using SharedLogic.Events;
 
 namespace SharedLogic.Model
 {
-    public class SceneModel
+    public class SceneModel : ICloneable
     {
         public SceneModel(string id)
         {
@@ -18,8 +19,8 @@ namespace SharedLogic.Model
 
 		public string sceneNotes {get; set; } = "";
 
-		public List<Event> onCharacterJoinSceneEvents {get; set; } = new List<Event>();
-		public List<Event> invokableEvents {get; set; } = new List<Event>();
+		public List<Event> onActorJoinEvents {get; set; } = new List<Event>();
+		public List<Event> triggerableEvents {get; set; } = new List<Event>();
 
 		// Overrides for Equals, GetHashCode and ToString are important for MudSelect
 		public override bool Equals(object o)
@@ -33,5 +34,31 @@ namespace SharedLogic.Model
 		{
 			return id;
 		}
-	}
+	
+        public object Clone() {
+			SceneModel cloneScene = new SceneModel(this.id);
+
+			cloneScene.backgroundImageUri = this.backgroundImageUri;
+			cloneScene.backgroundMusicUri = this.backgroundMusicUri;
+
+			cloneScene.charactersIdsInScene = new List<string>();
+			foreach(var characterId in this.charactersIdsInScene) {
+				cloneScene.charactersIdsInScene.Add(characterId);
+			}
+			
+			cloneScene.sceneNotes = this.sceneNotes;
+
+			cloneScene.onActorJoinEvents = new List<Event>();
+			foreach(var actorJoinEvent in this.onActorJoinEvents) {
+				cloneScene.onActorJoinEvents.Add((Event)actorJoinEvent.Clone());
+			}
+
+			cloneScene.triggerableEvents = new List<Event>();
+			foreach(var triggerableEvent in this.triggerableEvents) {
+				cloneScene.triggerableEvents.Add((Event)triggerableEvent.Clone());
+			}
+
+			return cloneScene;
+        }
+    }
 }

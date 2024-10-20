@@ -1,0 +1,59 @@
+﻿@using MudBlazor
+@using Mythologist_CRUD.Components.Dialogs.EventForms
+@using SharedLogic.Events
+@using SharedLogic.Model
+@using SharedLogic.Services
+
+@inject IDatabaseConnectionService dbConnection
+
+<MudDialog DefaultFocus="DefaultFocus.FirstChild" @onkeyup="KeyboardEventHandler" Style="width:25%; min-width:300px;">
+    <DialogContent>
+        <MudStack>
+            <MudTextField @bind-Value="outputProperty.playerName" Margin="Margin.Dense" Label="Player Name" Variant="Variant.Outlined"></MudTextField>
+            <MudTextField @bind-Value="outputProperty.propertyName" Margin="Margin.Dense" Label="Property Name" Variant="Variant.Outlined"></MudTextField>
+            <MudTextField @bind-Value="outputProperty.propertyValue" Margin="Margin.Dense" Label="Property Value" Variant="Variant.Outlined"></MudTextField>
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Success" OnClick="Submit">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code 
+{
+    [CascadingParameter]
+    private MudDialogInstance? MudDialog { get; set; }
+
+    [Parameter]
+    public PlayerPropertiesModel.PlayerProperty? InitialProperty { get; set; }
+
+    public PlayerPropertiesModel.PlayerProperty outputProperty { get; set; } = new PlayerPropertiesModel.PlayerProperty();
+
+
+    protected override void OnParametersSet() {
+        if (InitialProperty != null) {
+            outputProperty = (PlayerPropertiesModel.PlayerProperty)InitialProperty.Clone();
+        }
+        else {
+            outputProperty.playerName = "New Player";
+            outputProperty.propertyName = "New Property";
+            outputProperty.propertyValue = "10";
+        }
+    }
+
+    private void Submit()
+    {
+        MudDialog?.Close<PlayerPropertiesModel.PlayerProperty?>(outputProperty);
+    }
+
+    private void Cancel() => MudDialog?.Cancel();
+
+    private void KeyboardEventHandler(KeyboardEventArgs args) {
+        if (args.Key == "Enter") {
+            Submit();
+        }
+    }
+}
+
+

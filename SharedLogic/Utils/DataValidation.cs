@@ -116,5 +116,20 @@ namespace SharedLogic.Utils
             return text;
         }
 
+		public static string CreateUniqueString(string sourceString, IEnumerable<string> allStrings) {
+			
+			if (!allStrings.Contains(sourceString)) {
+				return sourceString;
+			}
+			
+			int val = 2;
+			while (allStrings.Contains($"{sourceString}({val.ToString()})")) {
+				val++;
+			}
+
+			return $"{sourceString}({val.ToString()})";
+
+
+		}
 	}
 }

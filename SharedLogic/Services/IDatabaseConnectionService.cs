@@ -29,6 +29,13 @@ namespace SharedLogic.Services
         Task<GameSettingsModel> GameSettings(string gameName);
         Task UpdatePlayerProperties(string gameName, PlayerPropertiesModel playerProperties);
         Task<PlayerPropertiesModel> PlayerProperties(string gameName);
+
+        //"Known", for the moment, means that they have a property
+        Task<IEnumerable<string?>> KnownPlayerUsernames(string gameName);
+
+        //All known players, plus all the characters that have been added
+        Task<IEnumerable<string?>> AllKnownActorsInGame(string gameName);
+
         Task<Guid> StorageGuid(string gameName);
 
 	}

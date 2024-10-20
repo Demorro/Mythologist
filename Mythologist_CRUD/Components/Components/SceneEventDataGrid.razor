@@ -1,0 +1,227 @@
+﻿@using Mythologist_CRUD.Components.Dialogs.EventForms.ConditionForms
+@using SharedLogic.Events
+@using SharedLogic.Services
+@using SharedLogic.Model
+@using Mythologist_CRUD.Components
+@using Mythologist_CRUD.Components.Dialogs
+@using Mythologist_CRUD.Components.Dialogs.EventForms
+@using MudBlazor
+
+@inject ISnackbar snackBar
+@inject IDialogService DialogService
+@inject IDatabaseConnectionService dbConnection;
+@inject NavigationManager NavManager
+
+<style>
+    .grid-item-outline {
+        border: 1px solid black; /* You can customize the color and thickness */
+    }</style>
+
+@if (Events != null) {
+
+        <MudList T="Event" Dense="true">
+        <MudListSubheader Style="width:100%; margin-bottom:-20px;">
+                <MudGrid Justify="Justify.SpaceBetween" Class="d-flex align-center">
+                    <MudItem xs="5">
+                        <MudText>Event Name</MudText>
+                    </MudItem>
+                    <MudItem xs="3">
+                        <MudText>Event Type</MudText>
+                    </MudItem>
+                    <MudItem xs="4">
+                    </MudItem>
+                </MudGrid>
+            </MudListSubheader>
+            @foreach (Event e in Events)
+            {
+                <MudListItem>
+                    <ChildContent>
+                        <MudGrid Justify="Justify.SpaceBetween" Class="d-flex align-center">
+                            <MudItem xs="5">
+                                    <MudText>@e.EventName</MudText>
+                            </MudItem>
+                            <MudItem xs="3">
+                                    <MudText>@Event.EventTypeName(e.EEventType)</MudText>
+                            </MudItem>
+                            <MudItem xs="4">
+                            <MudStack Row="true" Justify="Justify.FlexEnd" StretchItems="StretchItems.All" Spacing="0" Wrap="Wrap.Wrap">
+                                    <MudTooltip Delay="700" Text="Edit Event" RootClass="d-inline">
+                                        <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Outlined.Edit" OnClick="@(() => EditEventButtonClicked(e))" />
+                                    </MudTooltip>
+                                    <MudTooltip Delay="700" Text="Delete Event" RootClass="d-inline">
+                                        <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Outlined.Close" OnClick="@(() => DeleteEventButtonClicked(e))" />
+                                    </MudTooltip>
+                                    <MudTooltip Delay="700" Text="Duplicate Event" RootClass="d-inline">
+                                        <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Outlined.CopyAll" OnClick="@(() => DuplicateEventButtonClicked(e))" />
+                                    </MudTooltip>
+                                    <MudTooltip Delay="700" Text="Add New Trigger Condition" RootClass="d-inline">
+                                    <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Outlined.Checklist" OnClick="@(() => EditConditionButtonClicked(e))" />
+                                    </MudTooltip>
+                                </MudStack>
+                            </MudItem>
+                        </MudGrid>
+                    </ChildContent>
+                    <NestedList>
+                    @if (e.conditions.Count > 0) {
+                        <MudListSubheader Style="width:100%; margin-left:16px; margin-bottom:-20px;">
+                        <MudGrid Justify="Justify.SpaceBetween">
+                            <MudItem xs="1" />
+                            <MudItem xs="2" Class="pa-0">
+                            </MudItem>
+                            <MudItem xs="3" Class="pa-0">
+                                <MudText Class="pt-4 d-flex justify-center align-center" Style="height:100%; width:100%;">Condition Name</MudText>
+                            </MudItem>
+                            <MudItem xs="3" Class="pa-0">
+                                <MudText Class="pt-4 d-flex justify-center align-center" Style="height:100%; width:100%;">Condition Type</MudText>
+                            </MudItem>
+                            <MudItem xs="2" Class="">
+                            </MudItem>
+                        </MudGrid>
+                        </MudListSubheader>
+                        @foreach(EventCondition condition in e.conditions) {
+                            <MudListItem>
+                                <ChildContent>
+                                    <MudGrid Justify="Justify.SpaceBetween">
+                                    <MudItem xs="1"/>
+                                    <MudItem xs="2" Class="pa-0">
+                                        <MudChip Class="mt-7 d-flex justify-center align-center" T="string" Color="Color.Primary">Condition</MudChip>
+                                    </MudItem>
+                                    <MudItem xs="3" Class="pa-0">
+                                            <MudText Class="pt-4 d-flex justify-center align-center" Style="height:100%; width:100%;">@condition.ConditionName</MudText>
+                                    </MudItem>
+                                    <MudItem xs="3" Class="pa-0">
+                                            <MudText Class="pt-4 d-flex justify-center align-center" Style="height:100%; width:100%;">@EventCondition.ConditionTypeString(condition.EConditionType)</MudText>
+                                    </MudItem>
+                                    <MudItem xs="2" Class="">
+                                        <MudStack Row="true" Justify="Justify.FlexEnd" StretchItems="StretchItems.All" Spacing="0">
+                                            <MudTooltip Delay="700" Text="Edit Event" RootClass="d-inline">
+                                                    <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Outlined.Edit" OnClick="@(() => EditConditionButtonClicked(e, condition))" />
+                                            </MudTooltip>
+                                            <MudTooltip Delay="700" Text="Duplicate Event" RootClass="d-inline">
+                                                    <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Outlined.CopyAll" OnClick="@(() => DuplicateConditionButtonClicked(e, condition))" />
+                                            </MudTooltip>
+                                            <MudTooltip Delay="700" Text="Delete Event" RootClass="d-inline">
+                                                    <MudIconButton Size="@Size.Medium" Icon="@Icons.Material.Outlined.Close" OnClick="@(() => DeleteConditionButtonClicked(e, condition))" />
+                                            </MudTooltip>
+                                         </MudStack>
+                                     </MudItem>
+                                    </MudGrid>
+                                </ChildContent>
+                            </MudListItem>
+                        }
+                    }
+                    </NestedList>      
+                </MudListItem>
+            }
+        </MudList>
+    <MudStack Class="d-flex justify-start flex-grow-1 gap-4" Row="true">
+            <MudButton @onclick="@(() => EditEventButtonClicked())" Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.Add" Color="Color.Primary">Add Event</MudButton>
+    </MudStack>
+
+}
+
+@code {
+    [Parameter]
+    public List<Event>? Events { get; set; }
+
+    [Parameter]
+    public string? GameName {get; set;}
+
+    private async Task EditEventButtonClicked(Event? existingEvent = null) {
+        if (Events == null) {
+            snackBar.Add("Unexpected null events container.");
+            return;
+        }
+
+        var options = new DialogOptions { BackgroundClass = "blur-dialog-background", BackdropClick = false };
+        var parameters = new DialogParameters<NewSceneEventDialog> { { x => x.GameName, GameName }, { x => x.InitialEvent, existingEvent } };
+
+        IDialogReference dialog = await DialogService.ShowAsync<NewSceneEventDialog>(null, parameters, options);
+
+        DialogResult? eventDialogResult = null;
+        try {
+            eventDialogResult = await dialog.Result;
+        }
+        catch (Exception ex) {
+            snackBar.Add(ex.Message, Severity.Error);
+        }
+
+        if (eventDialogResult != null && !eventDialogResult.Canceled && eventDialogResult.Data != null) {
+            //gameName, GMPassword, Scene
+            Event? newEvent = eventDialogResult.Data as Event;
+            if (newEvent != null) {
+                if (existingEvent != null){
+                    Events.Remove(existingEvent);
+                }
+                Events.Add(newEvent);
+                return;
+            }
+            else {
+                snackBar.Add("Unexpected null event returned from dialog", Severity.Error);
+            }
+        }
+    }
+
+    private void DeleteEventButtonClicked(Event gameEvent) {
+        if (Events == null) {
+            snackBar.Add("Unexpected null events container,");
+            return;
+        }
+
+        Events.Remove(gameEvent);
+    }
+
+    private void DuplicateEventButtonClicked(Event gameEvent) {
+        if (Events == null) {
+            snackBar.Add("Unexpected null events container.");
+            return;
+        }
+
+        Events.Add((Event)gameEvent.Clone());
+    }
+
+    private async Task EditConditionButtonClicked(Event gameEvent, EventCondition? existingCondition = null) {
+        if (Events == null) {
+            snackBar.Add("Unexpected null events container.");
+            return;
+        }
+
+        var options = new DialogOptions { BackgroundClass = "blur-dialog-background", BackdropClick = false };
+        var parameters = new DialogParameters<ConditionsDialog> { { x => x.GameName, GameName }, { x => x.InitialCondition, existingCondition } };
+        var dialog = await DialogService.ShowAsync<ConditionsDialog>(null, parameters, options);
+
+        DialogResult? eventDialogResult = null;
+        try {
+            eventDialogResult = await dialog.Result;
+        }
+        catch (Exception ex) {
+            snackBar.Add(ex.Message, Severity.Error);
+        }
+
+        if (eventDialogResult != null && !eventDialogResult.Canceled && eventDialogResult.Data != null) {
+            //gameName, GMPassword, Scene
+            EventCondition? newCondition = eventDialogResult.Data as EventCondition;
+            if (newCondition != null) {
+                if (existingCondition != null) {
+                    gameEvent.conditions.Remove(existingCondition);
+                }
+                gameEvent.conditions.Add(newCondition);
+                return;
+
+            }
+            else {
+                snackBar.Add("Unexpected null condition returned from dialog", Severity.Error);
+            }
+        }
+    }
+
+    private void DeleteConditionButtonClicked(Event gameEvent, EventCondition condition) {
+        gameEvent.conditions.Remove(condition);
+    }
+
+    private void DuplicateConditionButtonClicked(Event gameEvent, EventCondition condition) {
+        
+        gameEvent.conditions.Add((EventCondition)condition.Clone());
+    }
+
+}

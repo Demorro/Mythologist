@@ -30,5 +30,9 @@ namespace SharedLogic.Utils
 			".mp3",
 			".ogg"
 		};
+
+		public static string ALL_PLAYERS_ID = "All Players";
+		public static string ALL_PLAYERS_IN_SCENE_ID = "All Players in Scene";
+		public static string TRIGGERING_PLAYER_ID = "Triggering Player";
 	}
 }
