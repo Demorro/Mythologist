@@ -2,7 +2,9 @@
 
 A web application to make narrative focused, high-prep online TTRPG games delightful.
 
-Built with Blazor with an azure backend, 90% done, 90% away from being done.
+Built with Blazor with an azure backend, containing both a gameplay application for players, as well as a CRUD application for GM's to manage their compaigns.
+Also integrates with discord to allow playing from inside a discord call.
+90% done, 90% away from being done.
 
 > [!WARNING]  
 > Project on indefinate hiatus. Got bored.
