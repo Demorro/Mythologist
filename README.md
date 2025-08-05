@@ -7,7 +7,7 @@ Also integrates with discord to allow playing from inside a discord call.
 90% done, 90% away from being done.
 
 > [!WARNING]  
-> Project on indefinate hiatus. Got bored.
+> Project on indefinate hiatus. Got bored/ran out of money and had to get another job.
 
 ## In-development Screenshots
 
